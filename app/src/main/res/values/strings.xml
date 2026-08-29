@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">IPod Class + Radio</string>
+    <string name="media_notification_channel_name">Rádio em Segundo Plano &amp; Tela de Bloqueio</string>
+</resources>

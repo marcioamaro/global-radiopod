@@ -1,0 +1,6 @@
+{
+  "name": "iPod World Radio",
+  "description": "App de rádio mundial com visual clássico iPod, compatibilidade Android Auto, RDS em tempo real, filtros globais e favoritos em destaque.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

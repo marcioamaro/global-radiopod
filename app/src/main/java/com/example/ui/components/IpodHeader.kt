@@ -1,0 +1,228 @@
+package com.example.ui.components
+
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BatteryFull
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import android.text.format.DateFormat
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.player.RadioPlaybackStatus
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+@Composable
+fun IpodHeader(
+    title: String,
+    status: RadioPlaybackStatus,
+    isHoldLocked: Boolean,
+    sleepTimerMinutes: Int,
+    backlightTextPrimary: Color,
+    backlightHighlight: Color,
+    fontFamily: FontFamily = FontFamily.Monospace,
+    fontScale: Float = 1.0f,
+    isBold: Boolean = true,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    var currentTime by remember {
+        mutableStateOf(
+            if (DateFormat.is24HourFormat(context)) {
+                SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+            } else {
+                SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date())
+            }
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        while (isActive) {
+            val now = System.currentTimeMillis()
+            val nextMinute = 60_000L - (now % 60_000L)
+            delay(nextMinute.coerceAtLeast(1000L))
+            currentTime = if (DateFormat.is24HourFormat(context)) {
+                SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+            } else {
+                SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date())
+            }
+        }
+    }
+
+    val infiniteTransition = rememberInfiniteTransition(label = "buffering_pulse")
+    val bufferAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 1.0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(600, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "buffer_alpha"
+    )
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(28.dp)
+            .background(backlightHighlight.copy(alpha = 0.25f))
+            .padding(horizontal = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Left: Playback indicator icon
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                when (status) {
+                    RadioPlaybackStatus.PLAYING -> {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = "Tocando",
+                            tint = backlightTextPrimary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                    RadioPlaybackStatus.BUFFERING -> {
+                        Box(
+                            modifier = Modifier
+                                .size(10.dp)
+                                .alpha(bufferAlpha)
+                                .clip(RoundedCornerShape(5.dp))
+                                .background(backlightTextPrimary)
+                        )
+                    }
+                    RadioPlaybackStatus.PAUSED -> {
+                        Icon(
+                            imageVector = Icons.Default.Pause,
+                            contentDescription = "Pausado",
+                            tint = backlightTextPrimary.copy(alpha = 0.6f),
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+                    else -> {
+                        Spacer(modifier = Modifier.width(14.dp))
+                    }
+                }
+
+                if (isHoldLocked) {
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = "Hold Bloqueado",
+                        tint = backlightTextPrimary,
+                        modifier = Modifier.size(13.dp)
+                    )
+                }
+            }
+
+            // Center: Screen Title
+            Text(
+                text = title,
+                color = backlightTextPrimary,
+                fontSize = (13.5f * fontScale).sp,
+                fontWeight = if (isBold) FontWeight.Black else FontWeight.Bold,
+                fontFamily = fontFamily,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f, fill = false).padding(horizontal = 8.dp)
+            )
+
+            // Right: Battery & Sleep timer
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (sleepTimerMinutes > 0) {
+                    Icon(
+                        imageVector = Icons.Default.Timer,
+                        contentDescription = "Timer $sleepTimerMinutes min",
+                        tint = backlightTextPrimary,
+                        modifier = Modifier.size(12.dp)
+                    )
+                    Text(
+                        text = "${sleepTimerMinutes}m",
+                        color = backlightTextPrimary,
+                        fontSize = (10 * fontScale).sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily,
+                        modifier = Modifier.padding(start = 2.dp, end = 4.dp)
+                    )
+                }
+
+                // Relógio LCD retrô em tempo real
+                Text(
+                    text = currentTime,
+                    color = backlightTextPrimary,
+                    fontSize = (10f * fontScale).sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = fontFamily,
+                    modifier = Modifier.padding(end = 5.dp)
+                )
+
+                // Authentic Retro iPod Battery with tip (monochrome LCD pixel style)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .width(22.dp)
+                            .height(11.dp)
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(backlightTextPrimary.copy(alpha = 0.25f))
+                            .padding(1.5.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(0.85f)
+                                .height(8.dp)
+                                .clip(RoundedCornerShape(1.dp))
+                                .background(backlightTextPrimary)
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .width(2.dp)
+                            .height(5.dp)
+                            .clip(RoundedCornerShape(0.5.dp))
+                            .background(backlightTextPrimary.copy(alpha = 0.75f))
+                    )
+                }
+            }
+        }
+    }
+}

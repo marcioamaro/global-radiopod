@@ -1,0 +1,156 @@
+package com.example.player
+
+import android.content.Context
+import androidx.annotation.OptIn
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
+import com.example.data.model.LocalVideoTrack
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+
+@OptIn(UnstableApi::class)
+class LocalVideoPlayerManager private constructor(private val context: Context) {
+
+    val exoPlayer: ExoPlayer = ExoPlayer.Builder(context)
+        .setAudioAttributes(
+            androidx.media3.common.AudioAttributes.Builder()
+                .setContentType(androidx.media3.common.C.AUDIO_CONTENT_TYPE_MOVIE)
+                .setUsage(androidx.media3.common.C.USAGE_MEDIA)
+                .build(),
+            true
+        )
+        .setHandleAudioBecomingNoisy(true)
+        .build().apply {
+            repeatMode = Player.REPEAT_MODE_OFF
+            playWhenReady = true
+        }
+
+    private val _isPlaying = MutableStateFlow(false)
+    val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
+
+    private val _currentVideo = MutableStateFlow<LocalVideoTrack?>(null)
+    val currentVideo: StateFlow<LocalVideoTrack?> = _currentVideo.asStateFlow()
+
+    private val _currentPositionMs = MutableStateFlow(0L)
+    val currentPositionMs: StateFlow<Long> = _currentPositionMs.asStateFlow()
+
+    private val _durationMs = MutableStateFlow(0L)
+    val durationMs: StateFlow<Long> = _durationMs.asStateFlow()
+
+    private val scope = CoroutineScope(Dispatchers.Main + Job())
+    private var progressJob: Job? = null
+
+    init {
+        exoPlayer.addListener(object : Player.Listener {
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                _isPlaying.value = isPlaying
+                if (isPlaying) {
+                    startProgressTracker()
+                } else {
+                    stopProgressTracker()
+                }
+            }
+
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                if (playbackState == Player.STATE_READY) {
+                    _durationMs.value = exoPlayer.duration.coerceAtLeast(0L)
+                } else if (playbackState == Player.STATE_ENDED) {
+                    _isPlaying.value = false
+                    stopProgressTracker()
+                }
+            }
+        })
+    }
+
+    private fun startProgressTracker() {
+        progressJob?.cancel()
+        progressJob = scope.launch {
+            while (isActive) {
+                _currentPositionMs.value = exoPlayer.currentPosition.coerceAtLeast(0L)
+                delay(500)
+            }
+        }
+    }
+
+    private fun stopProgressTracker() {
+        progressJob?.cancel()
+        progressJob = null
+    }
+
+    fun playVideo(video: LocalVideoTrack) {
+        // Pausar rádio ou MP3 em execução
+        RadioPlayerManager.getInstance(context).pause()
+
+        _currentVideo.value = video
+        _durationMs.value = video.durationMs
+        _currentPositionMs.value = 0L
+
+        val mediaItem = MediaItem.fromUri(video.contentUri)
+        exoPlayer.setMediaItem(mediaItem)
+        exoPlayer.prepare()
+        exoPlayer.play()
+    }
+
+    fun togglePlayPause() {
+        if (exoPlayer.isPlaying) {
+            exoPlayer.pause()
+        } else {
+            RadioPlayerManager.getInstance(context).pause()
+            exoPlayer.play()
+        }
+    }
+
+    fun pause() {
+        exoPlayer.pause()
+    }
+
+    fun resume() {
+        RadioPlayerManager.getInstance(context).pause()
+        exoPlayer.play()
+    }
+
+    fun seekTo(positionMs: Long) {
+        exoPlayer.seekTo(positionMs.coerceIn(0L, _durationMs.value))
+        _currentPositionMs.value = exoPlayer.currentPosition
+    }
+
+    fun forward10s() {
+        seekTo(exoPlayer.currentPosition + 10000L)
+    }
+
+    fun rewind10s() {
+        seekTo(exoPlayer.currentPosition - 10000L)
+    }
+
+    fun stop() {
+        exoPlayer.stop()
+        _isPlaying.value = false
+        _currentVideo.value = null
+        stopProgressTracker()
+    }
+
+    fun release() {
+        stopProgressTracker()
+        exoPlayer.release()
+    }
+
+    companion object {
+        @Volatile
+        private var instance: LocalVideoPlayerManager? = null
+
+        fun getInstance(context: Context): LocalVideoPlayerManager {
+            return instance ?: synchronized(this) {
+                instance ?: LocalVideoPlayerManager(context.applicationContext).also { instance = it }
+            }
+        }
+    }
+}
