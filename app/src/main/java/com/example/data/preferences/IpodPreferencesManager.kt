@@ -480,4 +480,58 @@ class IpodPreferencesManager private constructor(context: Context) {
             prefs.edit().putString("custom_youtube_videos_json", array.toString()).apply()
         } catch (_: Exception) {}
     }
+
+    fun getRadioAlarmConfig(): com.example.data.model.RadioAlarmConfig {
+        return try {
+            val jsonStr = prefs.getString("radio_alarm_config_json", null)
+            if (jsonStr != null) {
+                val obj = org.json.JSONObject(jsonStr)
+                val daysArray = obj.optJSONArray("daysOfWeek")
+                val days = mutableSetOf<Int>()
+                if (daysArray != null) {
+                    for (i in 0 until daysArray.length()) {
+                        days.add(daysArray.getInt(i))
+                    }
+                }
+                com.example.data.model.RadioAlarmConfig(
+                    isEnabled = obj.optBoolean("isEnabled", false),
+                    hour = obj.optInt("hour", 7),
+                    minute = obj.optInt("minute", 0),
+                    daysOfWeek = days,
+                    stationId = obj.optString("stationId", ""),
+                    stationName = obj.optString("stationName", ""),
+                    stationStreamUrl = obj.optString("stationStreamUrl", ""),
+                    stationFavicon = obj.optString("stationFavicon", ""),
+                    volume = obj.optDouble("volume", 0.85).toFloat(),
+                    vibrate = obj.optBoolean("vibrate", true),
+                    snoozeMinutes = obj.optInt("snoozeMinutes", 10)
+                )
+            } else {
+                com.example.data.model.RadioAlarmConfig()
+            }
+        } catch (_: Exception) {
+            com.example.data.model.RadioAlarmConfig()
+        }
+    }
+
+    fun saveRadioAlarmConfig(config: com.example.data.model.RadioAlarmConfig) {
+        try {
+            val daysArray = org.json.JSONArray()
+            config.daysOfWeek.forEach { daysArray.put(it) }
+            val obj = org.json.JSONObject().apply {
+                put("isEnabled", config.isEnabled)
+                put("hour", config.hour)
+                put("minute", config.minute)
+                put("daysOfWeek", daysArray)
+                put("stationId", config.stationId)
+                put("stationName", config.stationName)
+                put("stationStreamUrl", config.stationStreamUrl)
+                put("stationFavicon", config.stationFavicon)
+                put("volume", config.volume.toDouble())
+                put("vibrate", config.vibrate)
+                put("snoozeMinutes", config.snoozeMinutes)
+            }
+            prefs.edit().putString("radio_alarm_config_json", obj.toString()).apply()
+        } catch (_: Exception) {}
+    }
 }

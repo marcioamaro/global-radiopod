@@ -104,6 +104,14 @@ class LocalVideoPlayerManager private constructor(private val context: Context) 
     }
 
     fun playVideo(video: LocalVideoTrack) {
+        // Se já for o mesmo vídeo carregado, mantenha a posição e retome se necessário
+        if (_currentVideo.value?.id == video.id && exoPlayer.playbackState != Player.STATE_IDLE) {
+            if (!exoPlayer.isPlaying) {
+                exoPlayer.play()
+            }
+            return
+        }
+
         // Pausar rádio ou MP3 em execução
         RadioPlayerManager.getInstance(context).pause()
 

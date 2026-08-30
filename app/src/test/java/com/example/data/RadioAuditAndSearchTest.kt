@@ -218,4 +218,62 @@ class RadioAuditAndSearchTest {
         assertTrue("Android Auto search for '$query' must find results", results.isNotEmpty())
         assertTrue("Results should contain Mix FM", results.any { it.name.contains("Mix", ignoreCase = true) })
     }
+
+    @Test
+    fun testMonochromeCountryBadgesDoNotContainColoredFlags() {
+        val countries = CuratedData.COUNTRIES
+        assertTrue(countries.isNotEmpty())
+        countries.forEach { c ->
+            assertFalse("Country flag '${c.flag}' should not contain colored flag emoji", c.flag.contains("🇧🇷") || c.flag.contains("🇺🇸"))
+            assertTrue("Country flag should be formatted as monochrome [CODE]", c.flag.startsWith("[") && c.flag.endsWith("]"))
+        }
+    }
+
+    @Test
+    fun testRadioAlarmConfigNextTimeCalculation() {
+        val config = com.example.data.model.RadioAlarmConfig(
+            isEnabled = true,
+            hour = 7,
+            minute = 30,
+            stationName = "Kiss FM"
+        )
+        val nextMs = config.calculateNextAlarmTimeMs()
+        assertTrue("Next alarm time must be in the future", nextMs > System.currentTimeMillis())
+        val remainingStr = config.getRemainingTimeString()
+        assertTrue("Remaining string must be descriptive", remainingStr.startsWith("em ") || remainingStr == "Agora")
+    }
+
+    @Test
+    fun testAccentInsensitiveNormalization() {
+        val queryWithAccents = "SÃO PAULO NOTÍCIAS"
+        val normalized = RadioSearchEngine.normalize(queryWithAccents)
+        assertEquals("sao paulo noticias", normalized)
+    }
+
+    @Test
+    fun testBrazilianStatesSortedAlphabeticallyWithCollator() {
+        val states = CuratedData.BRAZILIAN_STATES.filter { it.first.isNotEmpty() }.map { it.second }
+        val collator = java.text.Collator.getInstance(java.util.Locale.forLanguageTag("pt-BR"))
+        val sorted = states.sortedWith(collator)
+        assertEquals("Brazilian states must be sorted alphabetically by name with pt-BR collator", sorted, states)
+    }
+
+    @Test
+    fun testCountriesSortedAlphabeticallyWithCollator() {
+        assertEquals("Brasil deve estar estritamente no topo (índice 0)", "BR", CuratedData.COUNTRIES[0].code)
+        assertEquals("Opção Todos os Países deve estar no índice 1", "ALL", CuratedData.COUNTRIES[1].code)
+        val otherCountries = CuratedData.COUNTRIES.filter { it.code != "ALL" && it.code != "BR" }.map { it.name }
+        val collator = java.text.Collator.getInstance(java.util.Locale.forLanguageTag("pt-BR"))
+        val sorted = otherCountries.sortedWith(collator)
+        assertEquals("Demais países devem estar ordenados alfabeticamente A-Z via collator pt-BR", sorted, otherCountries)
+        assertEquals("Brasil não deve estar duplicado", 1, CuratedData.COUNTRIES.count { it.code == "BR" })
+    }
+
+    @Test
+    fun testGetStateFullName() {
+        assertEquals("São Paulo", CuratedData.getStateFullName("SP"))
+        assertEquals("Rio de Janeiro", CuratedData.getStateFullName("RJ"))
+        assertEquals("Minas Gerais", CuratedData.getStateFullName("MG"))
+        assertEquals("Distrito Federal", CuratedData.getStateFullName("DF"))
+    }
 }

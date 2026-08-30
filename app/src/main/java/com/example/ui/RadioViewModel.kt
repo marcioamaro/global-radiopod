@@ -69,7 +69,8 @@ enum class IpodScreenDestination {
     AUDIO_OUTPUT_MENU,
     GAME_BRICK,
     SETTINGS_THEMES,
-    ABOUT
+    ABOUT,
+    ALARM_CONFIG
 }
 
 enum class DisplayMode {
@@ -326,9 +327,21 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         try {
             videoPlayerManager.pause()
         } catch (_: Exception) {}
+        if (_uiState.value.currentYouTubeVideo?.id != video.id) {
+            youTubePlaybackPositionSeconds = 0
+        }
         _uiState.value = _uiState.value.copy(currentYouTubeVideo = video)
         navigateTo(IpodScreenDestination.YOUTUBE_PLAYER)
         soundAndHaptics.performHeavyHaptic()
+    }
+
+    var youTubePlaybackPositionSeconds: Int = 0
+        private set
+
+    fun updateYouTubePlaybackPosition(seconds: Int) {
+        if (seconds >= 0) {
+            youTubePlaybackPositionSeconds = seconds
+        }
     }
 
     fun nextYouTubeVideo() {
@@ -1143,6 +1156,9 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                 // Return to main menu on center button press
                 navigateTo(IpodScreenDestination.MAIN_MENU)
             }
+            IpodScreenDestination.ALARM_CONFIG -> {
+                // Handled in LCD screen
+            }
         }
     }
 
@@ -1841,6 +1857,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
             IpodScreenDestination.GAME_BRICK,
             IpodScreenDestination.NOW_PLAYING_RDS,
             IpodScreenDestination.ABOUT -> 0
+            IpodScreenDestination.ALARM_CONFIG -> 0
         }
     }
 

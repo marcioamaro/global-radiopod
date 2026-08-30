@@ -61,25 +61,32 @@ object CuratedData {
         GenreCategory("world", "World Music", "world", "🌍", "Músicas e ritmos do mundo")
     )
 
-    val COUNTRIES = listOf(
-        CountryCategory("ALL", "Todos os Países", "🌐", "Global"),
-        CountryCategory("BR", "Brasil", "🇧🇷", "América do Sul"),
-        CountryCategory("US", "Estados Unidos", "🇺🇸", "América do Norte"),
-        CountryCategory("GB", "Reino Unido", "🇬🇧", "Europa"),
-        CountryCategory("PT", "Portugal", "🇵🇹", "Europa"),
-        CountryCategory("DE", "Alemanha", "🇩🇪", "Europa"),
-        CountryCategory("FR", "França", "🇫🇷", "Europa"),
-        CountryCategory("IT", "Itália", "🇮🇹", "Europa"),
-        CountryCategory("ES", "Espanha", "🇪🇸", "Europa"),
-        CountryCategory("JP", "Japão", "🇯🇵", "Ásia"),
-        CountryCategory("AR", "Argentina", "🇦🇷", "América do Sul"),
-        CountryCategory("CA", "Canadá", "🇨🇦", "América do Norte"),
-        CountryCategory("AU", "Austrália", "🇦🇺", "Oceania"),
-        CountryCategory("MX", "México", "🇲🇽", "América do Norte"),
-        CountryCategory("NL", "Holanda", "🇳🇱", "Europa"),
-        CountryCategory("CH", "Suíça", "🇨🇭", "Europa"),
-        CountryCategory("IE", "Irlanda", "🇮🇪", "Europa")
-    )
+    val COUNTRIES: List<CountryCategory> = run {
+        val collator = java.text.Collator.getInstance(java.util.Locale("pt", "BR")).apply {
+            strength = java.text.Collator.PRIMARY
+        }
+        val brasil = CountryCategory("BR", "Brasil", "[BR]", "América do Sul")
+        val todos = CountryCategory("ALL", "Todos os Países", "[ALL]", "Global")
+        val others = listOf(
+            CountryCategory("DE", "Alemanha", "[DE]", "Europa"),
+            CountryCategory("AR", "Argentina", "[AR]", "América do Sul"),
+            CountryCategory("AU", "Austrália", "[AU]", "Oceania"),
+            CountryCategory("CA", "Canadá", "[CA]", "América do Norte"),
+            CountryCategory("ES", "Espanha", "[ES]", "Europa"),
+            CountryCategory("US", "Estados Unidos", "[US]", "América do Norte"),
+            CountryCategory("FR", "França", "[FR]", "Europa"),
+            CountryCategory("NL", "Holanda", "[NL]", "Europa"),
+            CountryCategory("IE", "Irlanda", "[IE]", "Europa"),
+            CountryCategory("IT", "Itália", "[IT]", "Europa"),
+            CountryCategory("JP", "Japão", "[JP]", "Ásia"),
+            CountryCategory("MX", "México", "[MX]", "América do Norte"),
+            CountryCategory("PT", "Portugal", "[PT]", "Europa"),
+            CountryCategory("GB", "Reino Unido", "[GB]", "Europa"),
+            CountryCategory("CH", "Suíça", "[CH]", "Europa")
+        ).sortedWith { a, b -> collator.compare(a.name, b.name) }
+
+        listOf(brasil, todos) + others
+    }
 
     val BRAZILIAN_CITIES = listOf(
         "São Paulo",
@@ -120,35 +127,68 @@ object CuratedData {
     )
 
     val BRAZILIAN_STATES = listOf(
-        "" to "Todas as UFs",
-        "SP" to "São Paulo (SP)",
-        "RJ" to "Rio de Janeiro (RJ)",
-        "MG" to "Minas Gerais (MG)",
-        "RN" to "Rio Grande do Norte (RN)",
+        "" to "Todos os Estados",
+        "AC" to "Acre (AC)",
+        "AL" to "Alagoas (AL)",
+        "AP" to "Amapá (AP)",
+        "AM" to "Amazonas (AM)",
         "BA" to "Bahia (BA)",
         "CE" to "Ceará (CE)",
-        "PE" to "Pernambuco (PE)",
-        "RS" to "Rio Grande do Sul (RS)",
-        "PR" to "Paraná (PR)",
-        "SC" to "Santa Catarina (SC)",
-        "GO" to "Goiás (GO)",
         "DF" to "Distrito Federal (DF)",
         "ES" to "Espírito Santo (ES)",
-        "PB" to "Paraíba (PB)",
+        "GO" to "Goiás (GO)",
         "MA" to "Maranhão (MA)",
         "MT" to "Mato Grosso (MT)",
         "MS" to "Mato Grosso do Sul (MS)",
+        "MG" to "Minas Gerais (MG)",
         "PA" to "Pará (PA)",
-        "AM" to "Amazonas (AM)",
+        "PB" to "Paraíba (PB)",
+        "PR" to "Paraná (PR)",
+        "PE" to "Pernambuco (PE)",
         "PI" to "Piauí (PI)",
-        "AL" to "Alagoas (AL)",
-        "SE" to "Sergipe (SE)",
+        "RJ" to "Rio de Janeiro (RJ)",
+        "RN" to "Rio Grande do Norte (RN)",
+        "RS" to "Rio Grande do Sul (RS)",
         "RO" to "Rondônia (RO)",
-        "TO" to "Tocantins (TO)",
-        "AC" to "Acre (AC)",
-        "AP" to "Amapá (AP)",
-        "RR" to "Roraima (RR)"
+        "RR" to "Roraima (RR)",
+        "SC" to "Santa Catarina (SC)",
+        "SP" to "São Paulo (SP)",
+        "SE" to "Sergipe (SE)",
+        "TO" to "Tocantins (TO)"
     )
+
+    fun getStateFullName(uf: String?): String {
+        return when (uf?.trim()?.uppercase()) {
+            "AC" -> "Acre"
+            "AL" -> "Alagoas"
+            "AP" -> "Amapá"
+            "AM" -> "Amazonas"
+            "BA" -> "Bahia"
+            "CE" -> "Ceará"
+            "DF" -> "Distrito Federal"
+            "ES" -> "Espírito Santo"
+            "GO" -> "Goiás"
+            "MA" -> "Maranhão"
+            "MT" -> "Mato Grosso"
+            "MS" -> "Mato Grosso do Sul"
+            "MG" -> "Minas Gerais"
+            "PA" -> "Pará"
+            "PB" -> "Paraíba"
+            "PR" -> "Paraná"
+            "PE" -> "Pernambuco"
+            "PI" -> "Piauí"
+            "RJ" -> "Rio de Janeiro"
+            "RN" -> "Rio Grande do Norte"
+            "RS" -> "Rio Grande do Sul"
+            "RO" -> "Rondônia"
+            "RR" -> "Roraima"
+            "SC" -> "Santa Catarina"
+            "SP" -> "São Paulo"
+            "SE" -> "Sergipe"
+            "TO" -> "Tocantins"
+            else -> uf ?: "Brasil"
+        }
+    }
 
     val CITIES_BY_BRAZILIAN_STATE: Map<String, List<String>> = mapOf(
         "AC" to listOf("Todas as Cidades"),

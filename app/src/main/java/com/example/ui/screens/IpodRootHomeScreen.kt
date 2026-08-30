@@ -171,14 +171,11 @@ fun IpodRootHomeScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        AsyncImage(
-                            model = currentArtUrl,
-                            contentDescription = "Cover Art",
-                            contentScale = ContentScale.Crop,
-                            colorFilter = ColorFilter.colorMatrix(bwMatrix),
-                            modifier = Modifier
-                                .size(64.dp)
-                                .clip(RoundedCornerShape(6.dp))
+                        Icon(
+                            imageVector = Icons.Default.LibraryMusic,
+                            contentDescription = "Música em Reprodução",
+                            tint = backlightTextPrimary,
+                            modifier = Modifier.size(52.dp)
                         )
                         if (!nowPlayingTitle.isNullOrBlank()) {
                             Spacer(modifier = Modifier.height(4.dp))

@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import kotlinx.coroutines.delay
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -31,8 +32,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.SmartDisplay
 import androidx.compose.ui.res.stringResource
@@ -107,6 +107,7 @@ import com.example.ui.UiState
 import com.example.ui.components.ClickWheel
 import com.example.ui.components.IpodHeader
 import com.example.ui.components.RdsDisplay
+import com.example.ui.components.MonochromeFlag
 import com.example.util.IpodSoundAndHaptics
 
 @Composable
@@ -174,6 +175,7 @@ fun IpodClassicScreen(
     onSelectAudioDevice: (com.example.player.AudioRouteDevice) -> Unit = {},
     onOpenNativeAudioChooser: () -> Unit = {},
     viewModel: com.example.ui.RadioViewModel? = null,
+    onShowChassisBack: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val chassisTheme = uiState.chassisTheme
@@ -195,6 +197,16 @@ fun IpodClassicScreen(
 
     val context = LocalContext.current
     val effectiveSoundAndHaptics = soundAndHaptics ?: remember { IpodSoundAndHaptics.getInstance(context) }
+
+    var sleepBannerMessage by remember { mutableStateOf<String?>(null) }
+    var showSleepBanner by remember { mutableStateOf(false) }
+
+    LaunchedEffect(showSleepBanner) {
+        if (showSleepBanner) {
+            delay(2500L)
+            showSleepBanner = false
+        }
+    }
 
     Box(
         modifier = modifier
@@ -286,31 +298,75 @@ fun IpodClassicScreen(
                     }
                 }
 
-                // Car / Fullscreen Mode Toggle Pill (harmonized with Click Wheel colors)
                 Row(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(wheelColor.copy(alpha = 0.22f))
-                        .border(1.2.dp, wheelColor, RoundedCornerShape(12.dp))
-                        .clickable(onClick = onToggleDisplayMode)
-                        .padding(horizontal = 9.dp, vertical = 4.dp)
-                        .testTag("toggle_car_mode_button"),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.DirectionsCar,
-                        contentDescription = "Modo Carro",
-                        tint = wheelTextColor,
-                        modifier = Modifier.size(14.dp)
-                    )
-                    Spacer(modifier = Modifier.width(5.dp))
-                    Text(
-                        text = "MODO CARRO",
-                        color = wheelTextColor,
-                        fontSize = (9.5f * fontScale).sp,
-                        fontWeight = if (isBold) FontWeight.Black else FontWeight.Bold,
-                        fontFamily = fontFamily
-                    )
+                    // Modo Dormir (Sleep Timer) Pill Button
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (sleepTimerMinutes > 0) wheelColor.copy(alpha = 0.4f) else wheelColor.copy(alpha = 0.22f))
+                            .border(1.2.dp, if (sleepTimerMinutes > 0) Color(0xFF38BDF8) else wheelColor, RoundedCornerShape(12.dp))
+                            .clickable {
+                                val nextTimer = when (sleepTimerMinutes) {
+                                    0 -> 15
+                                    15 -> 30
+                                    30 -> 45
+                                    45 -> 60
+                                    60 -> 90
+                                    90 -> 120
+                                    else -> 0
+                                }
+                                onSetSleepTimer(nextTimer)
+                                sleepBannerMessage = if (nextTimer > 0) "MODO DORMIR: $nextTimer MIN" else "MODO DORMIR: DESLIGADO"
+                                showSleepBanner = true
+                            }
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Timer,
+                            contentDescription = "Modo Dormir",
+                            tint = if (sleepTimerMinutes > 0) Color(0xFF38BDF8) else wheelTextColor,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = if (sleepTimerMinutes > 0) "SONO ${sleepTimerMinutes}m" else "DORMIR",
+                            color = if (sleepTimerMinutes > 0) Color(0xFF38BDF8) else wheelTextColor,
+                            fontSize = (9f * fontScale).sp,
+                            fontWeight = if (isBold) FontWeight.Black else FontWeight.Bold,
+                            fontFamily = fontFamily
+                        )
+                    }
+
+                    // Car / Fullscreen Mode Toggle Pill (harmonized with Click Wheel colors)
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(wheelColor.copy(alpha = 0.22f))
+                            .border(1.2.dp, wheelColor, RoundedCornerShape(12.dp))
+                            .clickable(onClick = onToggleDisplayMode)
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                            .testTag("toggle_car_mode_button"),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DirectionsCar,
+                            contentDescription = "Modo Carro",
+                            tint = wheelTextColor,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "CARRO",
+                            color = wheelTextColor,
+                            fontSize = (9f * fontScale).sp,
+                            fontWeight = if (isBold) FontWeight.Black else FontWeight.Bold,
+                            fontFamily = fontFamily
+                        )
+                    }
                 }
             }
 
@@ -346,6 +402,31 @@ fun IpodClassicScreen(
                         }
                     } else 1.0f
 
+                    val isVideoPlaying = videoPlayerManager?.isPlaying?.collectAsState()?.value ?: false
+                    val currentVideoTrack = videoPlayerManager?.currentVideo?.collectAsState()?.value
+                    val currentEp = viewModel?.currentPodcastEpisode?.collectAsState(initial = null)?.value
+
+                    val computedTicker = when {
+                        isVideoPlaying && currentVideoTrack != null -> {
+                            "▶ Reproduzindo Vídeo: ${currentVideoTrack.title}"
+                        }
+                        playbackStatus == RadioPlaybackStatus.PLAYING -> {
+                            when {
+                                currentLocalAudio != null -> "▶ Reproduzindo MP3: ${currentLocalAudio.title}"
+                                currentEp != null -> "▶ Reproduzindo Podcast: ${currentEp.title}"
+                                currentStation != null -> {
+                                    val citySuffix = if (!currentStation.city.isNullOrBlank()) " (${currentStation.city})" else ""
+                                    "▶ Reproduzindo Rádio: ${currentStation.name}$citySuffix"
+                                }
+                                uiState.currentScreen == IpodScreenDestination.YOUTUBE_PLAYER && uiState.currentYouTubeVideo != null -> {
+                                    "▶ Reproduzindo YouTube: ${uiState.currentYouTubeVideo.title}"
+                                }
+                                else -> null
+                            }
+                        }
+                        else -> null
+                    }
+
                     IpodHeader(
                         title = getScreenTitle(uiState),
                         status = playbackStatus,
@@ -353,10 +434,12 @@ fun IpodClassicScreen(
                         sleepTimerMinutes = sleepTimerMinutes,
                         backlightTextPrimary = backlightTextPrimary,
                         backlightHighlight = backlightHighlight,
+                        backlightBg = backlightBg,
                         fontFamily = fontFamily,
                         fontScale = fontScale,
                         isBold = isBold,
                         playbackSpeed = headerSpeed,
+                        nowPlayingTicker = computedTicker,
                         showAudioOutputIcon = uiState.currentScreen in listOf(
                             IpodScreenDestination.NOW_PLAYING_RDS,
                             IpodScreenDestination.MP3_NOW_PLAYING,
@@ -665,7 +748,8 @@ fun IpodClassicScreen(
                                     onSelectGenre = onSelectGenre,
                                     backlightTextPrimary = backlightTextPrimary,
                                     backlightTextSecondary = backlightTextSecondary,
-                                    backlightHighlight = backlightHighlight
+                                    backlightHighlight = backlightHighlight,
+                                    isBold = isBold
                                 )
                             }
                             IpodScreenDestination.STATIONS_BY_GENRE -> {
@@ -696,7 +780,8 @@ fun IpodClassicScreen(
                                     onSelectCountry = onSelectCountry,
                                     backlightTextPrimary = backlightTextPrimary,
                                     backlightTextSecondary = backlightTextSecondary,
-                                    backlightHighlight = backlightHighlight
+                                    backlightHighlight = backlightHighlight,
+                                    isBold = isBold
                                 )
                             }
                             IpodScreenDestination.STATIONS_BY_COUNTRY -> {
@@ -1184,6 +1269,8 @@ fun IpodClassicScreen(
                                             val activity = context as? android.app.Activity
                                             activity?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                                         },
+                                        initialStartSeconds = viewModel?.youTubePlaybackPositionSeconds ?: 0,
+                                        onTimeUpdate = { viewModel?.updateYouTubePlaybackPosition(it) },
                                         backlightTextPrimary = backlightTextPrimary,
                                         backlightTextSecondary = backlightTextSecondary,
                                         backlightHighlight = backlightHighlight,
@@ -1260,29 +1347,97 @@ fun IpodClassicScreen(
                                     backlightHighlight = backlightHighlight,
                                     fontFamily = fontFamily,
                                     fontScale = fontScale,
+                                    isBold = isBold,
+                                    onShowChassisBack = onShowChassisBack
+                                )
+                            }
+                            IpodScreenDestination.ALARM_CONFIG -> {
+                                IpodAlarmScreen(
+                                    favorites = favorites,
+                                    onBack = onMenuClick,
+                                    backlightBg = backlightBg,
+                                    backlightTextPrimary = backlightTextPrimary,
+                                    backlightTextSecondary = backlightTextSecondary,
+                                    backlightHighlight = backlightHighlight,
+                                    fontFamily = fontFamily,
+                                    fontScale = fontScale,
                                     isBold = isBold
                                 )
                             }
                         }
                     }
                 }
+
+                // Banner LCD retrô para feedback do Modo Dormir (Inversão monocromática com alto contraste)
+                if (showSleepBanner && sleepBannerMessage != null) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = 28.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(backlightTextPrimary)
+                            .border(1.dp, backlightBg, RoundedCornerShape(4.dp))
+                            .padding(horizontal = 12.dp, vertical = 5.dp)
+                    ) {
+                        Text(
+                            text = "⏰ $sleepBannerMessage",
+                            color = backlightBg,
+                            fontSize = (10.5f * fontScale).sp,
+                            fontWeight = FontWeight.Black,
+                            fontFamily = fontFamily
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Interactive Click Wheel at Bottom with dynamic user-configured colors
-            ClickWheel(
-                onRotaryScroll = onRotaryScroll,
-                onCenterClick = onCenterClick,
-                onMenuClick = onMenuClick,
-                onPlayPauseClick = onPlayPauseClick,
-                onPrevClick = onPrevClick,
-                onNextClick = onNextClick,
-                wheelColor = wheelColor,
-                textColor = wheelTextColor,
-                centerButtonColor = centerButtonColor,
-                modifier = Modifier.padding(bottom = 6.dp)
-            )
+            // Interactive Click Wheel at Bottom with dynamic user-configured colors and Alarm Bell
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 6.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                ClickWheel(
+                    onRotaryScroll = onRotaryScroll,
+                    onCenterClick = onCenterClick,
+                    onMenuClick = onMenuClick,
+                    onPlayPauseClick = onPlayPauseClick,
+                    onPrevClick = onPrevClick,
+                    onNextClick = onNextClick,
+                    wheelColor = wheelColor,
+                    textColor = wheelTextColor,
+                    centerButtonColor = centerButtonColor
+                )
+
+                // Sininho no canto inferior direito do chassi que acessa as configurações de alarme
+                val isAlarmActive = remember(uiState.currentScreen) {
+                    try {
+                        com.example.data.preferences.IpodPreferencesManager.getInstance(context).getRadioAlarmConfig().isEnabled
+                    } catch (_: Exception) { false }
+                }
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 6.dp, bottom = 2.dp)
+                        .clip(CircleShape)
+                        .background(if (isAlarmActive) Color(0xFF0284C7).copy(alpha = 0.3f) else Color.White.copy(alpha = 0.08f))
+                        .border(1.2.dp, if (isAlarmActive) Color(0xFF38BDF8) else Color.White.copy(alpha = 0.2f), CircleShape)
+                        .clickable {
+                            onSelectDestination(IpodScreenDestination.ALARM_CONFIG)
+                        }
+                        .padding(8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Alarm,
+                        contentDescription = "Configurações de Alarme",
+                        tint = if (isAlarmActive) Color(0xFF38BDF8) else Color.White.copy(alpha = 0.5f),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
         }
     }
 }
@@ -1332,6 +1487,7 @@ private fun getScreenTitle(uiState: UiState): String {
         IpodScreenDestination.GAME_BRICK -> "Brick Game"
         IpodScreenDestination.SETTINGS_THEMES -> "Configurações"
         IpodScreenDestination.ABOUT -> "Sobre o Aplicativo"
+        IpodScreenDestination.ALARM_CONFIG -> "Despertador / Alarme"
     }
 }
 
@@ -1579,16 +1735,19 @@ private fun IpodGenresSplitView(
     onSelectGenre: (com.example.data.repository.GenreCategory) -> Unit,
     backlightTextPrimary: Color,
     backlightTextSecondary: Color,
-    backlightHighlight: Color
+    backlightHighlight: Color,
+    isBold: Boolean = true
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val genres = remember(searchQuery) {
         if (searchQuery.isBlank()) {
             CuratedData.GENRES
         } else {
-            val q = searchQuery.trim().lowercase()
+            val normQ = com.example.util.RadioSearchEngine.normalize(searchQuery)
             CuratedData.GENRES.filter {
-                it.name.lowercase().contains(q) || it.tag.lowercase().contains(q) || it.description.lowercase().contains(q)
+                com.example.util.RadioSearchEngine.normalize(it.name).contains(normQ) ||
+                com.example.util.RadioSearchEngine.normalize(it.tag).contains(normQ) ||
+                com.example.util.RadioSearchEngine.normalize(it.description).contains(normQ)
             }
         }
     }
@@ -1681,7 +1840,7 @@ private fun IpodGenresSplitView(
                                 text = genre.name,
                                 color = if (isSelected) Color.White else backlightTextPrimary,
                                 fontSize = 11.5.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                fontWeight = if (isSelected || isBold) FontWeight.Black else FontWeight.Bold,
                                 fontFamily = FontFamily.Monospace,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -1746,16 +1905,19 @@ private fun IpodCountriesSplitView(
     onSelectCountry: (com.example.data.repository.CountryCategory) -> Unit,
     backlightTextPrimary: Color,
     backlightTextSecondary: Color,
-    backlightHighlight: Color
+    backlightHighlight: Color,
+    isBold: Boolean = true
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val countries = remember(searchQuery) {
         if (searchQuery.isBlank()) {
             CuratedData.COUNTRIES
         } else {
-            val q = searchQuery.trim().lowercase()
+            val normQ = com.example.util.RadioSearchEngine.normalize(searchQuery)
             CuratedData.COUNTRIES.filter {
-                it.name.lowercase().contains(q) || it.code.lowercase().contains(q) || it.region.lowercase().contains(q)
+                com.example.util.RadioSearchEngine.normalize(it.name).contains(normQ) ||
+                com.example.util.RadioSearchEngine.normalize(it.code).contains(normQ) ||
+                com.example.util.RadioSearchEngine.normalize(it.region).contains(normQ)
             }
         }
     }
@@ -1839,23 +2001,26 @@ private fun IpodCountriesSplitView(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(20.dp, 14.dp)
+                                    .size(24.dp, 14.dp)
                                     .clip(RoundedCornerShape(2.dp))
                                     .background(backlightTextPrimary.copy(alpha = 0.1f))
                                     .border(0.8.dp, backlightTextPrimary.copy(alpha = 0.4f), RoundedCornerShape(2.dp)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 if (country.code.equals("ALL", ignoreCase = true)) {
-                                    Text(text = "🌐", fontSize = 10.sp)
+                                    Icon(
+                                        imageVector = Icons.Default.Public,
+                                        contentDescription = null,
+                                        tint = if (isSelected) Color.White else backlightTextPrimary,
+                                        modifier = Modifier.size(11.dp)
+                                    )
                                 } else {
-                                    AsyncImage(
-                                        model = "https://flagcdn.com/w80/${country.code.lowercase()}.png",
-                                        contentDescription = country.name,
-                                        contentScale = ContentScale.Crop,
-                                        colorFilter = androidx.compose.ui.graphics.ColorFilter.colorMatrix(
-                                            androidx.compose.ui.graphics.ColorMatrix().apply { setToSaturation(0f) }
-                                        ),
-                                        modifier = Modifier.fillMaxSize()
+                                    Text(
+                                        text = country.code,
+                                        color = if (isSelected) Color.White else backlightTextPrimary,
+                                        fontSize = 8.5.sp,
+                                        fontWeight = FontWeight.Black,
+                                        fontFamily = FontFamily.Monospace
                                     )
                                 }
                             }
@@ -1864,7 +2029,7 @@ private fun IpodCountriesSplitView(
                                 text = country.name,
                                 color = if (isSelected) Color.White else backlightTextPrimary,
                                 fontSize = 11.5.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                fontWeight = if (isSelected || isBold) FontWeight.Black else FontWeight.Bold,
                                 fontFamily = FontFamily.Monospace,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -1905,23 +2070,30 @@ private fun IpodCountriesSplitView(
                     .border(1.2.dp, backlightTextPrimary.copy(alpha = 0.5f), RoundedCornerShape(4.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                if (!activeCountry?.code.isNullOrBlank()) {
-                    AsyncImage(
-                        model = "https://flagcdn.com/w160/${activeCountry?.code?.lowercase()}.png",
-                        contentDescription = activeCountry?.name,
-                        contentScale = ContentScale.Crop,
-                        colorFilter = androidx.compose.ui.graphics.ColorFilter.colorMatrix(
-                            androidx.compose.ui.graphics.ColorMatrix().apply { setToSaturation(0f) }
-                        ),
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else {
+                if (activeCountry?.code.equals("ALL", ignoreCase = true) || activeCountry?.code.isNullOrBlank()) {
                     Icon(
                         imageVector = Icons.Default.Public,
                         contentDescription = null,
                         tint = backlightHighlight,
                         modifier = Modifier.size(36.dp)
                     )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(64.dp, 44.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(backlightTextPrimary.copy(alpha = 0.12f))
+                            .border(1.2.dp, backlightHighlight, RoundedCornerShape(4.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "[${activeCountry?.code}]",
+                            color = backlightHighlight,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Black,
+                            fontFamily = FontFamily.Monospace
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -2866,7 +3038,8 @@ private fun IpodAboutScreen(
     backlightHighlight: Color,
     fontFamily: FontFamily = FontFamily.Monospace,
     fontScale: Float = 1.0f,
-    isBold: Boolean = true
+    isBold: Boolean = true,
+    onShowChassisBack: () -> Unit = {}
 ) {
     LazyColumn(
         modifier = Modifier
@@ -2878,33 +3051,43 @@ private fun IpodAboutScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0x33000000))
-                    .border(1.2.dp, backlightHighlight.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(backlightTextPrimary.copy(alpha = 0.08f))
+                    .border(1.dp, backlightTextPrimary.copy(alpha = 0.35f), RoundedCornerShape(6.dp))
+                    .clickable { onShowChassisBack() }
                     .padding(10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(
-                    imageVector = Icons.Default.Radio,
-                    contentDescription = null,
-                    tint = backlightHighlight,
-                    modifier = Modifier.size(30.dp)
+                androidx.compose.foundation.Image(
+                    painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.ic_pear_logo),
+                    contentDescription = "Logo Pera",
+                    colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(backlightTextPrimary),
+                    modifier = Modifier.size(42.dp)
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = "MediaPod + Radio / Podcast",
                     color = backlightTextPrimary,
-                    fontSize = (15f * fontScale).sp,
+                    fontSize = (13.5f * fontScale).sp,
                     fontWeight = FontWeight.Black,
                     fontFamily = fontFamily,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "Versão 30.0 • i18n & Global RadioPod",
-                    color = backlightHighlight,
-                    fontSize = (11.5f * fontScale).sp,
+                    text = "Versão 37.0 • Global RadioPod",
+                    color = backlightTextSecondary,
+                    fontSize = (10.5f * fontScale).sp,
                     fontWeight = FontWeight.Bold,
+                    fontFamily = fontFamily,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "💡 Toque aqui ou vire o celular para ver a traseira em Aço Inox",
+                    color = backlightHighlight,
+                    fontSize = (9f * fontScale).sp,
+                    fontWeight = FontWeight.Medium,
                     fontFamily = fontFamily,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
@@ -2915,7 +3098,7 @@ private fun IpodAboutScreen(
             Text(
                 text = "INFORMAÇÕES DO AUTOR",
                 color = backlightTextSecondary,
-                fontSize = (11f * fontScale).sp,
+                fontSize = (10.5f * fontScale).sp,
                 fontWeight = FontWeight.Black,
                 fontFamily = fontFamily,
                 letterSpacing = 0.8.sp
@@ -2927,7 +3110,8 @@ private fun IpodAboutScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(6.dp))
-                    .background(Color(0x28000000))
+                    .background(backlightTextPrimary.copy(alpha = 0.08f))
+                    .border(1.dp, backlightTextPrimary.copy(alpha = 0.25f), RoundedCornerShape(6.dp))
                     .padding(10.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
@@ -2935,14 +3119,14 @@ private fun IpodAboutScreen(
                     Text(
                         text = "Autor:",
                         color = backlightTextSecondary,
-                        fontSize = (10f * fontScale).sp,
+                        fontSize = (9.5f * fontScale).sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = fontFamily
                     )
                     Text(
                         text = "Márcio Amaro",
                         color = backlightTextPrimary,
-                        fontSize = (13f * fontScale).sp,
+                        fontSize = (11.5f * fontScale).sp,
                         fontWeight = FontWeight.Black,
                         fontFamily = fontFamily
                     )
@@ -2952,21 +3136,21 @@ private fun IpodAboutScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(1.dp)
-                        .background(backlightTextSecondary.copy(alpha = 0.3f))
+                        .background(backlightTextPrimary.copy(alpha = 0.2f))
                 )
 
                 Column {
                     Text(
                         text = "E-mail:",
                         color = backlightTextSecondary,
-                        fontSize = (10f * fontScale).sp,
+                        fontSize = (9.5f * fontScale).sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = fontFamily
                     )
                     Text(
                         text = "marcio.amaro@gmail.com",
-                        color = backlightHighlight,
-                        fontSize = (12f * fontScale).sp,
+                        color = backlightTextPrimary,
+                        fontSize = (11.5f * fontScale).sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = fontFamily
                     )
@@ -2976,21 +3160,21 @@ private fun IpodAboutScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(1.dp)
-                        .background(backlightTextSecondary.copy(alpha = 0.3f))
+                        .background(backlightTextPrimary.copy(alpha = 0.2f))
                 )
 
                 Column {
                     Text(
                         text = "Localização:",
                         color = backlightTextSecondary,
-                        fontSize = (10f * fontScale).sp,
+                        fontSize = (9.5f * fontScale).sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = fontFamily
                     )
                     Text(
                         text = "Araras - SP / Brasil",
                         color = backlightTextPrimary,
-                        fontSize = (13f * fontScale).sp,
+                        fontSize = (11.5f * fontScale).sp,
                         fontWeight = FontWeight.Black,
                         fontFamily = fontFamily
                     )
@@ -3002,7 +3186,7 @@ private fun IpodAboutScreen(
             Text(
                 text = "ESPECIFICAÇÕES DO SISTEMA",
                 color = backlightTextSecondary,
-                fontSize = (11f * fontScale).sp,
+                fontSize = (10.5f * fontScale).sp,
                 fontWeight = FontWeight.Black,
                 fontFamily = fontFamily,
                 letterSpacing = 0.8.sp
@@ -3014,7 +3198,8 @@ private fun IpodAboutScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(6.dp))
-                    .background(Color(0x28000000))
+                    .background(backlightTextPrimary.copy(alpha = 0.08f))
+                    .border(1.dp, backlightTextPrimary.copy(alpha = 0.25f), RoundedCornerShape(6.dp))
                     .padding(10.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
@@ -3022,14 +3207,14 @@ private fun IpodAboutScreen(
                     Text(
                         text = "Controle:",
                         color = backlightTextSecondary,
-                        fontSize = (10f * fontScale).sp,
+                        fontSize = (9.5f * fontScale).sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = fontFamily
                     )
                     Text(
                         text = "SlideCircle Click Háptica",
                         color = backlightTextPrimary,
-                        fontSize = (12.5f * fontScale).sp,
+                        fontSize = (11.5f * fontScale).sp,
                         fontWeight = FontWeight.Black,
                         fontFamily = fontFamily
                     )
@@ -3039,21 +3224,21 @@ private fun IpodAboutScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(1.dp)
-                        .background(backlightTextSecondary.copy(alpha = 0.3f))
+                        .background(backlightTextPrimary.copy(alpha = 0.2f))
                 )
 
                 Column {
                     Text(
                         text = "Decodificador:",
                         color = backlightTextSecondary,
-                        fontSize = (10f * fontScale).sp,
+                        fontSize = (9.5f * fontScale).sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = fontFamily
                     )
                     Text(
                         text = "RDS / Radiotext (RT+)",
                         color = backlightTextPrimary,
-                        fontSize = (12.5f * fontScale).sp,
+                        fontSize = (11.5f * fontScale).sp,
                         fontWeight = FontWeight.Black,
                         fontFamily = fontFamily
                     )
@@ -3063,21 +3248,21 @@ private fun IpodAboutScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(1.dp)
-                        .background(backlightTextSecondary.copy(alpha = 0.3f))
+                        .background(backlightTextPrimary.copy(alpha = 0.2f))
                 )
 
                 Column {
                     Text(
                         text = "Integração Veicular:",
                         color = backlightTextSecondary,
-                        fontSize = (10f * fontScale).sp,
+                        fontSize = (9.5f * fontScale).sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = fontFamily
                     )
                     Text(
                         text = "Modo Carro & Android Auto",
                         color = backlightTextPrimary,
-                        fontSize = (12.5f * fontScale).sp,
+                        fontSize = (11.5f * fontScale).sp,
                         fontWeight = FontWeight.Black,
                         fontFamily = fontFamily
                     )
@@ -3087,21 +3272,21 @@ private fun IpodAboutScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(1.dp)
-                        .background(backlightTextSecondary.copy(alpha = 0.3f))
+                        .background(backlightTextPrimary.copy(alpha = 0.2f))
                 )
 
                 Column {
                     Text(
                         text = "Versão Atual:",
                         color = backlightTextSecondary,
-                        fontSize = (10f * fontScale).sp,
+                        fontSize = (9.5f * fontScale).sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = fontFamily
                     )
                     Text(
-                        text = "Versão 30.0",
-                        color = backlightHighlight,
-                        fontSize = (13f * fontScale).sp,
+                        text = "Versão 35.0",
+                        color = backlightTextPrimary,
+                        fontSize = (11.5f * fontScale).sp,
                         fontWeight = FontWeight.Black,
                         fontFamily = fontFamily
                     )
@@ -3243,23 +3428,14 @@ fun IpodSearchScreen(
             Spacer(modifier = Modifier.height(3.dp))
 
             // Seletor de Países
+            val countryOptions = remember {
+                CuratedData.COUNTRIES.map { it.code to it.name }
+            }
             androidx.compose.foundation.lazy.LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 1.dp, vertical = 2.dp)
             ) {
-                val countryOptions = listOf(
-                    "BR" to "Brasil 🇧🇷",
-                    "ALL" to "Todos os Países 🌐",
-                    "US" to "EUA 🇺🇸",
-                    "PT" to "Portugal 🇵🇹",
-                    "ES" to "Espanha 🇪🇸",
-                    "AR" to "Argentina 🇦🇷",
-                    "FR" to "França 🇫🇷",
-                    "DE" to "Alemanha 🇩🇪",
-                    "IT" to "Itália 🇮🇹",
-                    "GB" to "Reino Unido 🇬🇧"
-                )
                 items(countryOptions.size) { idx ->
                     val (code, label) = countryOptions[idx]
                     val isSelected = if (code == "ALL") {
@@ -3274,13 +3450,21 @@ fun IpodSearchScreen(
                             .clickable { onSearchCountryChange(code) }
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
-                        Text(
-                            text = label,
-                            color = if (isSelected) Color.White else backlightTextPrimary,
-                            fontSize = (10f * fontScale).sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            fontFamily = fontFamily
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            MonochromeFlag(
+                                code = code,
+                                tint = if (isSelected) Color.White else backlightTextPrimary,
+                                size = 12.dp
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = label,
+                                color = if (isSelected) Color.White else backlightTextPrimary,
+                                fontSize = (10f * fontScale).sp,
+                                fontWeight = if (isSelected || isBold) FontWeight.Black else FontWeight.Bold,
+                                fontFamily = fontFamily
+                            )
+                        }
                     }
                 }
             }
@@ -3337,13 +3521,23 @@ fun IpodSearchScreen(
                                 .clickable { onSearchStateChange(if (isSelected) "ALL" else code) }
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
-                            Text(
-                                text = label,
-                                color = if (isSelected) Color.White else backlightTextPrimary,
-                                fontSize = (10f * fontScale).sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                fontFamily = fontFamily
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (code.isNotEmpty()) {
+                                    MonochromeFlag(
+                                        code = code,
+                                        tint = if (isSelected) Color.White else backlightTextPrimary,
+                                        size = 12.dp
+                                    )
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                }
+                                Text(
+                                    text = label,
+                                    color = if (isSelected) Color.White else backlightTextPrimary,
+                                    fontSize = (10f * fontScale).sp,
+                                    fontWeight = if (isSelected || isBold) FontWeight.Black else FontWeight.Bold,
+                                    fontFamily = fontFamily
+                                )
+                            }
                         }
                     }
                 }
@@ -3372,10 +3566,11 @@ fun IpodSearchScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+                                val stateName = CuratedData.getStateFullName(selectedStateCode)
                                 Text(
-                                    text = if (isLoadingCities) "IBGE: Carregando cidades..."
-                                    else if (hasCitySelected) "Cidade: $selectedCity ($selectedStateCode)"
-                                    else "Cidade: Todas as Cidades de $selectedStateCode",
+                                    text = if (isLoadingCities) "Carregando municípios..."
+                                    else if (hasCitySelected) "Cidade: $selectedCity ($stateName)"
+                                    else "Cidade: Todas as Cidades de $stateName",
                                     color = backlightTextPrimary,
                                     fontSize = (10f * fontScale).sp,
                                     fontWeight = if (hasCitySelected) FontWeight.Bold else FontWeight.Normal,
@@ -3522,6 +3717,7 @@ fun IpodSearchScreen(
                     .padding(6.dp)
             ) {
                 Column(modifier = Modifier.fillMaxSize()) {
+                    val stateFullName = CuratedData.getStateFullName(selectedStateCode)
                     // Top Bar do Seletor
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -3530,14 +3726,14 @@ fun IpodSearchScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "CIDADES DE $selectedStateCode (IBGE)",
+                                text = "Cidades de $stateFullName",
                                 color = backlightTextPrimary,
                                 fontSize = (11.5f * fontScale).sp,
                                 fontWeight = FontWeight.Black,
                                 fontFamily = fontFamily
                             )
                             Text(
-                                text = if (isLoadingCities) "Consultando dados do IBGE..." else "${availableCities.size} municípios disponíveis",
+                                text = if (isLoadingCities) "Carregando municípios..." else "${availableCities.size} municípios disponíveis",
                                 color = backlightTextSecondary,
                                 fontSize = (9f * fontScale).sp,
                                 fontFamily = fontFamily
@@ -3599,8 +3795,8 @@ fun IpodSearchScreen(
                     val filteredCities = remember(availableCities, cityFilterQuery) {
                         if (cityFilterQuery.isBlank()) availableCities
                         else {
-                            val q = cityFilterQuery.trim().lowercase()
-                            availableCities.filter { it.lowercase().contains(q) }
+                            val normQ = com.example.util.RadioSearchEngine.normalize(cityFilterQuery)
+                            availableCities.filter { com.example.util.RadioSearchEngine.normalize(it).contains(normQ) }
                         }
                     }
 
@@ -3623,13 +3819,21 @@ fun IpodSearchScreen(
                                     .padding(horizontal = 8.dp, vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    text = "🌐 Todas as Cidades de $selectedStateCode",
-                                    color = if (isAllSelected) Color.White else backlightTextPrimary,
-                                    fontSize = (11f * fontScale).sp,
-                                    fontWeight = if (isAllSelected) FontWeight.Black else FontWeight.Bold,
-                                    fontFamily = fontFamily
-                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    MonochromeFlag(
+                                        code = selectedStateCode ?: "BR",
+                                        tint = if (isAllSelected) Color.White else backlightTextPrimary,
+                                        size = 12.dp
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = "Todas as Cidades de $stateFullName",
+                                        color = if (isAllSelected) Color.White else backlightTextPrimary,
+                                        fontSize = (11f * fontScale).sp,
+                                        fontWeight = if (isAllSelected) FontWeight.Black else FontWeight.Bold,
+                                        fontFamily = fontFamily
+                                    )
+                                }
                             }
                         }
 
@@ -3649,13 +3853,21 @@ fun IpodSearchScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    text = city,
-                                    color = if (isSelected) Color.White else backlightTextPrimary,
-                                    fontSize = (10.5f * fontScale).sp,
-                                    fontWeight = if (isSelected) FontWeight.Black else FontWeight.Normal,
-                                    fontFamily = fontFamily
-                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    MonochromeFlag(
+                                        code = selectedStateCode ?: "BR",
+                                        tint = if (isSelected) Color.White else backlightTextPrimary,
+                                        size = 11.dp
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = city,
+                                        color = if (isSelected) Color.White else backlightTextPrimary,
+                                        fontSize = (10.5f * fontScale).sp,
+                                        fontWeight = if (isSelected) FontWeight.Black else FontWeight.Normal,
+                                        fontFamily = fontFamily
+                                    )
+                                }
                                 if (isSelected) {
                                     Text(
                                         text = "✓",

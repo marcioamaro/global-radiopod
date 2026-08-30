@@ -323,6 +323,14 @@ fun IpodVideoPlayerScreen(
                     )
                 }
             },
+            update = { view ->
+                if (view.player != videoPlayerManager.exoPlayer) {
+                    view.player = videoPlayerManager.exoPlayer
+                }
+            },
+            onRelease = { view ->
+                view.player = null
+            },
             modifier = Modifier.fillMaxSize()
         )
 
@@ -384,10 +392,12 @@ fun IpodVideoPlayerScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 val currentSpeed by videoPlayerManager.playbackSpeed.collectAsState()
+                val isCustomSpeed = currentSpeed != 1.0f
+                val chipContentColor = if (isCustomSpeed) Color.Black else Color.White
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(3.dp))
-                        .background(if (currentSpeed != 1.0f) Color(0xFF00E5FF) else Color(0x33FFFFFF))
+                        .background(if (isCustomSpeed) Color(0xFF00E5FF) else Color(0x33FFFFFF))
                         .border(1.dp, Color(0xFF00E5FF).copy(alpha = 0.5f), RoundedCornerShape(3.dp))
                         .clickable {
                             val speeds = listOf(0.5f, 1.0f, 1.5f, 2.0f)
@@ -397,13 +407,22 @@ fun IpodVideoPlayerScreen(
                         }
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
-                    Text(
-                        text = "⚡ ${currentSpeed}x",
-                        color = if (currentSpeed != 1.0f) Color.Black else Color.White,
-                        fontSize = 8.5.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = fontFamily
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Speed,
+                            contentDescription = "Velocidade",
+                            tint = chipContentColor,
+                            modifier = Modifier.size(11.dp)
+                        )
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text(
+                            text = "${currentSpeed}x",
+                            color = chipContentColor,
+                            fontSize = 8.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily
+                        )
+                    }
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -506,6 +525,14 @@ fun FullscreenLandscapeVideoPlayer(
                         ViewGroup.LayoutParams.MATCH_PARENT
                     )
                 }
+            },
+            update = { view ->
+                if (view.player != videoPlayerManager.exoPlayer) {
+                    view.player = videoPlayerManager.exoPlayer
+                }
+            },
+            onRelease = { view ->
+                view.player = null
             },
             modifier = Modifier.fillMaxSize()
         )
@@ -658,10 +685,12 @@ fun FullscreenLandscapeVideoPlayer(
                         )
 
                         val currentSpeed by videoPlayerManager.playbackSpeed.collectAsState()
+                        val isCustomSpeed = currentSpeed != 1.0f
+                        val chipContentColor = if (isCustomSpeed) Color.Black else Color.White
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(4.dp))
-                                .background(if (currentSpeed != 1.0f) Color(0xFF00E5FF) else Color(0x44FFFFFF))
+                                .background(if (isCustomSpeed) Color(0xFF00E5FF) else Color(0x44FFFFFF))
                                 .clickable {
                                     val speeds = listOf(0.5f, 1.0f, 1.5f, 2.0f)
                                     val idx = speeds.indexOfFirst { kotlin.math.abs(it - currentSpeed) < 0.05f }
@@ -670,12 +699,21 @@ fun FullscreenLandscapeVideoPlayer(
                                 }
                                 .padding(horizontal = 8.dp, vertical = 3.dp)
                         ) {
-                            Text(
-                                text = "⚡ ${currentSpeed}x",
-                                color = if (currentSpeed != 1.0f) Color.Black else Color.White,
-                                fontSize = 10.5.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Speed,
+                                    contentDescription = "Velocidade",
+                                    tint = chipContentColor,
+                                    modifier = Modifier.size(13.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "${currentSpeed}x",
+                                    color = chipContentColor,
+                                    fontSize = 10.5.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
 
                         Text(

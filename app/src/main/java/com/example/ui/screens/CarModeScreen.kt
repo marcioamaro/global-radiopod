@@ -137,6 +137,7 @@ fun CarModeScreen(
     localAudioTracks: List<com.example.data.model.LocalAudioTrack> = emptyList(),
     onSelectAudioFolder: (com.example.data.model.MediaFolder) -> Unit = {},
     onSelectAudioTrack: (com.example.data.model.LocalAudioTrack) -> Unit = {},
+    liveSessionDurationSeconds: Long = 0L,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -180,6 +181,11 @@ fun CarModeScreen(
     val backlightTextSecondary = Color(backlight.textSecondary)
     val backlightHighlight = Color(backlight.highlight)
     val fontFamily = fontType.toFontFamily()
+
+    val carHours = liveSessionDurationSeconds / 3600
+    val carMinutes = (liveSessionDurationSeconds % 3600) / 60
+    val carSeconds = liveSessionDurationSeconds % 60
+    val carLiveTimerFormatted = String.format(java.util.Locale.US, "%02d:%02d:%02d", carHours, carMinutes, carSeconds)
 
     // ColorMatrix for strict authentic iPod monochrome logo rendering
     val bwMatrix = remember { ColorMatrix().apply { setToSaturation(0f) } }
@@ -597,6 +603,22 @@ fun CarModeScreen(
                                             modifier = Modifier.size(13.dp)
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
+                                        if (playbackStatus == RadioPlaybackStatus.PLAYING) {
+                                            Text(
+                                                text = carLiveTimerFormatted,
+                                                color = backlightTextPrimary,
+                                                fontSize = (11f * fontScale).coerceIn(10f, 14f).sp,
+                                                fontWeight = FontWeight.Bold,
+                                                fontFamily = FontFamily.Monospace
+                                            )
+                                            Spacer(modifier = Modifier.width(5.dp))
+                                            Text(
+                                                text = "•",
+                                                color = backlightTextSecondary,
+                                                fontSize = (11f * fontScale).coerceIn(10f, 14f).sp
+                                            )
+                                            Spacer(modifier = Modifier.width(5.dp))
+                                        }
                                     }
 
                                     val liveRdsDefault = stringResource(R.string.status_digital_rds)

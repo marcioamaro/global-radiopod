@@ -143,11 +143,11 @@ class PodcastRepository private constructor(private val context: Context) {
     )
 
     val countries = listOf(
-        PodcastCountry("BR", "Brasil", "🇧🇷"),
-        PodcastCountry("US", "Estados Unidos", "🇺🇸"),
-        PodcastCountry("GB", "Reino Unido", "🇬🇧"),
-        PodcastCountry("PT", "Portugal", "🇵🇹"),
-        PodcastCountry("ES", "Espanha / Latam", "🇪🇸")
+        PodcastCountry("BR", "Brasil", "[BR]"),
+        PodcastCountry("US", "Estados Unidos", "[US]"),
+        PodcastCountry("GB", "Reino Unido", "[GB]"),
+        PodcastCountry("PT", "Portugal", "[PT]"),
+        PodcastCountry("ES", "Espanha / Latam", "[ES]")
     )
 
     init {
@@ -189,15 +189,13 @@ class PodcastRepository private constructor(private val context: Context) {
 
     suspend fun searchPodcasts(query: String): List<PodcastShow> = withContext(Dispatchers.IO) {
         if (query.isBlank()) return@withContext emptyList()
-        val q = query.trim().lowercase()
+        val tokens = query.trim().split(Regex("\\s+")).filter { it.isNotBlank() }.map { com.example.util.RadioSearchEngine.normalize(it) }
         val favIds = _favoritesFlow.value.map { it.id }.toSet()
 
-        // 1. Filtro local no catálogo offline
-        val localMatches = (_curatedShows + _customShowsFlow.value).filter {
-            it.title.lowercase().contains(q) ||
-            it.author.lowercase().contains(q) ||
-            it.category.lowercase().contains(q) ||
-            it.description.lowercase().contains(q)
+        // 1. Filtro local no catálogo offline com normalização NFD sem acentos
+        val localMatches = (_curatedShows + _customShowsFlow.value).filter { show ->
+            val corpus = com.example.util.RadioSearchEngine.normalize("${show.title} ${show.author} ${show.category} ${show.description}")
+            tokens.all { token -> corpus.contains(token) }
         }
 
         // 2. Busca online global na API do iTunes

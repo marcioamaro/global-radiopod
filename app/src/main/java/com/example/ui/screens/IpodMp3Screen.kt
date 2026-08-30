@@ -379,31 +379,21 @@ fun IpodMp3NowPlayingScreen(
                 .padding(vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Album Art Box (Black & White LCD style)
+            // Album Art Box (Pure Monochrome LCD vector styling)
             Box(
                 modifier = Modifier
-                    .size(76.dp)
+                    .size(72.dp)
                     .clip(RoundedCornerShape(6.dp))
-                    .background(backlightTextPrimary.copy(alpha = 0.1f))
+                    .background(backlightTextPrimary.copy(alpha = 0.08f))
                     .border(1.2.dp, backlightTextPrimary, RoundedCornerShape(6.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                if (!track.albumArtUrl.isNullOrBlank()) {
-                    AsyncImage(
-                        model = track.albumArtUrl,
-                        contentDescription = "Capa do Álbum",
-                        contentScale = ContentScale.Crop,
-                        colorFilter = ColorFilter.colorMatrix(bwColorMatrix),
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.Album,
-                        contentDescription = null,
-                        tint = backlightTextPrimary,
-                        modifier = Modifier.size(40.dp)
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.Album,
+                    contentDescription = "Álbum / MP3",
+                    tint = backlightTextPrimary,
+                    modifier = Modifier.size(46.dp)
+                )
             }
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -486,21 +476,32 @@ fun IpodMp3NowPlayingScreen(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val isCustomSpeed = playbackSpeed != 1.0f
+                val chipContentColor = if (isCustomSpeed) backlightBg else backlightTextPrimary
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(3.dp))
-                        .background(if (playbackSpeed != 1.0f) backlightTextPrimary else backlightTextPrimary.copy(alpha = 0.12f))
+                        .background(if (isCustomSpeed) backlightTextPrimary else backlightTextPrimary.copy(alpha = 0.12f))
                         .border(1.dp, backlightTextPrimary.copy(alpha = 0.4f), RoundedCornerShape(3.dp))
                         .clickable { onCycleSpeed() }
-                        .padding(horizontal = 10.dp, vertical = 2.5.dp)
+                        .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
-                    Text(
-                        text = "⚡ Velocidade: ${playbackSpeed}x",
-                        color = if (playbackSpeed != 1.0f) backlightBg else backlightTextPrimary,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = fontFamily
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Speed,
+                            contentDescription = "Velocidade de Reprodução",
+                            tint = chipContentColor,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Velocidade: ${playbackSpeed}x",
+                            color = chipContentColor,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily
+                        )
+                    }
                 }
             }
 

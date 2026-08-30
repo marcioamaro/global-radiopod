@@ -7,6 +7,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -61,12 +62,14 @@ fun IpodHeader(
     sleepTimerMinutes: Int,
     backlightTextPrimary: Color,
     backlightHighlight: Color,
+    backlightBg: Color = Color.Transparent,
     fontFamily: FontFamily = FontFamily.Monospace,
     fontScale: Float = 1.0f,
     isBold: Boolean = true,
     showAudioOutputIcon: Boolean = false,
     onAudioOutputClick: (() -> Unit)? = null,
     playbackSpeed: Float = 1.0f,
+    nowPlayingTicker: String? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -168,17 +171,36 @@ fun IpodHeader(
                 }
             }
 
-            // Center: Screen Title
-            Text(
-                text = title,
-                color = backlightTextPrimary,
-                fontSize = (13.5f * fontScale).sp,
-                fontWeight = if (isBold) FontWeight.Black else FontWeight.Bold,
-                fontFamily = fontFamily,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f, fill = false).padding(horizontal = 8.dp)
-            )
+            // Center: Screen Title or Animated Marquee Ticker
+            if (!nowPlayingTicker.isNullOrBlank()) {
+                Text(
+                    text = nowPlayingTicker,
+                    color = backlightTextPrimary,
+                    fontSize = (12f * fontScale).sp,
+                    fontWeight = if (isBold) FontWeight.Black else FontWeight.Bold,
+                    fontFamily = fontFamily,
+                    maxLines = 1,
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .padding(horizontal = 6.dp)
+                        .basicMarquee(
+                            iterations = Int.MAX_VALUE,
+                            initialDelayMillis = 1200,
+                            velocity = 35.dp
+                        )
+                )
+            } else {
+                Text(
+                    text = title,
+                    color = backlightTextPrimary,
+                    fontSize = (13.5f * fontScale).sp,
+                    fontWeight = if (isBold) FontWeight.Black else FontWeight.Bold,
+                    fontFamily = fontFamily,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false).padding(horizontal = 8.dp)
+                )
+            }
 
             // Right: Audio Output Switcher, Battery & Sleep timer
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -227,7 +249,7 @@ fun IpodHeader(
                     ) {
                         Text(
                             text = "${playbackSpeed}x",
-                            color = backlightHighlight,
+                            color = backlightBg,
                             fontSize = (8f * fontScale).sp,
                             fontWeight = FontWeight.Black,
                             fontFamily = fontFamily

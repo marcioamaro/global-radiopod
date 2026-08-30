@@ -266,18 +266,18 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
     init {
         try {
-            // Preserva com consistência o volume da última vez que o aplicativo foi executado
-            val savedVol = com.example.data.preferences.IpodPreferencesManager.getInstance(context).volumeLevel
-            _volume.value = savedVol.coerceIn(0.05f, 1.0f)
-        } catch (_: Exception) {
             audioManager?.let { am ->
                 val current = am.getStreamVolume(AudioManager.STREAM_MUSIC)
                 val max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
                 if (max > 0) {
-                    _volume.value = (current.toFloat() / max.toFloat()).coerceIn(0.05f, 1.0f)
+                    _volume.value = (current.toFloat() / max.toFloat()).coerceIn(0f, 1.0f)
                 }
             }
+        } catch (_: Exception) {
+            val savedVol = com.example.data.preferences.IpodPreferencesManager.getInstance(context).volumeLevel
+            _volume.value = savedVol.coerceIn(0.05f, 1.0f)
         }
+        initVolumeListeners()
         initLocks()
         initPlayer()
 
@@ -363,14 +363,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .setLoadControl(loadControl)
             .build().apply {
-                volume = _volume.value
-                try {
-                    audioManager?.let { am ->
-                        val maxVol = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-                        val targetVol = (_volume.value * maxVol).toInt().coerceIn(0, maxVol)
-                        am.setStreamVolume(AudioManager.STREAM_MUSIC, targetVol, 0)
-                    }
-                } catch (_: Exception) {}
+                volume = 1.0f // Ganho unitário: delega o volume estritamente ao AudioManager.STREAM_MUSIC
                 addListener(object : Player.Listener {
                     override fun onPlaybackStateChanged(state: Int) {
                         when (state) {
@@ -393,6 +386,9 @@ class RadioPlayerManager private constructor(private val context: Context) {
                                     startVisualizer()
                                     retryCount = 0
                                     totalAttemptCount = 0
+                                    if (_activeMediaType.value == ActiveMediaType.LIVE_RADIO) {
+                                        startLiveSessionTimer(resume = true)
+                                    }
                                 } else if (userInitiatedPause) {
                                     _playbackStatus.value = RadioPlaybackStatus.PAUSED
                                     releaseLocks()
@@ -605,7 +601,12 @@ class RadioPlayerManager private constructor(private val context: Context) {
         _playbackSpeed.value = 1.0f
         exoPlayer?.playbackParameters = PlaybackParameters(1.0f, 1.0f)
         audioProgressJob?.cancel()
+        val isDifferentStation = _currentStation.value?.id != station.id
         _currentStation.value = station
+        if (isDifferentStation) {
+            _liveSessionDurationSeconds.value = 0L
+            startLiveSessionTimer(resume = false)
+        }
         ipodPrefs.addRecentStation(station)
         if (playlist.none { it.id == station.id }) {
             playlist = listOf(station) + playlist
@@ -1467,14 +1468,14 @@ class RadioPlayerManager private constructor(private val context: Context) {
         val clamped = newVolume.coerceIn(0f, 1f)
         _volume.value = clamped
         _isMuted.value = (clamped <= 0.01f)
-        exoPlayer?.volume = clamped
+        exoPlayer?.volume = 1.0f
         if (AudioRouteManager.getInstance(context).isCastingActive()) {
             AudioRouteManager.getInstance(context).setVolume(clamped)
         }
         try {
             audioManager?.let { am ->
                 val maxVol = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-                val targetVol = (clamped * maxVol).toInt().coerceIn(0, maxVol)
+                val targetVol = kotlin.math.round(clamped * maxVol).toInt().coerceIn(0, maxVol)
                 am.setStreamVolume(AudioManager.STREAM_MUSIC, targetVol, 0)
             }
         } catch (_: Exception) {}
@@ -1807,7 +1808,62 @@ class RadioPlayerManager private constructor(private val context: Context) {
         _visualizerAmplitudes.value = List(16) { 0.08f }
     }
 
+    private var isVolumeListenerRegistered = false
+
+    private val volumeReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == "android.media.VOLUME_CHANGED_ACTION") {
+                syncVolumeFromNativeStream()
+            }
+        }
+    }
+
+    private val volumeObserver = object : android.database.ContentObserver(android.os.Handler(android.os.Looper.getMainLooper())) {
+        override fun onChange(selfChange: Boolean) {
+            super.onChange(selfChange)
+            syncVolumeFromNativeStream()
+        }
+    }
+
+    private fun initVolumeListeners() {
+        if (!isVolumeListenerRegistered) {
+            try {
+                val filter = android.content.IntentFilter("android.media.VOLUME_CHANGED_ACTION")
+                context.registerReceiver(volumeReceiver, filter)
+                context.contentResolver.registerContentObserver(
+                    android.provider.Settings.System.CONTENT_URI,
+                    true,
+                    volumeObserver
+                )
+                isVolumeListenerRegistered = true
+            } catch (_: Exception) {}
+        }
+    }
+
+    private fun syncVolumeFromNativeStream() {
+        try {
+            audioManager?.let { am ->
+                val max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                val current = am.getStreamVolume(AudioManager.STREAM_MUSIC)
+                if (max > 0) {
+                    val ratio = (current.toFloat() / max.toFloat()).coerceIn(0f, 1f)
+                    if (kotlin.math.abs(_volume.value - ratio) > 0.01f) {
+                        _volume.value = ratio
+                        _isMuted.value = (ratio <= 0.01f)
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+    }
+
     fun release() {
+        if (isVolumeListenerRegistered) {
+            try {
+                context.unregisterReceiver(volumeReceiver)
+                context.contentResolver.unregisterContentObserver(volumeObserver)
+                isVolumeListenerRegistered = false
+            } catch (_: Exception) {}
+        }
         visualizerJob?.cancel()
         rdsSimulationJob?.cancel()
         sleepTimerJob?.cancel()

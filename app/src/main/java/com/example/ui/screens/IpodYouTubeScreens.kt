@@ -447,12 +447,77 @@ fun IpodAddYouTubeUrlScreen(
  * - Não remove nem oculta anúncios oficiais
  * - Permite botão de Cast para transmissão na rede local (Smart TVs, Chromecast)
  */
+class YouTubeJsBridge(private val onTimeUpdate: (Int) -> Unit) {
+    @android.webkit.JavascriptInterface
+    fun onTimeUpdate(seconds: Int) {
+        onTimeUpdate(seconds)
+    }
+}
+
+private fun buildYouTubePlayerHtml(videoId: String, startSeconds: Int): String {
+    return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+            <style>
+                body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; }
+                #player { width: 100%; height: 100%; border: none; }
+            </style>
+        </head>
+        <body>
+            <div id="player"></div>
+            <script>
+                var tag = document.createElement('script');
+                tag.src = "https://www.youtube.com/iframe_api";
+                var firstScriptTag = document.getElementsByTagName('script')[0];
+                firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+                var player;
+                function onYouTubeIframeAPIReady() {
+                    player = new YT.Player('player', {
+                        height: '100%',
+                        width: '100%',
+                        videoId: '$videoId',
+                        playerVars: {
+                            'autoplay': 1,
+                            'enablejsapi': 1,
+                            'playsinline': 1,
+                            'fs': 1,
+                            'rel': 0,
+                            'modestbranding': 1,
+                            'start': $startSeconds
+                        },
+                        events: {
+                            'onReady': onPlayerReady
+                        }
+                    });
+                }
+                function onPlayerReady(event) {
+                    event.target.playVideo();
+                    setInterval(function() {
+                        if (player && player.getCurrentTime) {
+                            var t = Math.floor(player.getCurrentTime());
+                            if (window.AndroidBridge && t >= 0) {
+                                window.AndroidBridge.onTimeUpdate(t);
+                            }
+                        }
+                    }, 1000);
+                }
+            </script>
+        </body>
+        </html>
+    """.trimIndent()
+}
+
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun IpodYouTubePlayerScreen(
     video: YouTubeVideo,
     onBack: () -> Unit,
     onToggleFullscreen: () -> Unit = {},
+    initialStartSeconds: Int = 0,
+    onTimeUpdate: (Int) -> Unit = {},
     backlightTextPrimary: Color,
     backlightTextSecondary: Color,
     backlightHighlight: Color,
@@ -519,14 +584,14 @@ fun IpodYouTubePlayerScreen(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Voltar",
                     tint = backlightTextPrimary,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(14.dp)
                 )
-                Spacer(modifier = Modifier.width(4.dp))
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = video.title,
                     color = backlightTextPrimary,
-                    fontSize = (10.5f * fontScale).coerceIn(10f, 13.5f).sp,
-                    fontWeight = if (isBold) FontWeight.Black else FontWeight.Bold,
+                    fontSize = (11f * fontScale).sp,
+                    fontWeight = if (isBold) FontWeight.Bold else FontWeight.Medium,
                     fontFamily = fontFamily,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -537,26 +602,26 @@ fun IpodYouTubePlayerScreen(
                 // Botão de Transmissão de Rede (Cast)
                 IconButton(
                     onClick = { openNetworkCastChooser() },
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Cast,
-                        contentDescription = "Transmitir na Rede (Chromecast / Smart TV)",
-                        tint = backlightHighlight,
-                        modifier = Modifier.size(18.dp)
+                        contentDescription = "Transmitir",
+                        tint = backlightTextPrimary,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
 
                 // Botão de Tela Cheia
                 IconButton(
                     onClick = onToggleFullscreen,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Fullscreen,
                         contentDescription = "Tela Cheia",
                         tint = backlightTextPrimary,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             }
@@ -592,6 +657,7 @@ fun IpodYouTubePlayerScreen(
                             displayZoomControls = false
                             cacheMode = WebSettings.LOAD_DEFAULT
                         }
+                        addJavascriptInterface(YouTubeJsBridge(onTimeUpdate), "AndroidBridge")
                         webViewClient = object : WebViewClient() {
                             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                                 isLoading = true
@@ -607,28 +673,7 @@ fun IpodYouTubePlayerScreen(
                         }
                         webChromeClient = WebChromeClient()
 
-                        // HTML embutido com o IFrame oficial do YouTube
-                        val html = """
-                            <!DOCTYPE html>
-                            <html>
-                            <head>
-                                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-                                <style>
-                                    body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; }
-                                    iframe { width: 100%; height: 100%; border: none; }
-                                </style>
-                            </head>
-                            <body>
-                                <iframe id="ytplayer" type="text/html"
-                                    src="https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&enablejsapi=1&playsinline=1&fs=1&rel=0&modestbranding=1"
-                                    allow="autoplay; encrypted-media; fullscreen"
-                                    allowfullscreen>
-                                </iframe>
-                            </body>
-                            </html>
-                        """.trimIndent()
-
-                        loadDataWithBaseURL("https://www.youtube-nocookie.com", html, "text/html", "UTF-8", null)
+                        loadDataWithBaseURL("https://www.youtube-nocookie.com", buildYouTubePlayerHtml(video.id, initialStartSeconds), "text/html", "UTF-8", null)
                         webViewRef = this
                     }
                 }
@@ -651,7 +696,9 @@ fun IpodYouTubePlayerScreen(
 @Composable
 fun FullscreenLandscapeYouTubePlayer(
     video: YouTubeVideo,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    initialStartSeconds: Int = 0,
+    onTimeUpdate: (Int) -> Unit = {}
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -691,30 +738,11 @@ fun FullscreenLandscapeYouTubePlayer(
                         loadWithOverviewMode = true
                         useWideViewPort = true
                     }
+                    addJavascriptInterface(YouTubeJsBridge(onTimeUpdate), "AndroidBridge")
                     webViewClient = WebViewClient()
                     webChromeClient = WebChromeClient()
 
-                    val html = """
-                        <!DOCTYPE html>
-                        <html>
-                        <head>
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-                            <style>
-                                body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; }
-                                iframe { width: 100vw; height: 100vh; border: none; }
-                            </style>
-                        </head>
-                        <body>
-                            <iframe id="ytplayer" type="text/html"
-                                src="https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&enablejsapi=1&playsinline=1&fs=1&rel=0&modestbranding=1"
-                                allow="autoplay; encrypted-media; fullscreen"
-                                allowfullscreen>
-                            </iframe>
-                        </body>
-                        </html>
-                    """.trimIndent()
-
-                    loadDataWithBaseURL("https://www.youtube-nocookie.com", html, "text/html", "UTF-8", null)
+                    loadDataWithBaseURL("https://www.youtube-nocookie.com", buildYouTubePlayerHtml(video.id, initialStartSeconds), "text/html", "UTF-8", null)
                     webViewRef = this
                 }
             }

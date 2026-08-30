@@ -88,11 +88,7 @@ fun RdsDisplay(
     val hours = liveSessionDurationSeconds / 3600
     val minutes = (liveSessionDurationSeconds % 3600) / 60
     val seconds = liveSessionDurationSeconds % 60
-    val sessionTimerFormatted = if (hours > 0) {
-        String.format(java.util.Locale.US, "%d:%02d:%02d", hours, minutes, seconds)
-    } else {
-        String.format(java.util.Locale.US, "%02d:%02d", minutes, seconds)
-    }
+    val sessionTimerFormatted = String.format(java.util.Locale.US, "%02d:%02d:%02d", hours, minutes, seconds)
 
     val infiniteTransition = rememberInfiniteTransition(label = "rds_marquee")
     val bufferPulse by infiniteTransition.animateFloat(

@@ -200,20 +200,57 @@ fun DockModeScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Botão fechar / voltar ao iPod
-                IconButton(
-                    onClick = onExitDockMode,
-                    modifier = Modifier
-                        .size(38.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.08f))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Sair do Modo Dock",
-                        tint = Color.White.copy(alpha = 0.75f),
-                        modifier = Modifier.size(20.dp)
-                    )
+                // Canto Superior Esquerdo: Botão Fechar e Indicador de Alarme
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        onClick = onExitDockMode,
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.08f))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Sair do Modo Dock",
+                            tint = Color.White.copy(alpha = 0.75f),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    // Indicador de Alarme Ativo e Contagem Regressiva
+                    val alarmConfig = remember {
+                        try {
+                            com.example.data.preferences.IpodPreferencesManager.getInstance(context).getRadioAlarmConfig()
+                        } catch (_: Exception) {
+                            com.example.data.model.RadioAlarmConfig()
+                        }
+                    }
+                    if (alarmConfig.isEnabled) {
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFF0284C7).copy(alpha = 0.22f))
+                                .border(1.dp, Color(0xFF38BDF8), RoundedCornerShape(12.dp))
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Alarm,
+                                contentDescription = "Alarme Ativo",
+                                tint = Color(0xFF38BDF8),
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = "⏰ ${alarmConfig.formattedTime} (${alarmConfig.getRemainingTimeString()})",
+                                color = Color(0xFFE0F2FE),
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        }
+                    }
                 }
 
                 Row(

@@ -246,37 +246,12 @@ fun ClickWheel(
                 .testTag("click_wheel_center_button"),
             contentAlignment = Alignment.Center
         ) {
-            // Subtle Bitten Pear Silhouette in center disc
-            Canvas(modifier = Modifier.size(centerSize * 0.28f)) {
-                val w = size.width
-                val h = size.height
-                val pearColor = textColor.copy(alpha = 0.35f)
-
-                // Pear Body
-                val path = androidx.compose.ui.graphics.Path().apply {
-                    moveTo(w * 0.5f, h * 0.22f)
-                    cubicTo(w * 0.32f, h * 0.22f, w * 0.22f, h * 0.38f, w * 0.22f, h * 0.52f)
-                    cubicTo(w * 0.22f, h * 0.65f, w * 0.15f, h * 0.72f, w * 0.15f, h * 0.82f)
-                    cubicTo(w * 0.15f, h * 0.95f, w * 0.32f, h * 0.98f, w * 0.5f, h * 0.98f)
-                    cubicTo(w * 0.68f, h * 0.98f, w * 0.85f, h * 0.95f, w * 0.85f, h * 0.82f)
-                    cubicTo(w * 0.85f, h * 0.72f, w * 0.78f, h * 0.65f, w * 0.78f, h * 0.52f)
-                    // Bite cutout on right
-                    cubicTo(w * 0.78f, h * 0.42f, w * 0.84f, h * 0.38f, w * 0.84f, h * 0.30f)
-                    cubicTo(w * 0.72f, h * 0.28f, w * 0.66f, h * 0.36f, w * 0.58f, h * 0.36f)
-                    cubicTo(w * 0.54f, h * 0.36f, w * 0.52f, h * 0.28f, w * 0.5f, h * 0.22f)
-                    close()
-                }
-                drawPath(path, color = pearColor)
-
-                // Pear Stem / Leaf
-                val stemPath = androidx.compose.ui.graphics.Path().apply {
-                    moveTo(w * 0.52f, h * 0.08f)
-                    cubicTo(w * 0.60f, h * 0.08f, w * 0.68f, h * 0.14f, w * 0.68f, h * 0.20f)
-                    cubicTo(w * 0.58f, h * 0.20f, w * 0.50f, h * 0.14f, w * 0.52f, h * 0.08f)
-                    close()
-                }
-                drawPath(stemPath, color = pearColor)
-            }
+            androidx.compose.foundation.Image(
+                painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.ic_pear_logo),
+                contentDescription = "Botão Central Pera",
+                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(textColor.copy(alpha = 0.38f)),
+                modifier = Modifier.size(centerSize * 0.35f)
+            )
         }
     }
 }

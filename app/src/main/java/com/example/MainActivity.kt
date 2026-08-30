@@ -25,10 +25,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.graphicsLayer
 import com.example.ui.DisplayMode
 import com.example.ui.RadioViewModel
 import com.example.ui.screens.CarModeScreen
 import com.example.ui.screens.DockModeScreen
+import com.example.ui.screens.IpodChassisBackScreen
 import com.example.ui.screens.IpodClassicScreen
 import com.example.ui.theme.MyApplicationTheme
 
@@ -81,6 +92,7 @@ fun MainScreen(viewModel: RadioViewModel) {
     val favorites by viewModel.favorites.collectAsState()
     val volume by viewModel.volume.collectAsState()
     val sleepTimerMinutes by viewModel.sleepTimerMinutes.collectAsState()
+    val liveSessionDurationSeconds by viewModel.liveSessionDurationSeconds.collectAsState()
     val currentLocalAudio by viewModel.currentLocalAudio.collectAsState()
     val audioPositionMs by viewModel.audioPositionMs.collectAsState()
     val audioDurationMs by viewModel.audioDurationMs.collectAsState()
@@ -91,6 +103,54 @@ fun MainScreen(viewModel: RadioViewModel) {
     val selectedAudioDevice by viewModel.selectedAudioDevice.collectAsState()
 
     val context = LocalContext.current
+
+    // Easter Egg: Virar o celular com a tela para baixo mostra a traseira de aço inox do iPod
+    var isChassisBackShowing by remember { mutableStateOf(false) }
+
+    DisposableEffect(uiState.displayMode) {
+        if (uiState.displayMode != DisplayMode.IPOD_CLASSIC) {
+            isChassisBackShowing = false
+            return@DisposableEffect onDispose {}
+        }
+        val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+        val sensor = sensorManager?.getDefaultSensor(Sensor.TYPE_GRAVITY)
+            ?: sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+
+        val listener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                if (event == null) return
+                // Eixo Z: quando virado com a tela para baixo z se torna negativo (ex: -9.8 m/s²)
+                val z = event.values[2]
+                if (z < -3.5f) {
+                    if (!isChassisBackShowing) {
+                        isChassisBackShowing = true
+                    }
+                } else if (z > -1.0f) {
+                    if (isChassisBackShowing) {
+                        isChassisBackShowing = false
+                    }
+                }
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+        }
+
+        sensorManager?.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_UI)
+
+        onDispose {
+            sensorManager?.unregisterListener(listener)
+        }
+    }
+
+    BackHandler(enabled = isChassisBackShowing) {
+        isChassisBackShowing = false
+    }
+
+    val chassisFlipAngle by animateFloatAsState(
+        targetValue = if (isChassisBackShowing) 180f else 0f,
+        animationSpec = tween(durationMillis = 550, easing = FastOutSlowInEasing),
+        label = "chassis_flip"
+    )
 
     // Request Notification & Media storage permissions every time the app opens or resumes
     val mediaPermissionsLauncher = rememberLauncherForActivityResult(
@@ -174,7 +234,9 @@ fun MainScreen(viewModel: RadioViewModel) {
     } else if (isLandscape && uiState.currentScreen == com.example.ui.IpodScreenDestination.YOUTUBE_PLAYER && uiState.currentYouTubeVideo != null) {
         com.example.ui.screens.FullscreenLandscapeYouTubePlayer(
             video = uiState.currentYouTubeVideo!!,
-            onBack = { viewModel.navigateBack() }
+            onBack = { viewModel.navigateBack() },
+            initialStartSeconds = viewModel.youTubePlaybackPositionSeconds,
+            onTimeUpdate = { viewModel.updateYouTubePlaybackPosition(it) }
         )
     } else {
         Box(
@@ -185,86 +247,110 @@ fun MainScreen(viewModel: RadioViewModel) {
         ) {
             when (uiState.displayMode) {
                 DisplayMode.IPOD_CLASSIC -> {
-                    IpodClassicScreen(
-                        uiState = uiState,
-                        playbackStatus = playbackStatus,
-                        currentStation = currentStation,
-                        rdsInfo = rdsInfo,
-                        visualizerAmplitudes = visualizerAmplitudes,
-                        volume = volume,
-                        favorites = favorites,
-                        sleepTimerMinutes = sleepTimerMinutes,
-                        onRotaryScroll = { steps -> viewModel.onRotaryScroll(steps) },
-                        onCenterClick = { viewModel.onCenterButtonPress() },
-                        onMenuClick = { viewModel.navigateBack() },
-                        onPlayPauseClick = { viewModel.onPlayPausePress() },
-                        onPrevClick = { viewModel.onPrevTrackPress() },
-                        onNextClick = { viewModel.onNextTrackPress() },
-                        onToggleHold = { viewModel.toggleHoldSwitch() },
-                        onToggleDisplayMode = { viewModel.toggleDisplayMode() },
-                        onSelectDestination = { dest -> viewModel.navigateTo(dest) },
-                        onSelectStation = { station ->
-                            viewModel.playStation(station)
-                            viewModel.navigateTo(com.example.ui.IpodScreenDestination.NOW_PLAYING_RDS)
-                        },
-                        onToggleFavorite = { station -> viewModel.toggleFavorite(station) },
-                        onDeleteFavorite = { id -> viewModel.deleteFavorite(id) },
-                        onSearchQueryChange = { query -> viewModel.onSearchQueryChanged(query) },
-                        onSearchCountryChange = { code -> viewModel.onSearchCountryChanged(code) },
-                        onSearchGenreChange = { tag -> viewModel.onSearchGenreChanged(tag) },
-                        onSearchStateChange = { state -> viewModel.onSearchStateChanged(state) },
-                        onSearchCityChange = { city -> viewModel.onSearchCityChanged(city) },
-                        onStepVolumeUp = { viewModel.adjustVolume(0.05f) },
-                        onStepVolumeDown = { viewModel.adjustVolume(-0.05f) },
-                        onPaddleMove = { pos -> viewModel.setPaddlePosition(pos) },
-                        soundAndHaptics = (LocalContext.current.applicationContext as com.example.RadioApp).soundAndHaptics,
-                        onSelectGenre = { genre -> viewModel.selectGenre(genre) },
-                        onSelectCountry = { country -> viewModel.selectCountry(country) },
-                        onSetChassisTheme = { theme -> viewModel.setChassisTheme(theme) },
-                        onSetCustomBodyColor = { color -> viewModel.setCustomBodyColor(color) },
-                        onSetBacklight = { backlight -> viewModel.setBacklight(backlight) },
-                        onSetWheelPreset = { preset -> viewModel.setWheelPreset(preset) },
-                        onSetCustomWheelColors = { wheel, text, center -> viewModel.setCustomWheelColors(wheel, text, center) },
-                        onSetFontType = { fontType -> viewModel.setFontType(fontType) },
-                        onSetFontSizeScale = { scale -> viewModel.setFontSizeScale(scale) },
-                        onSetFontBold = { bold -> viewModel.setFontBold(bold) },
-                        onSetAutoPlay = { autoPlay -> viewModel.setAutoPlayOnLaunch(autoPlay) },
-                        onToggleSound = { viewModel.toggleSound() },
-                        onToggleHaptics = { viewModel.toggleHaptics() },
-                        onSetSleepTimer = { mins -> viewModel.setSleepTimer(mins) },
-                        currentLocalAudio = currentLocalAudio,
-                        audioPositionMs = audioPositionMs,
-                        audioDurationMs = audioDurationMs,
-                        videoPlayerManager = viewModel.videoPlayerManager,
-                        onSelectAudioFolder = { folder ->
-                            viewModel.selectAudioFolder(folder)
-                            viewModel.navigateTo(com.example.ui.IpodScreenDestination.MP3_TRACKS_LIST)
-                        },
-                        onSelectAudioTrack = { track ->
-                            viewModel.playLocalAudio(track, uiState.localAudioTracks)
-                            viewModel.navigateTo(com.example.ui.IpodScreenDestination.MP3_NOW_PLAYING)
-                        },
-                        onSelectVideoFolder = { folder ->
-                            viewModel.selectVideoFolder(folder)
-                            viewModel.navigateTo(com.example.ui.IpodScreenDestination.VIDEO_LIST)
-                        },
-                        onSelectVideoTrack = { video ->
-                            viewModel.playLocalVideo(video)
-                            viewModel.navigateTo(com.example.ui.IpodScreenDestination.VIDEO_PLAYER)
-                        },
-                        onToggleVideoFullscreen = { viewModel.toggleVideoFullscreen() },
-                        isEqualizerEnabled = isEqualizerEnabled,
-                        onToggleEqualizerEnabled = { viewModel.setEqualizerEnabled(it) },
-                        equalizerPreset = equalizerPreset,
-                        onSelectEqualizerPreset = { viewModel.setEqualizerPreset(it) },
-                        equalizerBands = equalizerBands,
-                        onEqualizerBandLevelChange = { idx, lvl -> viewModel.setEqualizerBandLevel(idx, lvl) },
-                        availableAudioDevices = availableAudioDevices,
-                        selectedAudioDevice = selectedAudioDevice,
-                        onSelectAudioDevice = { dev -> viewModel.selectAudioDevice(dev) },
-                        onOpenNativeAudioChooser = { viewModel.showNativeAudioChooserDialog(context) },
-                        viewModel = viewModel
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer {
+                                rotationY = chassisFlipAngle
+                                cameraDistance = 16f * density
+                            }
+                    ) {
+                        if (chassisFlipAngle <= 90f) {
+                            IpodClassicScreen(
+                                uiState = uiState,
+                                playbackStatus = playbackStatus,
+                                currentStation = currentStation,
+                                rdsInfo = rdsInfo,
+                                visualizerAmplitudes = visualizerAmplitudes,
+                                volume = volume,
+                                favorites = favorites,
+                                sleepTimerMinutes = sleepTimerMinutes,
+                                onRotaryScroll = { steps -> viewModel.onRotaryScroll(steps) },
+                                onCenterClick = { viewModel.onCenterButtonPress() },
+                                onMenuClick = { viewModel.navigateBack() },
+                                onPlayPauseClick = { viewModel.onPlayPausePress() },
+                                onPrevClick = { viewModel.onPrevTrackPress() },
+                                onNextClick = { viewModel.onNextTrackPress() },
+                                onToggleHold = { viewModel.toggleHoldSwitch() },
+                                onToggleDisplayMode = { viewModel.toggleDisplayMode() },
+                                onSelectDestination = { dest -> viewModel.navigateTo(dest) },
+                                onSelectStation = { station ->
+                                    viewModel.playStation(station)
+                                    viewModel.navigateTo(com.example.ui.IpodScreenDestination.NOW_PLAYING_RDS)
+                                },
+                                onToggleFavorite = { station -> viewModel.toggleFavorite(station) },
+                                onDeleteFavorite = { id -> viewModel.deleteFavorite(id) },
+                                onSearchQueryChange = { query -> viewModel.onSearchQueryChanged(query) },
+                                onSearchCountryChange = { code -> viewModel.onSearchCountryChanged(code) },
+                                onSearchGenreChange = { tag -> viewModel.onSearchGenreChanged(tag) },
+                                onSearchStateChange = { state -> viewModel.onSearchStateChanged(state) },
+                                onSearchCityChange = { city -> viewModel.onSearchCityChanged(city) },
+                                onStepVolumeUp = { viewModel.adjustVolume(0.05f) },
+                                onStepVolumeDown = { viewModel.adjustVolume(-0.05f) },
+                                onPaddleMove = { pos -> viewModel.setPaddlePosition(pos) },
+                                soundAndHaptics = (LocalContext.current.applicationContext as com.example.RadioApp).soundAndHaptics,
+                                onSelectGenre = { genre -> viewModel.selectGenre(genre) },
+                                onSelectCountry = { country -> viewModel.selectCountry(country) },
+                                onSetChassisTheme = { theme -> viewModel.setChassisTheme(theme) },
+                                onSetCustomBodyColor = { color -> viewModel.setCustomBodyColor(color) },
+                                onSetBacklight = { backlight -> viewModel.setBacklight(backlight) },
+                                onSetWheelPreset = { preset -> viewModel.setWheelPreset(preset) },
+                                onSetCustomWheelColors = { wheel, text, center -> viewModel.setCustomWheelColors(wheel, text, center) },
+                                onSetFontType = { fontType -> viewModel.setFontType(fontType) },
+                                onSetFontSizeScale = { scale -> viewModel.setFontSizeScale(scale) },
+                                onSetFontBold = { bold -> viewModel.setFontBold(bold) },
+                                onSetAutoPlay = { autoPlay -> viewModel.setAutoPlayOnLaunch(autoPlay) },
+                                onToggleSound = { viewModel.toggleSound() },
+                                onToggleHaptics = { viewModel.toggleHaptics() },
+                                onSetSleepTimer = { mins -> viewModel.setSleepTimer(mins) },
+                                currentLocalAudio = currentLocalAudio,
+                                audioPositionMs = audioPositionMs,
+                                audioDurationMs = audioDurationMs,
+                                videoPlayerManager = viewModel.videoPlayerManager,
+                                onSelectAudioFolder = { folder ->
+                                    viewModel.selectAudioFolder(folder)
+                                    viewModel.navigateTo(com.example.ui.IpodScreenDestination.MP3_TRACKS_LIST)
+                                },
+                                onSelectAudioTrack = { track ->
+                                    viewModel.playLocalAudio(track, uiState.localAudioTracks)
+                                    viewModel.navigateTo(com.example.ui.IpodScreenDestination.MP3_NOW_PLAYING)
+                                },
+                                onSelectVideoFolder = { folder ->
+                                    viewModel.selectVideoFolder(folder)
+                                    viewModel.navigateTo(com.example.ui.IpodScreenDestination.VIDEO_LIST)
+                                },
+                                onSelectVideoTrack = { video ->
+                                    viewModel.playLocalVideo(video)
+                                    viewModel.navigateTo(com.example.ui.IpodScreenDestination.VIDEO_PLAYER)
+                                },
+                                onToggleVideoFullscreen = { viewModel.toggleVideoFullscreen() },
+                                isEqualizerEnabled = isEqualizerEnabled,
+                                onToggleEqualizerEnabled = { viewModel.setEqualizerEnabled(it) },
+                                equalizerPreset = equalizerPreset,
+                                onSelectEqualizerPreset = { viewModel.setEqualizerPreset(it) },
+                                equalizerBands = equalizerBands,
+                                onEqualizerBandLevelChange = { idx, lvl -> viewModel.setEqualizerBandLevel(idx, lvl) },
+                                availableAudioDevices = availableAudioDevices,
+                                selectedAudioDevice = selectedAudioDevice,
+                                onSelectAudioDevice = { dev -> viewModel.selectAudioDevice(dev) },
+                                onOpenNativeAudioChooser = { viewModel.showNativeAudioChooserDialog(context) },
+                                viewModel = viewModel,
+                                onShowChassisBack = { isChassisBackShowing = true }
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .graphicsLayer {
+                                        rotationY = 180f
+                                    }
+                            ) {
+                                IpodChassisBackScreen(
+                                    onFlipBack = { isChassisBackShowing = false }
+                                )
+                            }
+                        }
+                    }
                 }
             DisplayMode.CAR_FULLSCREEN_RDS -> {
                 CarModeScreen(
@@ -299,7 +385,8 @@ fun MainScreen(viewModel: RadioViewModel) {
                     localAudioFolders = uiState.localAudioFolders,
                     localAudioTracks = uiState.localAudioTracks,
                     onSelectAudioFolder = { folder -> viewModel.selectAudioFolder(folder) },
-                    onSelectAudioTrack = { track -> viewModel.playLocalAudio(track, uiState.localAudioTracks) }
+                    onSelectAudioTrack = { track -> viewModel.playLocalAudio(track, uiState.localAudioTracks) },
+                    liveSessionDurationSeconds = liveSessionDurationSeconds
                 )
             }
             DisplayMode.DOCK_STANDBY -> {
