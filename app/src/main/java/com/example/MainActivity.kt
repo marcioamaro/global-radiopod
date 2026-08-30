@@ -28,6 +28,7 @@ import androidx.core.content.ContextCompat
 import com.example.ui.DisplayMode
 import com.example.ui.RadioViewModel
 import com.example.ui.screens.CarModeScreen
+import com.example.ui.screens.DockModeScreen
 import com.example.ui.screens.IpodClassicScreen
 import com.example.ui.theme.MyApplicationTheme
 
@@ -37,6 +38,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        volumeControlStream = android.media.AudioManager.STREAM_MUSIC
         enableEdgeToEdge()
 
         setContent {
@@ -49,6 +51,23 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onKeyDown(keyCode: Int, event: android.view.KeyEvent?): Boolean {
+        val audioRouteManager = com.example.player.AudioRouteManager.getInstance(this)
+        if (audioRouteManager.isCastingActive()) {
+            when (keyCode) {
+                android.view.KeyEvent.KEYCODE_VOLUME_UP -> {
+                    audioRouteManager.adjustVolumeDelta(0.05f)
+                    return true
+                }
+                android.view.KeyEvent.KEYCODE_VOLUME_DOWN -> {
+                    audioRouteManager.adjustVolumeDelta(-0.05f)
+                    return true
+                }
+            }
+        }
+        return super.onKeyDown(keyCode, event)
     }
 }
 
@@ -68,6 +87,8 @@ fun MainScreen(viewModel: RadioViewModel) {
     val isEqualizerEnabled by viewModel.isEqualizerEnabled.collectAsState()
     val equalizerPreset by viewModel.equalizerPreset.collectAsState()
     val equalizerBands by viewModel.equalizerBands.collectAsState()
+    val availableAudioDevices by viewModel.availableAudioDevices.collectAsState()
+    val selectedAudioDevice by viewModel.selectedAudioDevice.collectAsState()
 
     val context = LocalContext.current
 
@@ -115,16 +136,26 @@ fun MainScreen(viewModel: RadioViewModel) {
         }
     }
 
-    // Android device back button navigates up through the iPod menu hierarchy
+    // Android device back button navigates up through the iPod menu hierarchy or exits Dock mode
     BackHandler(enabled = true) {
-        viewModel.navigateBack()
+        if (uiState.displayMode == DisplayMode.DOCK_STANDBY) {
+            viewModel.setDisplayMode(DisplayMode.IPOD_CLASSIC)
+        } else {
+            viewModel.navigateBack()
+        }
     }
 
     val displayMode = uiState.displayMode
-    LaunchedEffect(displayMode) {
+    val currentScreen = uiState.currentScreen
+    LaunchedEffect(displayMode, currentScreen) {
         val activity = context as? android.app.Activity
         if (displayMode == DisplayMode.CAR_FULLSCREEN_RDS) {
             activity?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        } else if (displayMode == DisplayMode.DOCK_STANDBY) {
+            activity?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR
+        } else if (currentScreen == com.example.ui.IpodScreenDestination.VIDEO_PLAYER ||
+                   currentScreen == com.example.ui.IpodScreenDestination.YOUTUBE_PLAYER) {
+            activity?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR
         } else {
             activity?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
@@ -139,6 +170,11 @@ fun MainScreen(viewModel: RadioViewModel) {
             onBack = { viewModel.navigateBack() },
             onNext = { viewModel.onNextTrackPress() },
             onPrev = { viewModel.onPrevTrackPress() }
+        )
+    } else if (isLandscape && uiState.currentScreen == com.example.ui.IpodScreenDestination.YOUTUBE_PLAYER && uiState.currentYouTubeVideo != null) {
+        com.example.ui.screens.FullscreenLandscapeYouTubePlayer(
+            video = uiState.currentYouTubeVideo!!,
+            onBack = { viewModel.navigateBack() }
         )
     } else {
         Box(
@@ -222,7 +258,12 @@ fun MainScreen(viewModel: RadioViewModel) {
                         equalizerPreset = equalizerPreset,
                         onSelectEqualizerPreset = { viewModel.setEqualizerPreset(it) },
                         equalizerBands = equalizerBands,
-                        onEqualizerBandLevelChange = { idx, lvl -> viewModel.setEqualizerBandLevel(idx, lvl) }
+                        onEqualizerBandLevelChange = { idx, lvl -> viewModel.setEqualizerBandLevel(idx, lvl) },
+                        availableAudioDevices = availableAudioDevices,
+                        selectedAudioDevice = selectedAudioDevice,
+                        onSelectAudioDevice = { dev -> viewModel.selectAudioDevice(dev) },
+                        onOpenNativeAudioChooser = { viewModel.showNativeAudioChooserDialog(context) },
+                        viewModel = viewModel
                     )
                 }
             DisplayMode.CAR_FULLSCREEN_RDS -> {
@@ -259,6 +300,27 @@ fun MainScreen(viewModel: RadioViewModel) {
                     localAudioTracks = uiState.localAudioTracks,
                     onSelectAudioFolder = { folder -> viewModel.selectAudioFolder(folder) },
                     onSelectAudioTrack = { track -> viewModel.playLocalAudio(track, uiState.localAudioTracks) }
+                )
+            }
+            DisplayMode.DOCK_STANDBY -> {
+                val currentPodcastEp = viewModel.currentPodcastEpisode.collectAsState(initial = null).value
+                DockModeScreen(
+                    currentStation = currentStation,
+                    currentLocalAudio = currentLocalAudio,
+                    currentPodcastEpisode = currentPodcastEp,
+                    rdsInfo = rdsInfo,
+                    playbackStatus = playbackStatus,
+                    audioPositionMs = audioPositionMs,
+                    audioDurationMs = audioDurationMs,
+                    colorTheme = uiState.dockColorTheme,
+                    dockClockScale = uiState.dockClockScale,
+                    dockShowSeconds = uiState.dockShowSeconds,
+                    onCycleColorTheme = { viewModel.cycleDockColorTheme() },
+                    onCycleClockScale = { viewModel.cycleDockClockScale() },
+                    onTogglePlayPause = { viewModel.onPlayPausePress() },
+                    onNextTrack = { viewModel.onNextTrackPress() },
+                    onOpenAudioOutput = { viewModel.showNativeAudioChooserDialog(context) },
+                    onExitDockMode = { viewModel.setDisplayMode(DisplayMode.IPOD_CLASSIC) }
                 )
             }
         }

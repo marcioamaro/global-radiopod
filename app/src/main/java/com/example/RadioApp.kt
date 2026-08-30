@@ -27,11 +27,19 @@ class RadioApp : Application() {
     lateinit var localMediaRepository: com.example.data.repository.LocalMediaRepository
         private set
 
+    lateinit var podcastRepository: com.example.data.repository.PodcastRepository
+        private set
+
+    override fun attachBaseContext(base: android.content.Context?) {
+        super.attachBaseContext(base)
+    }
+
     override fun onCreate() {
         super.onCreate()
         database = RadioDatabase.getDatabase(this)
-        repository = RadioRepository(database.favoriteStationDao())
+        repository = RadioRepository(database.favoriteStationDao(), database.radioStationDao())
         localMediaRepository = com.example.data.repository.LocalMediaRepository(this)
+        podcastRepository = com.example.data.repository.PodcastRepository.getInstance(this)
         playerManager = RadioPlayerManager.getInstance(this)
         soundAndHaptics = IpodSoundAndHaptics.getInstance(this)
 

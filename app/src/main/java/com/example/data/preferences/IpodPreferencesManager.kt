@@ -30,6 +30,13 @@ enum class IpodFontSizeScale(val displayName: String, val scale: Float) {
     SCALE_250("250%", 2.5f)
 }
 
+enum class DockClockScale(val displayName: String, val multiplier: Float) {
+    SCALE_100("100% (Padrão)", 1.0f),
+    SCALE_150("150%", 1.5f),
+    SCALE_200("200%", 2.0f),
+    SCALE_250("250%", 2.5f)
+}
+
 enum class IpodWheelPreset(
     val displayName: String,
     val wheelColor: Long,
@@ -69,6 +76,8 @@ class IpodPreferencesManager private constructor(context: Context) {
         private const val KEY_HAPTICS_ENABLED = "key_haptics_enabled"
         private const val KEY_RECENTS_JSON = "key_recents_json"
         private const val KEY_VOLUME = "key_volume"
+        private const val KEY_DOCK_CLOCK_SCALE = "key_dock_clock_scale"
+        private const val KEY_DOCK_SHOW_SECONDS = "key_dock_show_seconds"
         private const val MAX_RECENTS = 20
 
         @Volatile
@@ -185,6 +194,94 @@ class IpodPreferencesManager private constructor(context: Context) {
         }
     }
 
+    fun clearRecentStations() {
+        prefs.edit().remove(KEY_RECENTS_JSON).apply()
+    }
+
+    // Custom Radio Stations (Minhas Rádios)
+    fun addCustomStation(station: RadioStation) {
+        try {
+            val list = getCustomStations().toMutableList()
+            list.removeAll { it.id == station.id || it.streamUrl.equals(station.streamUrl, ignoreCase = true) }
+            list.add(0, station)
+            val array = org.json.JSONArray()
+            for (st in list) {
+                val obj = JSONObject().apply {
+                    put("id", st.id)
+                    put("name", st.name)
+                    put("streamUrl", st.streamUrl)
+                    put("favicon", st.favicon)
+                    put("country", st.country)
+                    put("countryCode", st.countryCode)
+                    put("state", st.state)
+                    put("city", st.city)
+                    put("tags", st.tags)
+                    put("bitrate", st.bitrate)
+                    put("codec", st.codec)
+                    put("votes", st.votes)
+                }
+                array.put(obj)
+            }
+            prefs.edit().putString("custom_stations_json", array.toString()).apply()
+        } catch (_: Exception) {}
+    }
+
+    fun removeCustomStation(stationId: String) {
+        try {
+            val list = getCustomStations().toMutableList()
+            list.removeAll { it.id == stationId }
+            val array = org.json.JSONArray()
+            for (st in list) {
+                val obj = JSONObject().apply {
+                    put("id", st.id)
+                    put("name", st.name)
+                    put("streamUrl", st.streamUrl)
+                    put("favicon", st.favicon)
+                    put("country", st.country)
+                    put("countryCode", st.countryCode)
+                    put("state", st.state)
+                    put("city", st.city)
+                    put("tags", st.tags)
+                    put("bitrate", st.bitrate)
+                    put("codec", st.codec)
+                    put("votes", st.votes)
+                }
+                array.put(obj)
+            }
+            prefs.edit().putString("custom_stations_json", array.toString()).apply()
+        } catch (_: Exception) {}
+    }
+
+    fun getCustomStations(): List<RadioStation> {
+        val jsonStr = prefs.getString("custom_stations_json", null) ?: return emptyList()
+        return try {
+            val array = org.json.JSONArray(jsonStr)
+            val list = mutableListOf<RadioStation>()
+            for (i in 0 until array.length()) {
+                val obj = array.getJSONObject(i)
+                list.add(
+                    RadioStation(
+                        id = obj.optString("id", ""),
+                        name = obj.optString("name", "Rádio Personalizada"),
+                        streamUrl = obj.optString("streamUrl", ""),
+                        favicon = obj.optString("favicon", ""),
+                        country = obj.optString("country", "Personalizada"),
+                        countryCode = obj.optString("countryCode", "BR"),
+                        state = obj.optString("state", ""),
+                        city = obj.optString("city", "Custom"),
+                        tags = obj.optString("tags", "personalizada"),
+                        bitrate = obj.optInt("bitrate", 128),
+                        codec = obj.optString("codec", "MP3"),
+                        votes = obj.optInt("votes", 999)
+                    )
+                )
+            }
+            list
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
     // Auto-play on startup
     var isAutoPlayOnLaunch: Boolean
         get() = prefs.getBoolean(KEY_AUTO_PLAY_ON_LAUNCH, true)
@@ -261,17 +358,17 @@ class IpodPreferencesManager private constructor(context: Context) {
 
     var fontSizeScale: IpodFontSizeScale
         get() {
-            val name = prefs.getString(KEY_FONT_SIZE_SCALE, IpodFontSizeScale.SCALE_150.name)
+            val name = prefs.getString(KEY_FONT_SIZE_SCALE, IpodFontSizeScale.SCALE_100.name)
             return try {
                 when (name) {
                     "COMPACT", "NORMAL", "SCALE_100" -> IpodFontSizeScale.SCALE_100
                     "LARGE", "EXTRA_LARGE", "SCALE_150" -> IpodFontSizeScale.SCALE_150
                     "SCALE_200" -> IpodFontSizeScale.SCALE_200
                     "SCALE_250" -> IpodFontSizeScale.SCALE_250
-                    else -> IpodFontSizeScale.valueOf(name ?: IpodFontSizeScale.SCALE_150.name)
+                    else -> IpodFontSizeScale.valueOf(name ?: IpodFontSizeScale.SCALE_100.name)
                 }
             } catch (_: Exception) {
-                IpodFontSizeScale.SCALE_150
+                IpodFontSizeScale.SCALE_100
             }
         }
         set(value) = prefs.edit().putString(KEY_FONT_SIZE_SCALE, value.name).apply()
@@ -292,4 +389,95 @@ class IpodPreferencesManager private constructor(context: Context) {
     var volumeLevel: Float
         get() = prefs.getFloat(KEY_VOLUME, 0.85f)
         set(value) = prefs.edit().putFloat(KEY_VOLUME, value).apply()
+
+    var dockClockScale: DockClockScale
+        get() {
+            val name = prefs.getString(KEY_DOCK_CLOCK_SCALE, DockClockScale.SCALE_100.name)
+            return try {
+                DockClockScale.valueOf(name ?: DockClockScale.SCALE_100.name)
+            } catch (_: Exception) {
+                DockClockScale.SCALE_100
+            }
+        }
+        set(value) {
+            prefs.edit().putString(KEY_DOCK_CLOCK_SCALE, value.name).commit()
+        }
+
+    var dockShowSeconds: Boolean
+        get() = prefs.getBoolean(KEY_DOCK_SHOW_SECONDS, false)
+        set(value) {
+            prefs.edit().putBoolean(KEY_DOCK_SHOW_SECONDS, value).commit()
+        }
+
+    // Velocidade de reprodução (separada para Podcasts e Mídias Locais MP3/Vídeo)
+    var podcastPlaybackSpeed: Float
+        get() = prefs.getFloat("key_podcast_playback_speed", 1.0f)
+        set(value) = prefs.edit().putFloat("key_podcast_playback_speed", value).apply()
+
+    var localMediaPlaybackSpeed: Float
+        get() = prefs.getFloat("key_local_media_playback_speed", 1.0f)
+        set(value) = prefs.edit().putFloat("key_local_media_playback_speed", value).apply()
+
+    // YouTube Videos (Vídeos no YouTube)
+    fun getYouTubeVideos(): List<com.example.data.model.YouTubeVideo> {
+        val jsonStr = prefs.getString("custom_youtube_videos_json", null) ?: return emptyList()
+        return try {
+            val array = org.json.JSONArray(jsonStr)
+            val list = mutableListOf<com.example.data.model.YouTubeVideo>()
+            for (i in 0 until array.length()) {
+                val obj = array.getJSONObject(i)
+                list.add(
+                    com.example.data.model.YouTubeVideo(
+                        id = obj.optString("id", ""),
+                        title = obj.optString("title", "Vídeo"),
+                        url = obj.optString("url", ""),
+                        thumbnailUrl = obj.optString("thumbnailUrl", ""),
+                        addedAt = obj.optLong("addedAt", System.currentTimeMillis())
+                    )
+                )
+            }
+            list
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    fun addYouTubeVideo(video: com.example.data.model.YouTubeVideo) {
+        try {
+            val list = getYouTubeVideos().toMutableList()
+            list.removeAll { it.id == video.id }
+            list.add(0, video)
+            val array = org.json.JSONArray()
+            for (v in list) {
+                val obj = org.json.JSONObject().apply {
+                    put("id", v.id)
+                    put("title", v.title)
+                    put("url", v.url)
+                    put("thumbnailUrl", v.thumbnailUrl)
+                    put("addedAt", v.addedAt)
+                }
+                array.put(obj)
+            }
+            prefs.edit().putString("custom_youtube_videos_json", array.toString()).apply()
+        } catch (_: Exception) {}
+    }
+
+    fun removeYouTubeVideo(videoId: String) {
+        try {
+            val list = getYouTubeVideos().toMutableList()
+            list.removeAll { it.id == videoId }
+            val array = org.json.JSONArray()
+            for (v in list) {
+                val obj = org.json.JSONObject().apply {
+                    put("id", v.id)
+                    put("title", v.title)
+                    put("url", v.url)
+                    put("thumbnailUrl", v.thumbnailUrl)
+                    put("addedAt", v.addedAt)
+                }
+                array.put(obj)
+            }
+            prefs.edit().putString("custom_youtube_videos_json", array.toString()).apply()
+        } catch (_: Exception) {}
+    }
 }

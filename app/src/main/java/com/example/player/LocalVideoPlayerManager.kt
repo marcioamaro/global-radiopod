@@ -46,6 +46,10 @@ class LocalVideoPlayerManager private constructor(private val context: Context) 
     private val _durationMs = MutableStateFlow(0L)
     val durationMs: StateFlow<Long> = _durationMs.asStateFlow()
 
+    private val ipodPrefs = com.example.data.preferences.IpodPreferencesManager.getInstance(context)
+    private val _playbackSpeed = MutableStateFlow(ipodPrefs.localMediaPlaybackSpeed)
+    val playbackSpeed: StateFlow<Float> = _playbackSpeed.asStateFlow()
+
     private val scope = CoroutineScope(Dispatchers.Main + Job())
     private var progressJob: Job? = null
 
@@ -69,6 +73,19 @@ class LocalVideoPlayerManager private constructor(private val context: Context) 
                 }
             }
         })
+    }
+
+    fun setPlaybackSpeed(speed: Float) {
+        val safeSpeed = speed.coerceIn(0.5f, 2.0f)
+        _playbackSpeed.value = safeSpeed
+        exoPlayer.playbackParameters = androidx.media3.common.PlaybackParameters(safeSpeed, 1.0f)
+        ipodPrefs.localMediaPlaybackSpeed = safeSpeed
+    }
+
+    fun seekToPosition(posMs: Long) {
+        val target = posMs.coerceIn(0L, _durationMs.value.coerceAtLeast(0L))
+        exoPlayer.seekTo(target)
+        _currentPositionMs.value = target
     }
 
     private fun startProgressTracker() {
@@ -97,6 +114,9 @@ class LocalVideoPlayerManager private constructor(private val context: Context) 
         val mediaItem = MediaItem.fromUri(video.contentUri)
         exoPlayer.setMediaItem(mediaItem)
         exoPlayer.prepare()
+        val speed = ipodPrefs.localMediaPlaybackSpeed
+        _playbackSpeed.value = speed
+        exoPlayer.playbackParameters = androidx.media3.common.PlaybackParameters(speed, 1.0f)
         exoPlayer.play()
     }
 

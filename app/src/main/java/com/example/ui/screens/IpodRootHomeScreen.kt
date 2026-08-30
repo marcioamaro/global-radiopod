@@ -27,10 +27,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 
+import androidx.compose.ui.res.stringResource
+import com.example.R
+
 data class RootMenuItem(
     val title: String,
     val icon: ImageVector,
-    val destination: Int // 0: Radio, 1: MP3, 2: Video, 3: Game, 4: Car, 5: About
+    val destination: Int // 0: Radio, 1: MP3, 2: Video, 3: Game, 4: Car, 5: About, 12: Close App
 )
 
 @Composable
@@ -50,18 +53,21 @@ fun IpodRootHomeScreen(
     fontScale: Float,
     isBold: Boolean
 ) {
-    val menuItems = remember {
-        listOf(
-            RootMenuItem("Rádio", Icons.Default.Radio, 0),
-            RootMenuItem("Mp3 Player", Icons.Default.LibraryMusic, 1),
-            RootMenuItem("Video Player", Icons.Default.VideoLibrary, 2),
-            RootMenuItem("Equalizador", Icons.Default.GraphicEq, 3),
-            RootMenuItem("Jogo", Icons.Default.SportsEsports, 4),
-            RootMenuItem("Modo Carro", Icons.Default.DirectionsCar, 5),
-            RootMenuItem("Configurações", Icons.Default.Settings, 6),
-            RootMenuItem("Sobre", Icons.Default.Info, 7)
-        )
-    }
+    val menuItems = listOf(
+        RootMenuItem(stringResource(R.string.menu_radio), Icons.Default.Radio, 0),
+        RootMenuItem(stringResource(R.string.menu_podcasts), Icons.Default.Podcasts, 9),
+        RootMenuItem(stringResource(R.string.menu_mp3), Icons.Default.LibraryMusic, 1),
+        RootMenuItem(stringResource(R.string.menu_video), Icons.Default.VideoLibrary, 2),
+        RootMenuItem(stringResource(R.string.menu_youtube), Icons.Default.SmartDisplay, 10),
+        RootMenuItem(stringResource(R.string.menu_equalizer), Icons.Default.GraphicEq, 3),
+        RootMenuItem(stringResource(R.string.menu_audio_output), Icons.Default.SpeakerGroup, 4),
+        RootMenuItem(stringResource(R.string.menu_game), Icons.Default.SportsEsports, 5),
+        RootMenuItem(stringResource(R.string.menu_car_mode), Icons.Default.DirectionsCar, 6),
+        RootMenuItem(stringResource(R.string.menu_dock_mode), Icons.Default.Schedule, 11),
+        RootMenuItem(stringResource(R.string.menu_settings), Icons.Default.Settings, 7),
+        RootMenuItem(stringResource(R.string.menu_about), Icons.Default.Info, 8),
+        RootMenuItem(stringResource(R.string.menu_close_app), Icons.Default.PowerSettingsNew, 12)
+    )
 
     val listState = rememberLazyListState()
 
@@ -78,40 +84,21 @@ fun IpodRootHomeScreen(
             .fillMaxSize()
             .background(backlightBg)
     ) {
-        // Top iPod Header Bar
+        // Top iPod Sub-Header Bar (Title only, avoiding icon redundancy with upper status bar)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(backlightHighlight.copy(alpha = 0.22f))
                 .padding(horizontal = 10.dp, vertical = 5.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "IPod Class + Radio",
+                text = "MediaPod + Radio / Podcast",
                 color = backlightTextPrimary,
-                fontSize = (13f * fontScale).sp,
+                fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Black,
                 fontFamily = fontFamily
             )
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (isPlaying) {
-                    Icon(
-                        imageVector = Icons.Default.PlayArrow,
-                        contentDescription = "Playing",
-                        tint = backlightTextPrimary,
-                        modifier = Modifier.size(14.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                }
-                Icon(
-                    imageVector = Icons.Default.BatteryChargingFull,
-                    contentDescription = "Battery",
-                    tint = backlightTextPrimary,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
         }
 
         // Split View: Left List (Menu) & Right Panel (Album Art / Preview)
@@ -216,7 +203,7 @@ fun IpodRootHomeScreen(
                             modifier = Modifier
                                 .size(66.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFF0F172A))
+                                .background(Color(0x33000000))
                                 .border(1.2.dp, backlightHighlight, RoundedCornerShape(8.dp)),
                             contentAlignment = Alignment.Center
                         ) {

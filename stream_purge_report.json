@@ -1,0 +1,192 @@
+{
+  "timestamp": "2026-08-29 21:54:43",
+  "initial_stations_evaluated": 1610,
+  "final_operable_stations": 1535,
+  "stations_purged": 75,
+  "promoted_alternatives_count": 5,
+  "dead_alternative_urls_removed": 51,
+  "final_brazil_stations": 1307,
+  "final_international_stations": 228,
+  "purged_sample": [
+    {
+      "id": "geracao_rock_limeira",
+      "name": "Geração Rock (Limeira - SP)",
+      "state": "SP",
+      "original_primary": "https://stream.geracaoradios.com.br/listen/rock/stream"
+    },
+    {
+      "id": "geracao_universitario_limeira",
+      "name": "Geração Sertanejo Universitário (Limeira - SP)",
+      "state": "SP",
+      "original_primary": "https://stream.geracaoradios.com.br/listen/sertanejouniversitario/stream"
+    },
+    {
+      "id": "geracao_marilia_limeira",
+      "name": "Geração Marília Mendonça (Limeira - SP)",
+      "state": "SP",
+      "original_primary": "https://stream.geracaoradios.com.br/listen/marilia/stream"
+    },
+    {
+      "id": "geracao_raiz_limeira",
+      "name": "Geração Sertanejo Raiz (Limeira - SP)",
+      "state": "SP",
+      "original_primary": "https://stream.geracaoradios.com.br/listen/raiz/stream"
+    },
+    {
+      "id": "geracao_sertaneja_limeira",
+      "name": "Geração Sertaneja (Limeira - SP)",
+      "state": "SP",
+      "original_primary": "https://stream.geracaoradios.com.br/listen/sertaneja/stream"
+    },
+    {
+      "id": "geracao_anos80_limeira",
+      "name": "Geração Anos 80s (Limeira - SP)",
+      "state": "SP",
+      "original_primary": "https://stream.geracaoradios.com.br/listen/anos80/stream"
+    },
+    {
+      "id": "geracao_samba_limeira",
+      "name": "Geração Samba e Pagode (Limeira - SP)",
+      "state": "SP",
+      "original_primary": "https://stream.geracaoradios.com.br/listen/samba/stream"
+    },
+    {
+      "id": "geracao_97fm_limeira",
+      "name": "97 FM (Limeira - SP)",
+      "state": "SP",
+      "original_primary": "https://stream.geracaoradios.com.br/listen/pagode/stream"
+    },
+    {
+      "id": "geracao_hits_limeira",
+      "name": "Geração Hits (Limeira - SP)",
+      "state": "SP",
+      "original_primary": "https://stream.geracaoradios.com.br/listen/radio_geral/stream"
+    },
+    {
+      "id": "geracao_pop_limeira",
+      "name": "Geração Pop (Limeira - SP)",
+      "state": "SP",
+      "original_primary": "https://stream.geracaoradios.com.br/listen/pop/stream"
+    },
+    {
+      "id": "geracao_gospel_limeira",
+      "name": "Geração Gospel (Limeira - SP)",
+      "state": "SP",
+      "original_primary": "https://stream.geracaoradios.com.br/listen/gospel/stream"
+    },
+    {
+      "id": "geracao_eletronica_limeira",
+      "name": "Geração Eletrônica (Limeira - SP)",
+      "state": "SP",
+      "original_primary": "https://stream.geracaoradios.com.br/listen/eletronica/stream"
+    },
+    {
+      "id": "geracao_inlove_limeira",
+      "name": "Geração In Love (Limeira - SP)",
+      "state": "SP",
+      "original_primary": "https://stream.geracaoradios.com.br/listen/inlove/stream"
+    },
+    {
+      "id": "geracao_catolica_limeira",
+      "name": "Geração Católica (Limeira - SP)",
+      "state": "SP",
+      "original_primary": "https://stream.geracaoradios.com.br/listen/catolica/stream"
+    },
+    {
+      "id": "br_sp_027",
+      "name": "Radio Reggae Brasil",
+      "state": "SP",
+      "original_primary": "https://casthttps.suaradionanet.net/13805/stream"
+    },
+    {
+      "id": "br_sp_045",
+      "name": "Radio Amigos da MPB",
+      "state": "SP",
+      "original_primary": "http://stm4.voxhd.com.br:7086/"
+    },
+    {
+      "id": "br_sp_462",
+      "name": "Radio Fut Music",
+      "state": "SP",
+      "original_primary": "http://stm4.voxhd.com.br:7086/"
+    },
+    {
+      "id": "rb_web_rádio_doval_3b848c",
+      "name": "Web Rádio Doval",
+      "state": "CE",
+      "original_primary": "https://stm9.voxhd.com.br:13288/"
+    },
+    {
+      "id": "rb_rádio_regional_1300_am_5a3469",
+      "name": "Rádio Regional 1300 AM",
+      "state": "RS",
+      "original_primary": "https://azura1.cmaudioevideo.com:8010/radio.mp3?1775488202153"
+    },
+    {
+      "id": "rb_voxpulse_fm_81269f",
+      "name": "VoxPulse FM",
+      "state": "CE",
+      "original_primary": "https://stm18.voxhd.com.br:12192/"
+    },
+    {
+      "id": "rb_rádio_tropical_diamantina_13ebd6",
+      "name": "Rádio Tropical Diamantina",
+      "state": "MI",
+      "original_primary": "https://stm22.voxhd.com.br:9904/"
+    },
+    {
+      "id": "rb_rádio_jambeiro_1049_fm_cb5fb7",
+      "name": "Rádio Jambeiro 104.9 FM",
+      "state": "SP",
+      "original_primary": "https://cast4.hoost.com.br:20010/stream"
+    },
+    {
+      "id": "rb_rádio_vida_terra_rica_355c6c",
+      "name": "Rádio Vida Terra Rica",
+      "state": "PR",
+      "original_primary": "https://stm1.voxhd.com.br:7706/"
+    },
+    {
+      "id": "rb_lder_fm_miraguai_f8a22a",
+      "name": "Líder FM miraguai",
+      "state": "RS",
+      "original_primary": "https://stm22.srvaudio.com.br:10106/"
+    },
+    {
+      "id": "rb_rádio_sintonia_fm_salvado_807286",
+      "name": "Rádio Sintonia FM Salvador",
+      "state": "BA",
+      "original_primary": "http://stm26.srvaudio.com.br:9732/"
+    },
+    {
+      "id": "rb_radio_esperana_fab734",
+      "name": "Radio Esperança",
+      "state": "SC",
+      "original_primary": "https://stm10.xcast.com.br:12112/"
+    },
+    {
+      "id": "br_sp_083",
+      "name": "Jovem Pan FM - Sorocaba 91.1",
+      "state": "SP",
+      "original_primary": "https://cast2.hoost.com.br:8039/stream"
+    },
+    {
+      "id": "br_sp_323",
+      "name": "Rádio Jovem Pan 91.1 FM",
+      "state": "SP",
+      "original_primary": "https://cast2.hoost.com.br:8039/stream"
+    },
+    {
+      "id": "br_rn_5469196d",
+      "name": "Rádio Maroca",
+      "state": "RN",
+      "original_primary": "https://server03.srvsh.com.br:6844/"
+    },
+    {
+      "id": "br_sp_332",
+      "name": "Radio Amigos do Rock Nacional",
+      "state": "SP",
+      "original_primary": "https://stm10.voxhd.com.br:7846/"
+    }
+  ]
+}

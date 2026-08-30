@@ -22,8 +22,16 @@ import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.common.PlaybackParameters
+import androidx.media3.extractor.metadata.id3.ChapterFrame
+import androidx.media3.extractor.metadata.id3.ChapterTocFrame
+import androidx.media3.extractor.metadata.id3.TextInformationFrame
+import com.example.data.model.PodcastChapter
+import com.example.data.preferences.IpodPreferencesManager
 import com.example.data.model.RadioStation
 import com.example.service.RadioMediaService
+import com.example.util.NetworkConnectivityValidator
+import com.example.util.NetworkStatus
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlinx.coroutines.CoroutineScope
@@ -36,6 +44,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
 enum class RadioPlaybackStatus {
@@ -43,7 +52,8 @@ enum class RadioPlaybackStatus {
     BUFFERING,
     PLAYING,
     PAUSED,
-    ERROR
+    ERROR,
+    NO_INTERNET
 }
 
 data class RdsInfo(
@@ -72,6 +82,18 @@ class RadioPlayerManager private constructor(private val context: Context) {
     private val _playbackStatus = MutableStateFlow(RadioPlaybackStatus.IDLE)
     val playbackStatus: StateFlow<RadioPlaybackStatus> = _playbackStatus.asStateFlow()
 
+    fun setPlaybackStatusDirect(status: RadioPlaybackStatus) {
+        _playbackStatus.value = status
+    }
+
+    fun pauseLocalOnly() {
+        try {
+            exoPlayer?.pause()
+        } catch (_: Exception) {}
+        releaseLocks()
+        stopVisualizer()
+    }
+
     private val _currentStation = MutableStateFlow<RadioStation?>(null)
     val currentStation: StateFlow<RadioStation?> = _currentStation.asStateFlow()
 
@@ -92,9 +114,32 @@ class RadioPlayerManager private constructor(private val context: Context) {
     private val _sleepTimerMinutes = MutableStateFlow(0)
     val sleepTimerMinutes: StateFlow<Int> = _sleepTimerMinutes.asStateFlow()
 
+    // Active Media Type (Isolamento exclusivo de fila de reprodução)
+    private val _activeMediaType = MutableStateFlow<ActiveMediaType>(ActiveMediaType.LIVE_RADIO)
+    val activeMediaType: StateFlow<ActiveMediaType> = _activeMediaType.asStateFlow()
+
+    fun setActiveMediaType(type: ActiveMediaType) {
+        _activeMediaType.value = type
+    }
+
     // Local Audio Playback Support (MP3 Player)
     private val _currentLocalAudio = MutableStateFlow<com.example.data.model.LocalAudioTrack?>(null)
     val currentLocalAudio: StateFlow<com.example.data.model.LocalAudioTrack?> = _currentLocalAudio.asStateFlow()
+
+    // Podcast Playback Support
+    private val _currentPodcastEpisode = MutableStateFlow<com.example.data.model.PodcastEpisode?>(null)
+    val currentPodcastEpisode: StateFlow<com.example.data.model.PodcastEpisode?> = _currentPodcastEpisode.asStateFlow()
+    private val _currentPodcastShow = MutableStateFlow<com.example.data.model.PodcastShow?>(null)
+    val currentPodcastShow: StateFlow<com.example.data.model.PodcastShow?> = _currentPodcastShow.asStateFlow()
+    private var podcastQueue: List<com.example.data.model.PodcastEpisode> = emptyList()
+
+    // Live Radio Continuous Session Duration Timer
+    private val _liveSessionDurationSeconds = MutableStateFlow(0L)
+    val liveSessionDurationSeconds: StateFlow<Long> = _liveSessionDurationSeconds.asStateFlow()
+    private var liveSessionJob: Job? = null
+
+    // Auto-reconnect loop on network loss (runs every 10s)
+    private var autoReconnectJob: Job? = null
 
     private val _audioPositionMs = MutableStateFlow(0L)
     val audioPositionMs: StateFlow<Long> = _audioPositionMs.asStateFlow()
@@ -105,17 +150,17 @@ class RadioPlayerManager private constructor(private val context: Context) {
     // Global Equalizer Engine (Rádio ao Vivo e MP3 Local)
     private var equalizer: Equalizer? = null
 
-    val EQUALIZER_PRESETS = mapOf(
-        "Flat" to listOf(0f, 0f, 0f, 0f, 0f),
-        "Rock" to listOf(4.5f, 2.5f, -1.0f, 2.5f, 5.0f),
-        "Pop" to listOf(-1.5f, 2.0f, 4.0f, 1.5f, -1.0f),
-        "Blues" to listOf(3.0f, 1.5f, 0.0f, 2.0f, 3.5f),
-        "Jazz" to listOf(3.5f, 2.0f, -1.5f, 2.0f, 4.0f),
-        "Clássica" to listOf(4.0f, 2.5f, -1.0f, 2.5f, 3.5f),
-        "Bass Boost" to listOf(6.0f, 4.0f, 1.0f, 0.0f, -1.0f),
-        "Eletrônica" to listOf(5.0f, 3.0f, -1.5f, 2.0f, 4.5f),
-        "Vocal" to listOf(-2.0f, 1.0f, 5.0f, 3.0f, 0.0f),
-        "Personalizado" to listOf(0f, 0f, 0f, 0f, 0f)
+    val EQUALIZER_PRESETS: Map<String, List<Float>> = linkedMapOf(
+        "Flat" to listOf(0.0f, 0.0f, 0.0f, 0.0f, 0.0f),
+        "Rock" to listOf(5.0f, 3.0f, -1.5f, 3.0f, 5.0f),
+        "Pop" to listOf(-1.0f, 2.0f, 4.0f, 2.5f, 1.0f),
+        "Bass Booster" to listOf(7.0f, 4.5f, 1.0f, 0.0f, -1.5f),
+        "Voz / Podcast" to listOf(-4.0f, -1.5f, 4.5f, 4.0f, 1.5f),
+        "Jazz" to listOf(3.5f, 2.0f, 0.0f, 2.0f, 3.5f),
+        "Clássica" to listOf(4.0f, 2.0f, -0.5f, 2.5f, 4.0f),
+        "Eletrônica" to listOf(6.0f, 4.0f, -1.0f, 3.0f, 5.5f),
+        "Blues" to listOf(3.0f, 2.0f, 1.0f, 2.5f, 3.0f),
+        "Personalizado" to listOf(0.0f, 0.0f, 0.0f, 0.0f, 0.0f)
     )
 
     private val eqPrefs = context.getSharedPreferences("radiopod_equalizer", Context.MODE_PRIVATE)
@@ -128,7 +173,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
     private fun loadSavedEqualizerBands(): List<Float> {
         val preset = eqPrefs.getString("eq_preset", "Rock") ?: "Rock"
-        val defaultBands = EQUALIZER_PRESETS[preset] ?: EQUALIZER_PRESETS["Rock"]!!
+        val defaultBands = EQUALIZER_PRESETS[preset] ?: EQUALIZER_PRESETS["Rock"] ?: listOf(0f, 0f, 0f, 0f, 0f)
         return List(5) { i ->
             eqPrefs.getFloat("eq_band_$i", defaultBands[i])
         }
@@ -136,6 +181,63 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
     private val _equalizerBands = MutableStateFlow<List<Float>>(loadSavedEqualizerBands())
     val equalizerBands: StateFlow<List<Float>> = _equalizerBands.asStateFlow()
+
+    val ipodPrefs = IpodPreferencesManager.getInstance(context)
+
+    private val _playbackSpeed = MutableStateFlow(1.0f)
+    val playbackSpeed: StateFlow<Float> = _playbackSpeed.asStateFlow()
+
+    fun setPlaybackSpeed(speed: Float, isPodcast: Boolean) {
+        val safeSpeed = speed.coerceIn(0.5f, 2.0f)
+        _playbackSpeed.value = safeSpeed
+        // PlaybackParameters(speed, 1.0f) mantém a correção de pitch via Sonic, evitando distorção de voz
+        exoPlayer?.playbackParameters = PlaybackParameters(safeSpeed, 1.0f)
+        if (isPodcast) {
+            ipodPrefs.podcastPlaybackSpeed = safeSpeed
+        } else {
+            ipodPrefs.localMediaPlaybackSpeed = safeSpeed
+        }
+    }
+
+    private val _currentPodcastChapters = MutableStateFlow<List<PodcastChapter>>(emptyList())
+    val currentPodcastChapters: StateFlow<List<PodcastChapter>> = _currentPodcastChapters.asStateFlow()
+
+    private val _currentChapter = MutableStateFlow<PodcastChapter?>(null)
+    val currentChapter: StateFlow<PodcastChapter?> = _currentChapter.asStateFlow()
+
+    fun updateCurrentChapter(posMs: Long) {
+        val chapters = _currentPodcastChapters.value
+        if (chapters.isEmpty()) {
+            _currentChapter.value = null
+            return
+        }
+        val ch = chapters.lastOrNull { it.startTimeMs <= posMs }
+        if (_currentChapter.value != ch) {
+            _currentChapter.value = ch
+        }
+    }
+
+    fun addEmbeddedChapter(chapter: PodcastChapter) {
+        val current = _currentPodcastChapters.value.toMutableList()
+        if (current.none { it.startTimeMs == chapter.startTimeMs || it.title.equals(chapter.title, ignoreCase = true) }) {
+            current.add(chapter)
+            val sorted = current.sortedBy { it.startTimeMs }
+            _currentPodcastChapters.value = sorted
+            updateCurrentChapter(_audioPositionMs.value)
+        }
+    }
+
+    fun seekToPosition(posMs: Long) {
+        val player = exoPlayer ?: return
+        val duration = if (_audioDurationMs.value > 0) _audioDurationMs.value else player.duration
+        val target = posMs.coerceIn(0L, duration.coerceAtLeast(0L))
+        player.seekTo(target)
+        _audioPositionMs.value = target
+        updateCurrentChapter(target)
+        _currentPodcastEpisode.value?.let { ep ->
+            com.example.data.repository.PodcastRepository.getInstance(context).savePlaybackPosition(ep.id, target)
+        }
+    }
 
     var onFolderWrapNext: (() -> Unit)? = null
     var onFolderWrapPrev: (() -> Unit)? = null
@@ -159,22 +261,36 @@ class RadioPlayerManager private constructor(private val context: Context) {
     private var currentUserAgentIndex = 0
     private var totalAttemptCount = 0
     private var streamingTimeoutJob: Job? = null
-    private var stabilityValidationJob: Job? = null
-    private var isStreamStable = false
+    private var bufferingWatchdogJob: Job? = null
     private var userInitiatedPause = false
 
     init {
         try {
+            // Preserva com consistência o volume da última vez que o aplicativo foi executado
+            val savedVol = com.example.data.preferences.IpodPreferencesManager.getInstance(context).volumeLevel
+            _volume.value = savedVol.coerceIn(0.05f, 1.0f)
+        } catch (_: Exception) {
             audioManager?.let { am ->
                 val current = am.getStreamVolume(AudioManager.STREAM_MUSIC)
                 val max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
                 if (max > 0) {
-                    _volume.value = (current.toFloat() / max.toFloat()).coerceIn(0f, 1f)
+                    _volume.value = (current.toFloat() / max.toFloat()).coerceIn(0.05f, 1.0f)
                 }
             }
-        } catch (_: Exception) {}
+        }
         initLocks()
         initPlayer()
+
+        // Monitoramento não-bloqueante de conectividade de rede com NetworkCallback
+        NetworkConnectivityValidator.startMonitoring(context)
+        scope.launch {
+            NetworkConnectivityValidator.networkStatus.collect { status ->
+                when (status) {
+                    NetworkStatus.OFFLINE -> handleNetworkLoss()
+                    NetworkStatus.ONLINE -> handleNetworkRestored()
+                }
+            }
+        }
     }
 
     private fun initLocks() {
@@ -229,16 +345,16 @@ class RadioPlayerManager private constructor(private val context: Context) {
             .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
             .build()
 
-        // Configure buffer duration for smooth and stable live radio streaming
+        // Configure buffer for continuous, resilient live radio streaming (zero backBuffer to save RAM)
         val loadControl = DefaultLoadControl.Builder()
             .setBufferDurationsMs(
-                15000,  // minBufferMs (15 seconds buffer)
-                60000,  // maxBufferMs (60 seconds)
-                2500,   // bufferForPlaybackMs (2.5 seconds to start quickly)
-                5000    // bufferForPlaybackAfterRebufferMs (5 seconds)
+                6000,   // minBufferMs (6 segundos de reserva segura para evitar engasgos)
+                18000,  // maxBufferMs (18 segundos)
+                1200,   // bufferForPlaybackMs (1.2 segundos para início rápido sem engasgo)
+                2500    // bufferForPlaybackAfterRebufferMs (2.5 segundos para re-buffer seguro)
             )
-            .setPrioritizeTimeOverSizeThresholds(true)
-            .setBackBuffer(10000, false)
+            .setPrioritizeTimeOverSizeThresholds(false)
+            .setBackBuffer(0, false) // Sem retenção de buffer passado para economizar memória RAM
             .build()
 
         exoPlayer = ExoPlayer.Builder(context)
@@ -248,6 +364,13 @@ class RadioPlayerManager private constructor(private val context: Context) {
             .setLoadControl(loadControl)
             .build().apply {
                 volume = _volume.value
+                try {
+                    audioManager?.let { am ->
+                        val maxVol = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                        val targetVol = (_volume.value * maxVol).toInt().coerceIn(0, maxVol)
+                        am.setStreamVolume(AudioManager.STREAM_MUSIC, targetVol, 0)
+                    }
+                } catch (_: Exception) {}
                 addListener(object : Player.Listener {
                     override fun onPlaybackStateChanged(state: Int) {
                         when (state) {
@@ -255,26 +378,30 @@ class RadioPlayerManager private constructor(private val context: Context) {
                                 _playbackStatus.value = RadioPlaybackStatus.BUFFERING
                                 acquireLocks()
                                 stopVisualizer()
+                                val station = _currentStation.value
+                                if (station != null && !userInitiatedPause) {
+                                    startBufferingWatchdog(station)
+                                }
                             }
                             Player.STATE_READY -> {
+                                cancelBufferingWatchdog()
+                                streamingTimeoutJob?.cancel()
+                                reconnectJob?.cancel()
                                 if (playWhenReady) {
                                     _playbackStatus.value = RadioPlaybackStatus.PLAYING
                                     acquireLocks()
                                     startVisualizer()
-                                    val station = _currentStation.value
-                                    if (station != null && !userInitiatedPause) {
-                                        startStabilityValidation(station)
-                                    }
+                                    retryCount = 0
+                                    totalAttemptCount = 0
                                 } else if (userInitiatedPause) {
                                     _playbackStatus.value = RadioPlaybackStatus.PAUSED
-                                    stabilityValidationJob?.cancel()
-                                    streamingTimeoutJob?.cancel()
                                     releaseLocks()
                                     stopVisualizer()
                                 }
                                 _errorMessage.value = null
                             }
                             Player.STATE_ENDED -> {
+                                cancelBufferingWatchdog()
                                 if (_currentLocalAudio.value != null) {
                                     nextLocalTrack()
                                 } else {
@@ -282,7 +409,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
                                     if (station != null && !userInitiatedPause) {
                                         android.util.Log.w(
                                             "RadioPlayerManager",
-                                            "Fim de fluxo recebido para '${station.name}'. Alternando para próxima fonte ou reconectando..."
+                                            "Fim de fluxo recebido para '${station.name}'. Alternando para próxima fonte..."
                                         )
                                         handleStreamFailureOrTimeout(station, "Fim prematuro do fluxo (EOF)")
                                     } else {
@@ -306,23 +433,40 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
                     override fun onIsPlayingChanged(isPlaying: Boolean) {
                         if (isPlaying) {
+                            cancelBufferingWatchdog()
+                            streamingTimeoutJob?.cancel()
+                            reconnectJob?.cancel()
                             _playbackStatus.value = RadioPlaybackStatus.PLAYING
                             acquireLocks()
                             startVisualizer()
-                            val station = _currentStation.value
-                            if (station != null && !userInitiatedPause) {
-                                startStabilityValidation(station)
-                            }
                         } else if (userInitiatedPause) {
+                            cancelBufferingWatchdog()
                             _playbackStatus.value = RadioPlaybackStatus.PAUSED
-                            stabilityValidationJob?.cancel()
                             releaseLocks()
                             stopVisualizer()
                         }
                     }
 
                     override fun onPlayerError(error: PlaybackException) {
+                        cancelBufferingWatchdog()
+                        if (userInitiatedPause) return
+
                         val station = _currentStation.value
+                        val podcast = _currentPodcastEpisode.value
+
+                        if (isNetworkError(error)) {
+                            android.util.Log.w("RadioPlayerManager", "Falha de I/O de rede no ExoPlayer (${error.errorCodeName}). Tratando com resiliência sem crash.")
+                            if (station != null) {
+                                reportNoInternetState(station)
+                            } else if (podcast != null) {
+                                reportNoInternetStateForPodcast(podcast)
+                            } else {
+                                _playbackStatus.value = RadioPlaybackStatus.NO_INTERNET
+                                _errorMessage.value = "VERIFIQUE A CONEXÃO COM A INTERNET"
+                            }
+                            return
+                        }
+
                         if (station != null) {
                             handleStreamFailureOrTimeout(station, "Erro no streaming: ${error.errorCodeName}")
                         } else {
@@ -351,6 +495,22 @@ class RadioPlayerManager private constructor(private val context: Context) {
                                 if (!streamTitle.isNullOrBlank()) {
                                     processDetectedRdsTitle(streamTitle)
                                 }
+                            } else if (entry is ChapterFrame) {
+                                var chTitle = entry.chapterId
+                                val count = entry.subFrameCount
+                                for (subIdx in 0 until count) {
+                                    val sub = entry.getSubFrame(subIdx)
+                                    if (sub is TextInformationFrame) {
+                                        val text = sub.values.firstOrNull() ?: sub.value
+                                        if (!text.isNullOrBlank()) {
+                                            chTitle = text
+                                            break
+                                        }
+                                    }
+                                }
+                                val startMs = entry.startTimeMs.toLong()
+                                val endMs = entry.endTimeMs.toLong()
+                                addEmbeddedChapter(PodcastChapter(chTitle, startMs, endMs))
                             }
                         }
                     }
@@ -397,18 +557,32 @@ class RadioPlayerManager private constructor(private val context: Context) {
     }
 
     fun playNext() {
-        if (_currentLocalAudio.value != null) {
-            nextLocalTrack()
-        } else {
-            playNextStation()
+        when (_activeMediaType.value) {
+            ActiveMediaType.LOCAL_AUDIO -> nextLocalTrack()
+            ActiveMediaType.PODCAST_EPISODE -> nextPodcastEpisode()
+            ActiveMediaType.LIVE_RADIO -> playNextStation()
+            else -> playNextStation()
         }
     }
 
     fun playPrevious() {
-        if (_currentLocalAudio.value != null) {
-            prevLocalTrack()
-        } else {
-            playPreviousStation()
+        when (_activeMediaType.value) {
+            ActiveMediaType.LOCAL_AUDIO -> {
+                if (_audioPositionMs.value > 3000L) {
+                    seekToPosition(0L)
+                } else {
+                    prevLocalTrack()
+                }
+            }
+            ActiveMediaType.PODCAST_EPISODE -> {
+                if (_audioPositionMs.value > 3000L) {
+                    seekToPosition(0L)
+                } else {
+                    prevPodcastEpisode()
+                }
+            }
+            ActiveMediaType.LIVE_RADIO -> playPreviousStation()
+            else -> playPreviousStation()
         }
     }
 
@@ -421,10 +595,18 @@ class RadioPlayerManager private constructor(private val context: Context) {
         try {
             LocalVideoPlayerManager.getInstance(context).pause()
         } catch (_: Exception) {}
+        _activeMediaType.value = ActiveMediaType.LIVE_RADIO
         _currentLocalAudio.value = null
+        _currentPodcastEpisode.value = null
+        localAudioQueue = emptyList()
+        podcastQueue = emptyList()
+        _currentPodcastChapters.value = emptyList()
+        _currentChapter.value = null
+        _playbackSpeed.value = 1.0f
+        exoPlayer?.playbackParameters = PlaybackParameters(1.0f, 1.0f)
         audioProgressJob?.cancel()
         _currentStation.value = station
-        com.example.data.preferences.IpodPreferencesManager.getInstance(context).addRecentStation(station)
+        ipodPrefs.addRecentStation(station)
         if (playlist.none { it.id == station.id }) {
             playlist = listOf(station) + playlist
         }
@@ -436,8 +618,6 @@ class RadioPlayerManager private constructor(private val context: Context) {
         _playbackStatus.value = RadioPlaybackStatus.BUFFERING
         rdsSimulationJob?.cancel()
         userInitiatedPause = false
-        isStreamStable = false
-        stabilityValidationJob?.cancel()
         reconnectJob?.cancel()
 
         // Set initial RDS info with Station Name as default when RDS is absent
@@ -456,51 +636,58 @@ class RadioPlayerManager private constructor(private val context: Context) {
         val candidates = station.getAllStreamCandidates()
         val initialUrl = if (candidates.isNotEmpty()) candidates[0] else station.streamUrl
         playStreamUrl(station, initialUrl)
+        if (AudioRouteManager.getInstance(context).isCastingActive()) {
+            AudioRouteManager.getInstance(context).updateCastMedia()
+        }
     }
 
     private fun getHttpDataSourceFactory(): DefaultHttpDataSource.Factory {
         val currentUa = USER_AGENTS[currentUserAgentIndex % USER_AGENTS.size]
         return DefaultHttpDataSource.Factory()
             .setUserAgent(currentUa)
-            .setConnectTimeoutMs(15000)
-            .setReadTimeoutMs(30000)
+            .setConnectTimeoutMs(10000)
+            .setReadTimeoutMs(15000)
             .setAllowCrossProtocolRedirects(true)
             .setKeepPostFor302Redirects(true)
             .setDefaultRequestProperties(mapOf(
                 "Icy-MetaData" to "1",
-                "Accept" to "*/*",
-                "Connection" to "keep-alive"
+                "Accept" to "*/*"
             ))
     }
 
-    private fun startStabilityValidation(station: RadioStation) {
-        stabilityValidationJob?.cancel()
-        stabilityValidationJob = scope.launch {
-            delay(5000L) // Validação de 5 segundos de streaming contínuo sem interrupções
-            if (exoPlayer?.isPlaying == true && !userInitiatedPause) {
-                isStreamStable = true
-                retryCount = 0
-                totalAttemptCount = 0
-                streamingTimeoutJob?.cancel()
-                _errorMessage.value = null
-                android.util.Log.i(
+    private fun startBufferingWatchdog(station: RadioStation) {
+        bufferingWatchdogJob?.cancel()
+        bufferingWatchdogJob = scope.launch {
+            delay(9000L) // Watchdog: 9 segundos congelado em buffering
+            val player = exoPlayer
+            if (player?.playbackState == Player.STATE_BUFFERING && !userInitiatedPause) {
+                android.util.Log.w(
                     "RadioPlayerManager",
-                    "Streaming da rádio '${station.name}' validado e estabilizado após 5s. Mantendo ativo continuamente."
+                    "Watchdog de Buffering acionado: congelamento por > 9s em '${station.name}'. Penalizando fonte e alternando..."
                 )
+                handleStreamFailureOrTimeout(station, "Watchdog de Buffering (travamento > 9s)")
             }
         }
+    }
+
+    private fun cancelBufferingWatchdog() {
+        bufferingWatchdogJob?.cancel()
+        bufferingWatchdogJob = null
     }
 
     private fun startStreamingTimeoutWatcher(station: RadioStation) {
         streamingTimeoutJob?.cancel()
         streamingTimeoutJob = scope.launch {
-            delay(10000L) // Limite de 10 segundos para iniciar reprodução
-            if (_playbackStatus.value == RadioPlaybackStatus.BUFFERING && !userInitiatedPause) {
+            delay(12000L) // 12 segundos apenas para detecção de falha de conexão inicial
+            val player = exoPlayer
+            val isPlaying = player?.isPlaying == true
+            val isReady = player?.playbackState == Player.STATE_READY
+            if (!isPlaying && !isReady && !userInitiatedPause) {
                 android.util.Log.w(
                     "RadioPlayerManager",
-                    "Streaming timeout de 10s na emissora ${station.name}. Alternando para próxima fonte/agente..."
+                    "Falha ao conectar emissora ${station.name} em 12s. Penalizando e tentando próxima fonte..."
                 )
-                handleStreamFailureOrTimeout(station, "Tempo limite de 10s esgotado")
+                handleStreamFailureOrTimeout(station, "Falha de conexão inicial")
             }
         }
     }
@@ -508,30 +695,46 @@ class RadioPlayerManager private constructor(private val context: Context) {
     private fun handleStreamFailureOrTimeout(station: RadioStation, reason: String) {
         if (userInitiatedPause) return
 
-        stopVisualizer()
+        cancelBufferingWatchdog()
         streamingTimeoutJob?.cancel()
-        stabilityValidationJob?.cancel()
 
-        val candidates = station.getAllStreamCandidates()
+        scope.launch {
+            // Valida conectividade com pelo menos 3 servidores confiáveis (ex: example.com, google, cloudflare)
+            val hasInternet = com.example.util.NetworkConnectivityValidator.checkInternetAccess(context)
+            if (!hasInternet) {
+                android.util.Log.w(
+                    "RadioPlayerManager",
+                    "Sem acesso à internet confirmado após consultar servidores de validação. Notificando UI."
+                )
+                reportNoInternetState(station)
+                return@launch
+            }
 
-        // Se o streaming já estava estável e sofreu uma oscilação na rede, reinicia contagem para manter o streaming ativo
-        if (isStreamStable) {
-            isStreamStable = false
-            totalAttemptCount = 0
-            android.util.Log.w(
-                "RadioPlayerManager",
-                "Oscilação em stream estável de '${station.name}' ($reason). Reconectando para manter ativo..."
-            )
+            proceedStreamFallback(station, reason)
         }
+    }
 
-        // Tenta próximas fontes com agentes distintos
-        if (totalAttemptCount < 5) {
+    private fun proceedStreamFallback(station: RadioStation, reason: String) {
+        if (userInitiatedPause) return
+
+        // 1. Penalização Dinâmica: move a URL que falhou para o final da lista daquela estação
+        val candidates = station.getAllStreamCandidates()
+        val failedUrl = candidates.getOrNull(currentCandidateIndex) ?: station.streamUrl
+        val penalizedStation = station.penalizeStreamUrl(failedUrl)
+        _currentStation.value = penalizedStation
+        try {
+            com.example.data.preferences.IpodPreferencesManager.getInstance(context)
+                .addRecentStation(penalizedStation)
+        } catch (_: Exception) {}
+
+        val newCandidates = penalizedStation.getAllStreamCandidates()
+
+        // 2. Sequenciamento de fallback inteligente
+        if (totalAttemptCount < minOf(newCandidates.size + 1, 6)) {
             totalAttemptCount++
             currentUserAgentIndex = (currentUserAgentIndex + 1) % USER_AGENTS.size
-            if (candidates.size > 1) {
-                currentCandidateIndex = (currentCandidateIndex + 1) % candidates.size
-            }
-            val nextUrl = candidates[currentCandidateIndex]
+            currentCandidateIndex = (currentCandidateIndex + 1) % newCandidates.size
+            val nextUrl = newCandidates[currentCandidateIndex]
 
             val agentLabel = when (currentUserAgentIndex) {
                 0 -> "Android Chrome"
@@ -542,37 +745,242 @@ class RadioPlayerManager private constructor(private val context: Context) {
             }
             android.util.Log.w(
                 "RadioPlayerManager",
-                "Tentativa $totalAttemptCount/5 para '${station.name}' usando agente '$agentLabel' e fonte: $nextUrl ($reason)"
+                "Penalizada URL ($failedUrl). Tentativa $totalAttemptCount com fonte reserva: $nextUrl (Agente: $agentLabel) por motivo: $reason"
             )
             _playbackStatus.value = RadioPlaybackStatus.BUFFERING
-            _errorMessage.value = "Conectando fonte alternativa ($totalAttemptCount/5)..."
+            _errorMessage.value = "Alternando para fonte reserva..."
 
             reconnectJob?.cancel()
             reconnectJob = scope.launch {
-                delay(300L)
-                playStreamUrl(station, nextUrl)
+                delay(250L)
+                playStreamUrl(penalizedStation, nextUrl)
             }
             return
         }
 
-        // 5 tentativas expiradas sem sucesso
-        android.util.Log.e("RadioPlayerManager", "Todas as 5 tentativas esgotadas para a rádio ${station.name}")
+        // 3. Todas as fontes falharam: Falha remota notificada na UI e Android Auto
+        android.util.Log.e("RadioPlayerManager", "Todas as fontes falharam para a rádio ${station.name}")
+        reportRemotePlaybackFailure(penalizedStation)
+    }
+
+    private fun isNetworkError(error: PlaybackException): Boolean {
+        if (error.errorCode == PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED ||
+            error.errorCode == PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT ||
+            error.errorCode == PlaybackException.ERROR_CODE_IO_UNSPECIFIED ||
+            error.errorCode == PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS
+        ) {
+            return true
+        }
+        var cause: Throwable? = error.cause
+        while (cause != null) {
+            if (cause is java.net.UnknownHostException ||
+                cause is java.net.SocketTimeoutException ||
+                cause is java.net.ConnectException ||
+                cause is java.net.NoRouteToHostException ||
+                cause is androidx.media3.datasource.HttpDataSource.HttpDataSourceException
+            ) {
+                return true
+            }
+            cause = cause.cause
+        }
+        return false
+    }
+
+    fun handleNetworkLoss() {
+        if (userInitiatedPause) return
+        val station = _currentStation.value
+        val podcast = _currentPodcastEpisode.value
+
+        // Se estiver reproduzindo áudio local MP3, perda de internet não afeta a reprodução offline
+        if (_currentLocalAudio.value != null) return
+
+        if (station != null) {
+            reportNoInternetState(station)
+        } else if (podcast != null) {
+            reportNoInternetStateForPodcast(podcast)
+        }
+    }
+
+    fun handleNetworkRestored() {
+        if (userInitiatedPause) return
+        if (_playbackStatus.value != RadioPlaybackStatus.NO_INTERNET) return
+
+        val station = _currentStation.value
+        val podcast = _currentPodcastEpisode.value
+
+        if (station != null) {
+            android.util.Log.i("RadioPlayerManager", "Internet restabelecida. Retomando transmissão da rádio ${station.name} automaticamente.")
+            autoReconnectJob?.cancel()
+            _playbackStatus.value = RadioPlaybackStatus.BUFFERING
+            _errorMessage.value = null
+            playStation(station)
+            startLiveSessionTimer(resume = true)
+        } else if (podcast != null) {
+            android.util.Log.i("RadioPlayerManager", "Internet restabelecida. Retomando episódio de podcast ${podcast.title} automaticamente.")
+            autoReconnectJob?.cancel()
+            _playbackStatus.value = RadioPlaybackStatus.BUFFERING
+            _errorMessage.value = null
+            playPodcastEpisode(podcast, _currentPodcastShow.value, podcastQueue)
+        }
+    }
+
+    private fun reportNoInternetState(station: RadioStation) {
+        try {
+            exoPlayer?.pause()
+        } catch (_: Exception) {}
+
         releaseLocks()
+        stopVisualizer()
+        pauseLiveSessionTimer()
+        _playbackStatus.value = RadioPlaybackStatus.NO_INTERNET
+        _errorMessage.value = "VERIFIQUE A CONEXÃO COM A INTERNET"
+
+        // Atualiza MediaMetadata no Android Auto e central de notificações
+        try {
+            val radioIconUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.ic_radio_retro}")
+            val offlineMetadata = MediaMetadata.Builder()
+                .setTitle(station.name)
+                .setArtist("VERIFIQUE A CONEXÃO COM A INTERNET")
+                .setSubtitle("VERIFIQUE A CONEXÃO COM A INTERNET")
+                .setAlbumTitle("Sem conexão")
+                .setArtworkUri(radioIconUri)
+                .build()
+            exoPlayer?.playlistMetadata = offlineMetadata
+        } catch (_: Exception) {}
+
+        startAutoReconnectLoop()
+    }
+
+    private fun reportNoInternetStateForPodcast(episode: com.example.data.model.PodcastEpisode) {
+        try {
+            val currentPos = exoPlayer?.currentPosition ?: _audioPositionMs.value
+            _audioPositionMs.value = currentPos
+            com.example.data.repository.PodcastRepository.getInstance(context).savePlaybackPosition(episode.id, currentPos)
+            exoPlayer?.pause()
+        } catch (_: Exception) {}
+
+        releaseLocks()
+        stopVisualizer()
+        _playbackStatus.value = RadioPlaybackStatus.NO_INTERNET
+        _errorMessage.value = "VERIFIQUE A CONEXÃO COM A INTERNET"
+
+        // Atualiza MediaMetadata no Android Auto e notificações
+        try {
+            val podcastIconUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.ic_podcast_retro}")
+            val offlineMetadata = MediaMetadata.Builder()
+                .setTitle(episode.title)
+                .setArtist("VERIFIQUE A CONEXÃO COM A INTERNET")
+                .setSubtitle("VERIFIQUE A CONEXÃO COM A INTERNET")
+                .setAlbumTitle(episode.showTitle)
+                .setArtworkUri(podcastIconUri)
+                .build()
+            exoPlayer?.playlistMetadata = offlineMetadata
+        } catch (_: Exception) {}
+
+        startAutoReconnectLoop()
+    }
+
+    private fun startAutoReconnectLoop() {
+        autoReconnectJob?.cancel()
+        autoReconnectJob = scope.launch(Dispatchers.IO) {
+            android.util.Log.i("RadioPlayerManager", "Iniciando loop de tentativa de reconexão a cada 10s...")
+            while (isActive && _playbackStatus.value == RadioPlaybackStatus.NO_INTERNET && !userInitiatedPause) {
+                delay(10000L)
+                if (userInitiatedPause) break
+                val hasNet = NetworkConnectivityValidator.checkInternetAccess(context)
+                if (hasNet && !userInitiatedPause) {
+                    android.util.Log.i("RadioPlayerManager", "Internet detectada no retry de 10s! Retomando transmissão...")
+                    withContext(Dispatchers.Main) {
+                        handleNetworkRestored()
+                    }
+                    break
+                }
+            }
+        }
+    }
+
+    fun startLiveSessionTimer(resume: Boolean = false) {
+        liveSessionJob?.cancel()
+        if (!resume) {
+            _liveSessionDurationSeconds.value = 0L
+        }
+        liveSessionJob = scope.launch {
+            while (isActive) {
+                delay(1000L)
+                if (_playbackStatus.value == RadioPlaybackStatus.PLAYING && _currentStation.value != null) {
+                    _liveSessionDurationSeconds.value += 1L
+                }
+            }
+        }
+    }
+
+    fun pauseLiveSessionTimer() {
+        liveSessionJob?.cancel()
+        liveSessionJob = null
+    }
+
+    fun stopLiveSessionTimer() {
+        liveSessionJob?.cancel()
+        liveSessionJob = null
+        _liveSessionDurationSeconds.value = 0L
+    }
+
+    fun retryPlayback() {
+        autoReconnectJob?.cancel()
+        val station = _currentStation.value ?: return
+        _errorMessage.value = null
+        totalAttemptCount = 0
+        currentCandidateIndex = 0
+        playStation(station)
+    }
+
+    private fun reportRemotePlaybackFailure(station: RadioStation) {
+        try {
+            exoPlayer?.stop()
+            exoPlayer?.clearMediaItems()
+        } catch (_: Exception) {}
+
+        releaseLocks()
+        stopVisualizer()
         _playbackStatus.value = RadioPlaybackStatus.ERROR
-        _errorMessage.value = "Não foi possível conectar a uma fonte válida para esta rádio"
+        val errorNotice = "Impossível reproduzir no momento (falha remota)"
+        _errorMessage.value = errorNotice
+
+        // Notificar Android Auto e MediaSession para exibição limpa no painel veicular
+        try {
+            val radioIconUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.ic_radio_retro}")
+            val errorMetadata = MediaMetadata.Builder()
+                .setTitle(station.name)
+                .setArtist(errorNotice)
+                .setSubtitle(errorNotice)
+                .setAlbumTitle("Falha remota")
+                .setArtworkUri(radioIconUri)
+                .build()
+            exoPlayer?.setPlaylistMetadata(errorMetadata)
+        } catch (_: Exception) {}
     }
 
     private fun playStreamUrl(station: RadioStation, streamUrl: String) {
+        val subtitle = "${station.city} ${station.country} • ${station.primaryGenre}".trim().ifEmpty { station.name }
+        val radioIconUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.ic_radio_retro}")
         val mediaMetadata = MediaMetadata.Builder()
             .setTitle(station.name)
-            .setArtist(station.primaryGenre)
+            .setArtist(subtitle)
             .setAlbumTitle(station.country)
-            .setArtworkUri(Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}"))
+            .setArtworkUri(radioIconUri)
+            .setIsPlayable(true)
+            .build()
+
+        // LiveConfiguration: trava clock a 1.0f para eliminar micro-acelerações de buffer em streams Icecast/Triton
+        val liveConfiguration = MediaItem.LiveConfiguration.Builder()
+            .setMinPlaybackSpeed(1.0f)
+            .setMaxPlaybackSpeed(1.0f)
             .build()
 
         val mediaItem = MediaItem.Builder()
             .setMediaId(station.id)
             .setUri(streamUrl)
+            .setLiveConfiguration(liveConfiguration)
             .setMediaMetadata(mediaMetadata)
             .build()
 
@@ -584,6 +992,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
             val mediaSource = DefaultMediaSourceFactory(getHttpDataSourceFactory())
                 .createMediaSource(mediaItem)
             player.setMediaSource(mediaSource)
+            player.playlistMetadata = mediaMetadata
 
             player.prepare()
             player.playWhenReady = true
@@ -618,7 +1027,11 @@ class RadioPlayerManager private constructor(private val context: Context) {
         try {
             LocalVideoPlayerManager.getInstance(context).pause()
         } catch (_: Exception) {}
+        _activeMediaType.value = ActiveMediaType.LOCAL_AUDIO
         _currentStation.value = null
+        _currentPodcastEpisode.value = null
+        _currentPodcastShow.value = null
+        podcastQueue = emptyList()
         _currentLocalAudio.value = track
         if (queue.isNotEmpty()) {
             localAudioQueue = queue
@@ -636,7 +1049,8 @@ class RadioPlayerManager private constructor(private val context: Context) {
             .setTitle(track.title)
             .setArtist(track.artist)
             .setAlbumTitle(track.album)
-            .setArtworkUri(track.albumArtUrl?.let { Uri.parse(it) })
+            .setArtworkUri(track.albumArtUrl?.let { Uri.parse(it) } ?: Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}"))
+            .setIsPlayable(true)
             .build()
 
         val mediaItem = MediaItem.Builder()
@@ -662,14 +1076,147 @@ class RadioPlayerManager private constructor(private val context: Context) {
             player.stop()
             player.clearMediaItems()
             player.setMediaItem(mediaItem)
+            player.playlistMetadata = mediaMetadata
+            val speed = ipodPrefs.localMediaPlaybackSpeed
+            _playbackSpeed.value = speed
+            player.playbackParameters = PlaybackParameters(speed, 1.0f)
+            _currentPodcastChapters.value = emptyList()
+            _currentChapter.value = null
             player.prepare()
             player.playWhenReady = true
             startMediaService()
             startAudioProgressTracker()
             startVisualizer()
+            if (AudioRouteManager.getInstance(context).isCastingActive()) {
+                AudioRouteManager.getInstance(context).updateCastMedia()
+            }
         } catch (e: Exception) {
             _playbackStatus.value = RadioPlaybackStatus.ERROR
             _errorMessage.value = "Falha ao reproduzir: ${e.message}"
+        }
+    }
+
+    fun playPodcastEpisode(
+        episode: com.example.data.model.PodcastEpisode,
+        show: com.example.data.model.PodcastShow? = null,
+        queue: List<com.example.data.model.PodcastEpisode> = emptyList()
+    ) {
+        try {
+            LocalVideoPlayerManager.getInstance(context).pause()
+        } catch (_: Exception) {}
+        _activeMediaType.value = ActiveMediaType.PODCAST_EPISODE
+        _currentStation.value = null
+        _currentLocalAudio.value = null
+        localAudioQueue = emptyList()
+        _currentPodcastEpisode.value = episode
+        _currentPodcastShow.value = show
+        podcastQueue = if (queue.isNotEmpty()) queue else listOf(episode)
+
+        userInitiatedPause = false
+        autoReconnectJob?.cancel()
+        stopLiveSessionTimer()
+
+        val repo = com.example.data.repository.PodcastRepository.getInstance(context)
+        repo.addRecentEpisode(episode)
+        val savedPos = repo.getSavedPlaybackPosition(episode.id)
+
+        _audioDurationMs.value = episode.durationMs
+        _audioPositionMs.value = savedPos
+        _errorMessage.value = null
+        _playbackStatus.value = RadioPlaybackStatus.BUFFERING
+        rdsSimulationJob?.cancel()
+
+        // Carrega capítulos locais ou busca via Podcasting 2.0 JSON / fallback assincronamente
+        _currentPodcastChapters.value = episode.chapters
+        _currentChapter.value = null
+        scope.launch {
+            val chapters = com.example.util.PodcastChaptersExtractor.getOrFetchChapters(episode)
+            if (chapters.isNotEmpty()) {
+                _currentPodcastChapters.value = chapters
+                updateCurrentChapter(_audioPositionMs.value)
+            }
+        }
+
+        val podcastIconUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.ic_podcast_retro}")
+        val mediaMetadata = MediaMetadata.Builder()
+            .setTitle(episode.title)
+            .setArtist(episode.showTitle)
+            .setAlbumTitle(episode.publishDate.ifBlank { "Podcast" })
+            .setArtworkUri(podcastIconUri)
+            .setIsPlayable(true)
+            .build()
+
+        val mediaItem = MediaItem.Builder()
+            .setMediaId(episode.id)
+            .setUri(episode.audioUrl)
+            .setMediaMetadata(mediaMetadata)
+            .build()
+
+        _rdsInfo.value = RdsInfo(
+            programService = episode.showTitle.take(12).uppercase(),
+            radioText = "${episode.showTitle} - ${episode.title}".uppercase(),
+            hasRealRds = true,
+            programType = "[PODCAST]",
+            signalStrengthBars = 5,
+            isStereo = true,
+            hasTrafficProgram = false,
+            bitrateInfo = "Podcast Áudio Digital",
+            frequencyMhz = ""
+        )
+
+        val player = getPlayer()
+        try {
+            player.stop()
+            player.clearMediaItems()
+            player.setMediaItem(mediaItem)
+            player.playlistMetadata = mediaMetadata
+            val speed = ipodPrefs.podcastPlaybackSpeed
+            _playbackSpeed.value = speed
+            player.playbackParameters = PlaybackParameters(speed, 1.0f)
+            player.prepare()
+            if (savedPos > 0) {
+                player.seekTo(savedPos)
+            }
+            player.playWhenReady = true
+            startMediaService()
+            startAudioProgressTracker()
+            startVisualizer()
+            if (AudioRouteManager.getInstance(context).isCastingActive()) {
+                AudioRouteManager.getInstance(context).updateCastMedia()
+            }
+        } catch (e: Exception) {
+            _playbackStatus.value = RadioPlaybackStatus.ERROR
+            _errorMessage.value = "Falha ao reproduzir podcast: ${e.message}"
+        }
+    }
+
+    fun seekRelative(offsetMs: Long) {
+        val player = exoPlayer ?: return
+        val current = player.currentPosition
+        val target = (current + offsetMs).coerceIn(0L, player.duration.coerceAtLeast(0L))
+        player.seekTo(target)
+        _audioPositionMs.value = target
+        updateCurrentChapter(target)
+        _currentPodcastEpisode.value?.let { ep ->
+            com.example.data.repository.PodcastRepository.getInstance(context).savePlaybackPosition(ep.id, target)
+        }
+    }
+
+    fun nextPodcastEpisode() {
+        if (podcastQueue.isEmpty()) return
+        val current = _currentPodcastEpisode.value ?: return
+        val idx = podcastQueue.indexOfFirst { it.id == current.id }
+        if (idx in 0 until podcastQueue.size - 1) {
+            playPodcastEpisode(podcastQueue[idx + 1], _currentPodcastShow.value, podcastQueue)
+        }
+    }
+
+    fun prevPodcastEpisode() {
+        if (podcastQueue.isEmpty()) return
+        val current = _currentPodcastEpisode.value ?: return
+        val idx = podcastQueue.indexOfFirst { it.id == current.id }
+        if (idx > 0) {
+            playPodcastEpisode(podcastQueue[idx - 1], _currentPodcastShow.value, podcastQueue)
         }
     }
 
@@ -678,10 +1225,17 @@ class RadioPlayerManager private constructor(private val context: Context) {
         audioProgressJob = scope.launch {
             while (isActive) {
                 exoPlayer?.let { p ->
-                    _audioPositionMs.value = p.currentPosition.coerceAtLeast(0L)
+                    val pos = p.currentPosition.coerceAtLeast(0L)
+                    _audioPositionMs.value = pos
+                    updateCurrentChapter(pos)
                     val dur = p.duration
                     if (dur > 0) {
                         _audioDurationMs.value = dur
+                    }
+                    _currentPodcastEpisode.value?.let { ep ->
+                        if (pos > 0) {
+                            com.example.data.repository.PodcastRepository.getInstance(context).savePlaybackPosition(ep.id, pos)
+                        }
                     }
                 }
                 delay(500)
@@ -743,11 +1297,15 @@ class RadioPlayerManager private constructor(private val context: Context) {
             eq.enabled = _isEqualizerEnabled.value
             if (!eq.enabled) return
 
+            val range = try { eq.bandLevelRange } catch (_: Exception) { shortArrayOf(-1200, 1200) }
+            val minMb = if (range.isNotEmpty()) range[0].toInt() else -1200
+            val maxMb = if (range.size > 1) range[1].toInt() else 1200
+
             val numBands = eq.numberOfBands.toInt()
             val currentLevels = _equalizerBands.value
             for (i in 0 until minOf(numBands, currentLevels.size)) {
-                val mB = (currentLevels[i] * 100).toInt().coerceIn(-1500, 1500).toShort()
-                eq.setBandLevel(i.toShort(), mB)
+                val targetMb = (currentLevels[i] * 100).toInt().coerceIn(minMb, maxMb).toShort()
+                eq.setBandLevel(i.toShort(), targetMb)
             }
         } catch (e: Exception) {
             android.util.Log.w("RadioPlayerManager", "Failed to apply Equalizer levels", e)
@@ -761,10 +1319,24 @@ class RadioPlayerManager private constructor(private val context: Context) {
     }
 
     fun setEqualizerPreset(presetName: String) {
-        _equalizerPreset.value = presetName
-        eqPrefs.edit().putString("eq_preset", presetName).apply()
-        if (presetName != "Personalizado") {
-            val presetBands = EQUALIZER_PRESETS[presetName] ?: return
+        val canonicalName = when {
+            presetName.equals("Flat", ignoreCase = true) -> "Flat"
+            presetName.equals("Rock", ignoreCase = true) -> "Rock"
+            presetName.equals("Pop", ignoreCase = true) -> "Pop"
+            presetName.contains("Bass", ignoreCase = true) -> "Bass Booster"
+            presetName.contains("Voz", ignoreCase = true) || presetName.contains("Podcast", ignoreCase = true) || presetName.contains("Vocal", ignoreCase = true) -> "Voz / Podcast"
+            presetName.equals("Jazz", ignoreCase = true) -> "Jazz"
+            presetName.contains("Clássica", ignoreCase = true) || presetName.contains("Classica", ignoreCase = true) -> "Clássica"
+            presetName.contains("Eletr", ignoreCase = true) || presetName.contains("Dance", ignoreCase = true) -> "Eletrônica"
+            presetName.contains("Blues", ignoreCase = true) -> "Blues"
+            else -> "Personalizado"
+        }
+
+        _equalizerPreset.value = canonicalName
+        eqPrefs.edit().putString("eq_preset", canonicalName).apply()
+
+        if (canonicalName != "Personalizado") {
+            val presetBands = EQUALIZER_PRESETS[canonicalName] ?: listOf(0f, 0f, 0f, 0f, 0f)
             _equalizerBands.value = presetBands
             eqPrefs.edit().apply {
                 presetBands.forEachIndexed { idx, v -> putFloat("eq_band_$idx", v) }
@@ -778,11 +1350,12 @@ class RadioPlayerManager private constructor(private val context: Context) {
         if (bandIndex !in 0..4) return
         val current = _equalizerBands.value.toMutableList()
         current[bandIndex] = levelDb.coerceIn(-12f, 12f)
-        _equalizerBands.value = current
+        val updated = current.toList()
+        _equalizerBands.value = updated
         _equalizerPreset.value = "Personalizado"
         eqPrefs.edit().apply {
             putString("eq_preset", "Personalizado")
-            putFloat("eq_band_$bandIndex", current[bandIndex])
+            updated.forEachIndexed { idx, v -> putFloat("eq_band_$idx", v) }
             apply()
         }
         applyEqualizerToHardware()
@@ -801,6 +1374,10 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
 
     fun togglePlayPause() {
+        if (AudioRouteManager.getInstance(context).isCastingActive()) {
+            AudioRouteManager.getInstance(context).togglePlayPause()
+            return
+        }
         val player = exoPlayer ?: return
         if (player.isPlaying) {
             pause()
@@ -818,10 +1395,15 @@ class RadioPlayerManager private constructor(private val context: Context) {
     }
 
     fun pause() {
+        if (AudioRouteManager.getInstance(context).isCastingActive()) {
+            AudioRouteManager.getInstance(context).pause()
+        }
         userInitiatedPause = true
-        stabilityValidationJob?.cancel()
+        cancelBufferingWatchdog()
         streamingTimeoutJob?.cancel()
         reconnectJob?.cancel()
+        autoReconnectJob?.cancel()
+        pauseLiveSessionTimer()
         exoPlayer?.pause()
         _playbackStatus.value = RadioPlaybackStatus.PAUSED
         releaseLocks()
@@ -829,27 +1411,33 @@ class RadioPlayerManager private constructor(private val context: Context) {
     }
 
     fun resume() {
+        if (AudioRouteManager.getInstance(context).isCastingActive()) {
+            AudioRouteManager.getInstance(context).play()
+            return
+        }
         userInitiatedPause = false
-        isStreamStable = false
         acquireLocks()
         exoPlayer?.play()
         _playbackStatus.value = RadioPlaybackStatus.PLAYING
         startVisualizer()
         if (_currentLocalAudio.value != null) {
             startAudioProgressTracker()
+        } else if (_currentStation.value != null) {
+            startLiveSessionTimer(resume = true)
         }
         startMediaService()
-        val station = _currentStation.value
-        if (station != null) {
-            startStabilityValidation(station)
-        }
     }
 
     fun stop() {
+        if (AudioRouteManager.getInstance(context).isCastingActive()) {
+            AudioRouteManager.getInstance(context).pause()
+        }
         userInitiatedPause = true
-        stabilityValidationJob?.cancel()
+        cancelBufferingWatchdog()
         streamingTimeoutJob?.cancel()
         reconnectJob?.cancel()
+        autoReconnectJob?.cancel()
+        stopLiveSessionTimer()
         exoPlayer?.stop()
         _playbackStatus.value = RadioPlaybackStatus.IDLE
         releaseLocks()
@@ -880,11 +1468,21 @@ class RadioPlayerManager private constructor(private val context: Context) {
         _volume.value = clamped
         _isMuted.value = (clamped <= 0.01f)
         exoPlayer?.volume = clamped
+        if (AudioRouteManager.getInstance(context).isCastingActive()) {
+            AudioRouteManager.getInstance(context).setVolume(clamped)
+        }
         try {
             audioManager?.let { am ->
                 val maxVol = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
                 val targetVol = (clamped * maxVol).toInt().coerceIn(0, maxVol)
                 am.setStreamVolume(AudioManager.STREAM_MUSIC, targetVol, 0)
+            }
+        } catch (_: Exception) {}
+
+        // Salvar persistentemente na preferência para preservar a consistência de volume entre execuções
+        try {
+            if (clamped > 0.01f) {
+                com.example.data.preferences.IpodPreferencesManager.getInstance(context).volumeLevel = clamped
             }
         } catch (_: Exception) {}
     }

@@ -43,10 +43,16 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Radio
 import androidx.compose.material.icons.filled.Smartphone
+import androidx.compose.material.icons.filled.VolumeDown
+import androidx.compose.material.icons.filled.VolumeMute
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import android.text.format.DateFormat
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -341,11 +347,18 @@ fun CarModeScreen(
                                         modifier = Modifier.size(13.dp)
                                     )
                                 } else if (playbackStatus == RadioPlaybackStatus.BUFFERING) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(8.dp)
-                                            .clip(CircleShape)
-                                            .background(backlightHighlight.copy(alpha = bufferPulse))
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_hourglass_flat),
+                                        contentDescription = "Bufferizando",
+                                        tint = backlightHighlight.copy(alpha = bufferPulse),
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                } else if (playbackStatus == RadioPlaybackStatus.NO_INTERNET) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_wifi_off_alert),
+                                        contentDescription = "Sem Internet",
+                                        tint = backlightTextPrimary,
+                                        modifier = Modifier.size(13.dp)
                                     )
                                 }
                                 Spacer(modifier = Modifier.width(6.dp))
@@ -559,27 +572,41 @@ fun CarModeScreen(
                                     modifier = Modifier.weight(1f),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(3.dp))
-                                            .background(backlightHighlight.copy(alpha = 0.85f))
-                                            .padding(horizontal = 4.dp, vertical = 1.dp)
-                                    ) {
-                                        Text(
-                                            text = "RDS",
-                                            color = Color.White,
-                                            fontSize = 9.sp,
-                                            fontWeight = FontWeight.Black,
-                                            fontFamily = fontFamily
-                                        )
-                                    }
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_rds_pixel),
+                                        contentDescription = "RDS",
+                                        tint = backlightHighlight,
+                                        modifier = Modifier.size(width = 30.dp, height = 12.dp)
+                                    )
 
                                     Spacer(modifier = Modifier.width(6.dp))
 
-                                    val rdsDisplay = if (rdsInfo.radioText.isNotBlank()) {
+                                    if (playbackStatus == RadioPlaybackStatus.NO_INTERNET) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_wifi_off_alert),
+                                            contentDescription = "Sem Conexão",
+                                            tint = backlightTextPrimary,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                    } else {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_live_antenna),
+                                            contentDescription = "Ao Vivo",
+                                            tint = backlightHighlight,
+                                            modifier = Modifier.size(13.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                    }
+
+                                    val liveRdsDefault = stringResource(R.string.status_digital_rds)
+                                    val noInternetMsg = stringResource(R.string.msg_connection_error).uppercase()
+                                    val rdsDisplay = if (playbackStatus == RadioPlaybackStatus.NO_INTERNET) {
+                                        noInternetMsg
+                                    } else if (rdsInfo.radioText.isNotBlank()) {
                                         rdsInfo.radioText
                                     } else {
-                                        "Sintonizado • Transmissão Digital RDS"
+                                        liveRdsDefault
                                     }
 
                                     Text(
@@ -593,27 +620,41 @@ fun CarModeScreen(
                                     )
                                 }
 
-                                // Mini Animated VU Equalizer (5 bars)
-                                Box(
-                                    modifier = Modifier
-                                        .width(36.dp)
-                                        .height(14.dp)
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
-                                    Canvas(modifier = Modifier.fillMaxSize()) {
-                                        val bars = 5
-                                        val spacing = 2.dp.toPx()
-                                        val barWidth = (size.width - (spacing * (bars - 1))) / bars
-                                        for (i in 0 until bars) {
-                                            val amp = if (playbackStatus == RadioPlaybackStatus.PLAYING) {
-                                                visualizerAmplitudes.getOrElse(i) { 0.3f }
-                                            } else 0.1f
-                                            val barH = (size.height * amp).coerceAtLeast(2.dp.toPx())
-                                            drawRoundRect(
-                                                color = backlightHighlight,
-                                                topLeft = Offset(i * (barWidth + spacing), size.height - barH),
-                                                size = Size(barWidth, barH),
-                                                cornerRadius = CornerRadius(1.dp.toPx(), 1.dp.toPx())
-                                            )
+                                    // LCD Volume Gauge / Meter
+                                    CarLcdVolumeIndicator(
+                                        volume = volume,
+                                        onVolumeChange = onVolumeChange,
+                                        backlightTextPrimary = backlightTextPrimary,
+                                        backlightHighlight = backlightHighlight,
+                                        fontFamily = fontFamily
+                                    )
+
+                                    // Mini Animated VU Equalizer (5 bars)
+                                    Box(
+                                        modifier = Modifier
+                                            .width(28.dp)
+                                            .height(14.dp)
+                                    ) {
+                                        Canvas(modifier = Modifier.fillMaxSize()) {
+                                            val bars = 5
+                                            val spacing = 2.dp.toPx()
+                                            val barWidth = (size.width - (spacing * (bars - 1))) / bars
+                                            for (i in 0 until bars) {
+                                                val amp = if (playbackStatus == RadioPlaybackStatus.PLAYING) {
+                                                    visualizerAmplitudes.getOrElse(i) { 0.3f }
+                                                } else 0.1f
+                                                val barH = (size.height * amp).coerceAtLeast(2.dp.toPx())
+                                                drawRoundRect(
+                                                    color = backlightHighlight,
+                                                    topLeft = Offset(i * (barWidth + spacing), size.height - barH),
+                                                    size = Size(barWidth, barH),
+                                                    cornerRadius = CornerRadius(1.dp.toPx(), 1.dp.toPx())
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -810,6 +851,97 @@ private fun CarLcdStationCard(
                 fontFamily = fontFamily,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@Composable
+fun CarLcdVolumeIndicator(
+    volume: Float,
+    onVolumeChange: (Float) -> Unit,
+    backlightTextPrimary: Color,
+    backlightHighlight: Color,
+    fontFamily: FontFamily,
+    modifier: Modifier = Modifier
+) {
+    val volPercent = (volume * 100).toInt().coerceIn(0, 100)
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(3.dp),
+        modifier = modifier
+            .clip(RoundedCornerShape(3.dp))
+            .background(Color(0x33000000))
+            .border(0.8.dp, backlightHighlight.copy(alpha = 0.45f), RoundedCornerShape(3.dp))
+            .padding(horizontal = 4.dp, vertical = 2.dp)
+    ) {
+        // Step Down Button
+        Box(
+            modifier = Modifier
+                .size(15.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .clickable { onVolumeChange((volume - 0.05f).coerceAtLeast(0f)) },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "-",
+                color = backlightTextPrimary,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = fontFamily
+            )
+        }
+
+        // Speaker Icon
+        Icon(
+            imageVector = when {
+                volPercent == 0 -> Icons.Default.VolumeMute
+                volPercent < 50 -> Icons.Default.VolumeDown
+                else -> Icons.Default.VolumeUp
+            },
+            contentDescription = "Volume",
+            tint = backlightHighlight,
+            modifier = Modifier.size(12.dp)
+        )
+
+        // Segmented Matrix Level Bars (8 bars)
+        Row(horizontalArrangement = Arrangement.spacedBy(1.5.dp)) {
+            val totalBars = 8
+            val filledBars = ((volPercent / 100f) * totalBars).toInt()
+            for (i in 0 until totalBars) {
+                val isFilled = i < filledBars
+                Box(
+                    modifier = Modifier
+                        .width(2.5.dp)
+                        .height(9.dp)
+                        .background(if (isFilled) backlightHighlight else backlightTextPrimary.copy(alpha = 0.2f))
+                )
+            }
+        }
+
+        // Percentage Text
+        Text(
+            text = "$volPercent%",
+            color = backlightTextPrimary,
+            fontSize = 8.5.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = fontFamily
+        )
+
+        // Step Up Button
+        Box(
+            modifier = Modifier
+                .size(15.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .clickable { onVolumeChange((volume + 0.05f).coerceAtMost(1f)) },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "+",
+                color = backlightTextPrimary,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = fontFamily
             )
         }
     }

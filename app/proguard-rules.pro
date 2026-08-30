@@ -1,21 +1,41 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# ProGuard/R8 rules for Global RadioPod
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Preserve line numbers and source files for readable Logcat crash traces
+-keepattributes SourceFile,LineNumberTable
+-keepattributes *Annotation*
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Android Auto / Media3 Session & Player
+-keep class androidx.media3.session.** { *; }
+-keep interface androidx.media3.session.** { *; }
+-keep class androidx.media3.common.** { *; }
+-keep class androidx.media3.exoplayer.** { *; }
+-keep class androidx.media3.extractor.** { *; }
+-keep class androidx.media3.decoder.** { *; }
+-keep class androidx.media3.datasource.** { *; }
+-keep class androidx.media.app.** { *; }
+-keep class android.support.v4.media.** { *; }
+-keep class androidx.core.app.NotificationCompat** { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Android Auto / Car App Library
+-keep class androidx.car.app.** { *; }
+-keep interface androidx.car.app.** { *; }
+
+# Data Models, Room & Moshi Reflection
+-keep class com.example.data.model.** { *; }
+-keep class com.example.data.db.** { *; }
+-keep @androidx.room.Entity class * { *; }
+-keep @androidx.room.Dao interface * { *; }
+-keepclassmembers class * extends androidx.room.RoomDatabase { *; }
+
+# Moshi JSON serialization
+-keep class com.squareup.moshi.** { *; }
+-keepclassmembers class * {
+    @com.squareup.moshi.Json *;
+    @com.squareup.moshi.JsonClass *;
+}
+
+# Coroutines
+-keepclassmembers class kotlinx.coroutines.** { *; }
+
+# Keep service and receiver declarations
+-keep class com.example.service.RadioMediaService { *; }

@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-08-29 21:48:22",
+  "radio_browser_stations_fetched": 1721,
+  "radio_browser_br_stations": 1475,
+  "radio_browser_global_top_stations": 250,
+  "initial_local_stations": 611,
+  "exact_stream_url_matches": 710,
+  "name_or_brand_matches": 8,
+  "existing_stations_enriched": 530,
+  "new_working_stations_added": 933,
+  "final_catalog_total": 1544,
+  "final_brazil_stations": 1313,
+  "final_international_stations": 231
+}

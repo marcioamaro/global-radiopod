@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -123,8 +124,13 @@ fun FavoritesScreen(
                 onValueChange = { searchQuery = it },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(44.dp)
+                    .defaultMinSize(minHeight = 46.dp)
                     .testTag("favorites_search_input"),
+                textStyle = androidx.compose.material3.LocalTextStyle.current.copy(
+                    fontSize = (11.5f * fontScale).sp,
+                    lineHeight = 16.sp,
+                    platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false)
+                ),
                 placeholder = {
                     Text(
                         text = "Filtrar favoritos...",

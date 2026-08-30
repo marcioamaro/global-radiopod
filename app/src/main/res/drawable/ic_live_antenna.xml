@@ -1,0 +1,42 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Antenna Tower Mast -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M11.2,8h1.6v11h-1.6z M9,19h6v1.4h-6z M10.5,13h3v1.2h-3z M9.8,16h4.4v1.2h-4.4z" />
+    <!-- Tower Top Sphere / Emitter -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,6.5m-1.5,0a1.5,1.5 0 1,0 3,0a1.5,1.5 0 1,0 -3,0" />
+    <!-- Left Radiating Arc 1 -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.4"
+        android:strokeLineCap="round"
+        android:pathData="M8.2,3.8C6.6,5 5.5,6.8 5.5,9" />
+    <!-- Right Radiating Arc 1 -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.4"
+        android:strokeLineCap="round"
+        android:pathData="M15.8,3.8c1.6,1.2 2.7,3 2.7,5.2" />
+    <!-- Left Radiating Arc 2 (Outer) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.4"
+        android:strokeLineCap="round"
+        android:pathData="M5.5,1.8C3.3,3.4 2,6 2,9" />
+    <!-- Right Radiating Arc 2 (Outer) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.4"
+        android:strokeLineCap="round"
+        android:pathData="M18.5,1.8c2.2,1.6 3.5,4.2 3.5,7.2" />
+</vector>

@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.data.model.LocalAudioTrack
 import com.example.data.model.MediaFolder
+import com.example.ui.components.IpodInteractiveProgressBar
 
 @Composable
 fun IpodMp3FoldersScreen(
@@ -280,6 +281,9 @@ fun IpodMp3NowPlayingScreen(
     volume: Float,
     onStepVolumeUp: () -> Unit = {},
     onStepVolumeDown: () -> Unit = {},
+    onSeekTo: (Long) -> Unit = {},
+    playbackSpeed: Float = 1.0f,
+    onCycleSpeed: () -> Unit = {},
     backlightBg: Color,
     backlightTextPrimary: Color,
     backlightTextSecondary: Color,
@@ -306,13 +310,6 @@ fun IpodMp3NowPlayingScreen(
         }
         return
     }
-
-    val progress = if (durationMs > 0) (positionMs.toFloat() / durationMs.toFloat()).coerceIn(0f, 1f) else 0f
-
-    val posSecs = (positionMs / 1000).coerceAtLeast(0)
-    val posFormatted = String.format(java.util.Locale.US, "%d:%02d", posSecs / 60, posSecs % 60)
-    val durSecs = (durationMs / 1000).coerceAtLeast(0)
-    val durFormatted = String.format(java.util.Locale.US, "%d:%02d", durSecs / 60, durSecs % 60)
 
     val bwColorMatrix = remember { ColorMatrix().apply { setToSaturation(0f) } }
 
@@ -346,12 +343,32 @@ fun IpodMp3NowPlayingScreen(
                     fontFamily = fontFamily
                 )
             }
-            Text(
-                text = "MP3 / ÁUDIO",
-                color = backlightTextSecondary,
-                fontSize = (9f * fontScale).sp,
-                fontFamily = fontFamily
-            )
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (playbackSpeed != 1.0f) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(backlightTextPrimary)
+                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                    ) {
+                        Text(
+                            text = "${playbackSpeed}x",
+                            color = backlightBg,
+                            fontSize = (7.5f * fontScale).sp,
+                            fontWeight = FontWeight.Black,
+                            fontFamily = fontFamily
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(6.dp))
+                }
+                Text(
+                    text = "MP3 / ÁUDIO",
+                    color = backlightTextSecondary,
+                    fontSize = (9f * fontScale).sp,
+                    fontFamily = fontFamily
+                )
+            }
         }
 
         // Center Content: Album Artwork (or iPod Cassette fallback) + Track Details
@@ -451,42 +468,40 @@ fun IpodMp3NowPlayingScreen(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Progress bar
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(6.dp)
-                    .clip(RoundedCornerShape(3.dp))
-                    .background(backlightTextPrimary.copy(alpha = 0.25f))
+            // Progress bar interativa com suporte a click-to-seek e scrubbing
+            IpodInteractiveProgressBar(
+                positionMs = positionMs,
+                durationMs = durationMs,
+                onSeekTo = onSeekTo,
+                backlightTextPrimary = backlightTextPrimary,
+                backlightTextSecondary = backlightTextSecondary,
+                fontFamily = fontFamily
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Row de velocidade
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth(progress)
-                        .fillMaxHeight()
-                        .background(backlightTextPrimary)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(3.dp))
-
-            // Time indicators
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = posFormatted,
-                    color = backlightTextPrimary,
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = fontFamily
-                )
-                Text(
-                    text = durFormatted,
-                    color = backlightTextSecondary,
-                    fontSize = 9.sp,
-                    fontFamily = fontFamily
-                )
+                        .clip(RoundedCornerShape(3.dp))
+                        .background(if (playbackSpeed != 1.0f) backlightTextPrimary else backlightTextPrimary.copy(alpha = 0.12f))
+                        .border(1.dp, backlightTextPrimary.copy(alpha = 0.4f), RoundedCornerShape(3.dp))
+                        .clickable { onCycleSpeed() }
+                        .padding(horizontal = 10.dp, vertical = 2.5.dp)
+                ) {
+                    Text(
+                        text = "⚡ Velocidade: ${playbackSpeed}x",
+                        color = if (playbackSpeed != 1.0f) backlightBg else backlightTextPrimary,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(4.dp))

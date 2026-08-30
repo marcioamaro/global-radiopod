@@ -20,14 +20,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.SmartDisplay
+import androidx.compose.ui.res.stringResource
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import com.example.util.BackupRestoreManager
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Gamepad
@@ -53,10 +64,14 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
+import com.example.ui.RadioViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -72,6 +87,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.painterResource
+import com.example.R
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.data.model.RadioStation
@@ -152,6 +169,11 @@ fun IpodClassicScreen(
     onSelectEqualizerPreset: (String) -> Unit = {},
     equalizerBands: List<Float> = listOf(0f, 0f, 0f, 0f, 0f),
     onEqualizerBandLevelChange: (Int, Float) -> Unit = { _, _ -> },
+    availableAudioDevices: List<com.example.player.AudioRouteDevice> = emptyList(),
+    selectedAudioDevice: com.example.player.AudioRouteDevice? = null,
+    onSelectAudioDevice: (com.example.player.AudioRouteDevice) -> Unit = {},
+    onOpenNativeAudioChooser: () -> Unit = {},
+    viewModel: com.example.ui.RadioViewModel? = null,
     modifier: Modifier = Modifier
 ) {
     val chassisTheme = uiState.chassisTheme
@@ -311,7 +333,19 @@ fun IpodClassicScreen(
                         .clip(RoundedCornerShape(12.dp))
                         .background(backlightBg)
                 ) {
-                    // Header Bar
+                    // Header Bar com velocidade dinâmica
+                    val headerSpeed = if (uiState.currentScreen in listOf(
+                            IpodScreenDestination.PODCAST_NOW_PLAYING,
+                            IpodScreenDestination.MP3_NOW_PLAYING,
+                            IpodScreenDestination.VIDEO_PLAYER
+                        )) {
+                        if (uiState.currentScreen == IpodScreenDestination.VIDEO_PLAYER) {
+                            videoPlayerManager?.playbackSpeed?.collectAsState(initial = 1.0f)?.value ?: 1.0f
+                        } else {
+                            viewModel?.playbackSpeed?.collectAsState(initial = 1.0f)?.value ?: 1.0f
+                        }
+                    } else 1.0f
+
                     IpodHeader(
                         title = getScreenTitle(uiState),
                         status = playbackStatus,
@@ -321,7 +355,17 @@ fun IpodClassicScreen(
                         backlightHighlight = backlightHighlight,
                         fontFamily = fontFamily,
                         fontScale = fontScale,
-                        isBold = isBold
+                        isBold = isBold,
+                        playbackSpeed = headerSpeed,
+                        showAudioOutputIcon = uiState.currentScreen in listOf(
+                            IpodScreenDestination.NOW_PLAYING_RDS,
+                            IpodScreenDestination.MP3_NOW_PLAYING,
+                            IpodScreenDestination.PODCAST_NOW_PLAYING,
+                            IpodScreenDestination.VIDEO_PLAYER
+                        ),
+                        onAudioOutputClick = {
+                            onSelectDestination(IpodScreenDestination.AUDIO_OUTPUT_MENU)
+                        }
                     )
 
                     // Active Screen Content
@@ -336,10 +380,18 @@ fun IpodClassicScreen(
                                             1 -> onSelectDestination(IpodScreenDestination.MP3_FOLDERS)
                                             2 -> onSelectDestination(IpodScreenDestination.VIDEO_FOLDERS)
                                             3 -> onSelectDestination(IpodScreenDestination.EQUALIZER)
-                                            4 -> onSelectDestination(IpodScreenDestination.GAME_BRICK)
-                                            5 -> onToggleDisplayMode()
-                                            6 -> onSelectDestination(IpodScreenDestination.SETTINGS_THEMES)
-                                            7 -> onSelectDestination(IpodScreenDestination.ABOUT)
+                                            4 -> onSelectDestination(IpodScreenDestination.AUDIO_OUTPUT_MENU)
+                                            5 -> onSelectDestination(IpodScreenDestination.GAME_BRICK)
+                                            6 -> onToggleDisplayMode()
+                                            7 -> onSelectDestination(IpodScreenDestination.SETTINGS_THEMES)
+                                            8 -> onSelectDestination(IpodScreenDestination.ABOUT)
+                                            9 -> onSelectDestination(IpodScreenDestination.PODCASTS_MENU)
+                                            10 -> {
+                                                viewModel?.loadYouTubeVideos()
+                                                onSelectDestination(IpodScreenDestination.YOUTUBE_VIDEOS_LIST)
+                                            }
+                                            11 -> viewModel?.enterDockMode()
+                                            12 -> viewModel?.exitApplication()
                                         }
                                     },
                                     isLocalAudio = currentLocalAudio != null,
@@ -364,10 +416,23 @@ fun IpodClassicScreen(
                                             0 -> onSelectDestination(IpodScreenDestination.NOW_PLAYING_RDS)
                                             1 -> onSelectDestination(IpodScreenDestination.FAVORITES)
                                             2 -> onSelectDestination(IpodScreenDestination.RECENTS)
-                                            3 -> onSelectDestination(IpodScreenDestination.TOP_WORLD)
-                                            4 -> onSelectDestination(IpodScreenDestination.GENRES_LIST)
-                                            5 -> onSelectDestination(IpodScreenDestination.COUNTRIES_LIST)
-                                            6 -> onSelectDestination(IpodScreenDestination.SEARCH)
+                                            3 -> {
+                                                viewModel?.loadTopBrazilStations()
+                                                onSelectDestination(IpodScreenDestination.TOP_BRAZIL)
+                                            }
+                                            4 -> {
+                                                viewModel?.loadTopStations()
+                                                onSelectDestination(IpodScreenDestination.TOP_WORLD)
+                                            }
+                                            5 -> onSelectDestination(IpodScreenDestination.GENRES_LIST)
+                                            6 -> {
+                                                viewModel?.executeSearch()
+                                                onSelectDestination(IpodScreenDestination.SEARCH)
+                                            }
+                                            7 -> {
+                                                viewModel?.loadCustomStations()
+                                                onSelectDestination(IpodScreenDestination.RADIO_CUSTOM_LIST)
+                                            }
                                         }
                                     },
                                     backlightTextPrimary = backlightTextPrimary,
@@ -409,6 +474,7 @@ fun IpodClassicScreen(
                                 )
                             }
                             IpodScreenDestination.MP3_NOW_PLAYING -> {
+                                val speed = viewModel?.playbackSpeed?.collectAsState(initial = 1.0f)?.value ?: 1.0f
                                 IpodMp3NowPlayingScreen(
                                     track = currentLocalAudio,
                                     isPlaying = playbackStatus == RadioPlaybackStatus.PLAYING,
@@ -418,6 +484,9 @@ fun IpodClassicScreen(
                                     volume = volume,
                                     onStepVolumeUp = onStepVolumeUp,
                                     onStepVolumeDown = onStepVolumeDown,
+                                    onSeekTo = { posMs -> viewModel?.seekToPosition(posMs) },
+                                    playbackSpeed = speed,
+                                    onCycleSpeed = { viewModel?.cyclePlaybackSpeed(false) },
                                     backlightBg = backlightBg,
                                     backlightTextPrimary = backlightTextPrimary,
                                     backlightTextSecondary = backlightTextSecondary,
@@ -486,6 +555,7 @@ fun IpodClassicScreen(
                                 )
                             }
                             IpodScreenDestination.NOW_PLAYING_RDS -> {
+                                val liveSeconds = viewModel?.liveSessionDurationSeconds?.collectAsState(initial = 0L)?.value ?: 0L
                                 RdsDisplay(
                                     station = currentStation,
                                     rdsInfo = rdsInfo,
@@ -502,7 +572,9 @@ fun IpodClassicScreen(
                                     backlightHighlight = backlightHighlight,
                                     fontFamily = fontFamily,
                                     fontScale = fontScale,
-                                    isBold = isBold
+                                    isBold = isBold,
+                                    liveSessionDurationSeconds = liveSeconds,
+                                    onRetry = onPlayPauseClick
                                 )
                             }
                             IpodScreenDestination.FAVORITES -> {
@@ -533,6 +605,29 @@ fun IpodClassicScreen(
                                     onSearchQueryChange = onSearchQueryChange,
                                     onSelectStation = onSelectStation,
                                     onToggleFavorite = onToggleFavorite,
+                                    backlightBg = backlightBg,
+                                    backlightTextPrimary = backlightTextPrimary,
+                                    backlightTextSecondary = backlightTextSecondary,
+                                    backlightHighlight = backlightHighlight,
+                                    fontFamily = fontFamily,
+                                    fontScale = fontScale,
+                                    isBold = isBold,
+                                    onClearAll = { viewModel?.clearRecentStations() }
+                                )
+                            }
+                            IpodScreenDestination.TOP_BRAZIL -> {
+                                StationsListScreen(
+                                    title = "Top Brasil",
+                                    stations = uiState.stationsList,
+                                    currentStationId = currentStation?.id,
+                                    selectedIndex = uiState.selectedIndex,
+                                    isLoading = uiState.isLoadingList,
+                                    showSearchBar = true,
+                                    searchQuery = uiState.searchQuery,
+                                    onSearchQueryChange = onSearchQueryChange,
+                                    onSelectStation = onSelectStation,
+                                    onToggleFavorite = onToggleFavorite,
+                                    favorites = favorites,
                                     backlightBg = backlightBg,
                                     backlightTextPrimary = backlightTextPrimary,
                                     backlightTextSecondary = backlightTextSecondary,
@@ -648,8 +743,455 @@ fun IpodClassicScreen(
                                     backlightBg = backlightBg,
                                     backlightTextPrimary = backlightTextPrimary,
                                     backlightTextSecondary = backlightTextSecondary,
-                                    backlightHighlight = backlightHighlight
+                                    backlightHighlight = backlightHighlight,
+                                    availableCities = uiState.availableCities,
+                                    isLoadingCities = uiState.isLoadingCities,
+                                    fontFamily = fontFamily,
+                                    fontScale = fontScale,
+                                    isBold = isBold
                                 )
+                            }
+                            IpodScreenDestination.RADIO_CUSTOM_LIST -> {
+                                val customItems = uiState.customStations.map { it.name to it.streamUrl }
+                                IpodCustomItemsListScreen(
+                                    title = "Minhas Rádios",
+                                    items = customItems,
+                                    selectedIndex = uiState.selectedIndex,
+                                    onAddNew = { onSelectDestination(IpodScreenDestination.ADD_CUSTOM_RADIO) },
+                                    onSelectItem = { idx ->
+                                        val station = uiState.customStations.getOrNull(idx)
+                                        if (station != null) {
+                                            onSelectStation(station)
+                                        }
+                                    },
+                                    onDeleteItem = { idx ->
+                                        val station = uiState.customStations.getOrNull(idx)
+                                        if (station != null) {
+                                            viewModel?.removeCustomStation(station.id)
+                                        }
+                                    },
+                                    backlightBg = backlightBg,
+                                    backlightTextPrimary = backlightTextPrimary,
+                                    backlightTextSecondary = backlightTextSecondary,
+                                    backlightHighlight = backlightHighlight,
+                                    fontFamily = fontFamily,
+                                    fontScale = fontScale,
+                                    isBold = isBold
+                                )
+                            }
+                            IpodScreenDestination.ADD_CUSTOM_RADIO -> {
+                                IpodAddCustomUrlScreen(
+                                    target = CustomUrlTarget.RADIO,
+                                    onSaveSuccess = { name, url ->
+                                        viewModel?.addCustomStation(name, url)
+                                        onSelectDestination(IpodScreenDestination.RADIO_CUSTOM_LIST)
+                                    },
+                                    onCancel = { onSelectDestination(IpodScreenDestination.RADIO_CUSTOM_LIST) },
+                                    backlightBg = backlightBg,
+                                    backlightTextPrimary = backlightTextPrimary,
+                                    backlightTextSecondary = backlightTextSecondary,
+                                    backlightHighlight = backlightHighlight,
+                                    fontFamily = fontFamily,
+                                    fontScale = fontScale,
+                                    isBold = isBold
+                                )
+                            }
+                            IpodScreenDestination.PODCASTS_MENU -> {
+                                IpodPodcastMenuScreen(
+                                    selectedIndex = uiState.selectedIndex,
+                                    onSelectIndex = { idx ->
+                                        when (idx) {
+                                            0 -> onSelectDestination(IpodScreenDestination.PODCAST_NOW_PLAYING)
+                                            1 -> onSelectDestination(IpodScreenDestination.PODCASTS_FAVORITES)
+                                            2 -> onSelectDestination(IpodScreenDestination.PODCASTS_RECENTS)
+                                            3 -> {
+                                                viewModel?.loadPodcastTopBrazil()
+                                                onSelectDestination(IpodScreenDestination.PODCASTS_TOP_BRAZIL)
+                                            }
+                                            4 -> {
+                                                viewModel?.loadPodcastTopWorld()
+                                                onSelectDestination(IpodScreenDestination.PODCASTS_TOP_WORLD)
+                                            }
+                                            5 -> {
+                                                viewModel?.loadPodcastCountries()
+                                                onSelectDestination(IpodScreenDestination.PODCASTS_COUNTRIES)
+                                            }
+                                            6 -> onSelectDestination(IpodScreenDestination.PODCASTS_SEARCH)
+                                            7 -> {
+                                                viewModel?.loadCustomPodcasts()
+                                                onSelectDestination(IpodScreenDestination.PODCASTS_CUSTOM_LIST)
+                                            }
+                                        }
+                                    },
+                                    backlightTextPrimary = backlightTextPrimary,
+                                    backlightTextSecondary = backlightTextSecondary,
+                                    backlightHighlight = backlightHighlight,
+                                    fontFamily = fontFamily,
+                                    fontScale = fontScale,
+                                    isBold = isBold
+                                )
+                            }
+                            IpodScreenDestination.PODCASTS_TOP_BRAZIL,
+                            IpodScreenDestination.PODCASTS_TOP_WORLD,
+                            IpodScreenDestination.PODCASTS_BY_CATEGORY,
+                            IpodScreenDestination.PODCASTS_BY_COUNTRY -> {
+                                val favList = viewModel?.podcastFavorites?.collectAsState(initial = emptyList())?.value ?: emptyList()
+                                IpodPodcastShowsScreen(
+                                    title = uiState.activeCategoryName,
+                                    shows = uiState.podcastShows,
+                                    selectedIndex = uiState.selectedIndex,
+                                    onSelectShow = { show ->
+                                        viewModel?.selectPodcastShow(show)
+                                        onSelectDestination(IpodScreenDestination.PODCAST_EPISODES_LIST)
+                                    },
+                                    isFavorite = { id -> favList.any { it.id == id } },
+                                    onToggleFavorite = { show -> viewModel?.togglePodcastFavorite(show) },
+                                    isLoading = uiState.isPodcastLoading,
+                                    backlightBg = backlightBg,
+                                    backlightTextPrimary = backlightTextPrimary,
+                                    backlightTextSecondary = backlightTextSecondary,
+                                    backlightHighlight = backlightHighlight,
+                                    fontFamily = fontFamily,
+                                    fontScale = fontScale,
+                                    isBold = isBold
+                                )
+                            }
+                            IpodScreenDestination.PODCASTS_SEARCH -> {
+                                val favList = viewModel?.podcastFavorites?.collectAsState(initial = emptyList())?.value ?: emptyList()
+                                IpodPodcastSearchScreen(
+                                    searchQuery = uiState.podcastSearchQuery,
+                                    onSearchQueryChange = { q -> viewModel?.searchPodcasts(q) },
+                                    shows = uiState.podcastShows,
+                                    selectedIndex = uiState.selectedIndex,
+                                    onSelectShow = { show ->
+                                        viewModel?.selectPodcastShow(show)
+                                        onSelectDestination(IpodScreenDestination.PODCAST_EPISODES_LIST)
+                                    },
+                                    isFavorite = { id -> favList.any { it.id == id } },
+                                    onToggleFavorite = { show -> viewModel?.togglePodcastFavorite(show) },
+                                    isLoading = uiState.isPodcastLoading,
+                                    backlightBg = backlightBg,
+                                    backlightTextPrimary = backlightTextPrimary,
+                                    backlightTextSecondary = backlightTextSecondary,
+                                    backlightHighlight = backlightHighlight,
+                                    fontFamily = fontFamily,
+                                    fontScale = fontScale,
+                                    isBold = isBold
+                                )
+                            }
+                            IpodScreenDestination.PODCASTS_FAVORITES -> {
+                                val favList = viewModel?.podcastFavorites?.collectAsState(initial = emptyList())?.value ?: emptyList()
+                                IpodPodcastShowsScreen(
+                                    title = "Podcasts Favoritos",
+                                    shows = favList,
+                                    selectedIndex = uiState.selectedIndex,
+                                    onSelectShow = { show ->
+                                        viewModel?.selectPodcastShow(show)
+                                        onSelectDestination(IpodScreenDestination.PODCAST_EPISODES_LIST)
+                                    },
+                                    isFavorite = { true },
+                                    onToggleFavorite = { show -> viewModel?.togglePodcastFavorite(show) },
+                                    isLoading = false,
+                                    backlightBg = backlightBg,
+                                    backlightTextPrimary = backlightTextPrimary,
+                                    backlightTextSecondary = backlightTextSecondary,
+                                    backlightHighlight = backlightHighlight,
+                                    fontFamily = fontFamily,
+                                    fontScale = fontScale,
+                                    isBold = isBold
+                                )
+                            }
+                            IpodScreenDestination.PODCASTS_RECENTS -> {
+                                val recList = viewModel?.podcastRecents?.collectAsState(initial = emptyList())?.value ?: emptyList()
+                                val favList = viewModel?.podcastFavorites?.collectAsState(initial = emptyList())?.value ?: emptyList()
+                                IpodPodcastShowsScreen(
+                                    title = "Recentes",
+                                    shows = recList,
+                                    selectedIndex = uiState.selectedIndex,
+                                    onSelectShow = { show ->
+                                        viewModel?.selectPodcastShow(show)
+                                        onSelectDestination(IpodScreenDestination.PODCAST_EPISODES_LIST)
+                                    },
+                                    isFavorite = { id -> favList.any { it.id == id } },
+                                    onToggleFavorite = { show -> viewModel?.togglePodcastFavorite(show) },
+                                    isLoading = false,
+                                    backlightBg = backlightBg,
+                                    backlightTextPrimary = backlightTextPrimary,
+                                    backlightTextSecondary = backlightTextSecondary,
+                                    backlightHighlight = backlightHighlight,
+                                    fontFamily = fontFamily,
+                                    fontScale = fontScale,
+                                    isBold = isBold,
+                                    onClearAll = { viewModel?.clearRecentPodcasts() }
+                                )
+                            }
+                            IpodScreenDestination.PODCASTS_CATEGORIES -> {
+                                val list = uiState.podcastCategories
+                                LazyColumn(
+                                    state = rememberLazyListState(),
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(backlightBg)
+                                        .padding(horizontal = 6.dp, vertical = 3.dp),
+                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    itemsIndexed(list) { index, cat ->
+                                        val isSelected = index == uiState.selectedIndex
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(4.dp))
+                                                .background(if (isSelected) backlightHighlight else Color.Transparent)
+                                                .clickable {
+                                                    viewModel?.loadPodcastsByCategory(cat.name)
+                                                    onSelectDestination(IpodScreenDestination.PODCASTS_BY_CATEGORY)
+                                                }
+                                                .padding(horizontal = 8.dp, vertical = 5.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(
+                                                    imageVector = Icons.Default.MusicNote,
+                                                    contentDescription = null,
+                                                    tint = if (isSelected) Color.White else backlightTextPrimary,
+                                                    modifier = Modifier.size(15.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    text = cat.name,
+                                                    color = if (isSelected) Color.White else backlightTextPrimary,
+                                                    fontSize = (11.5f * fontScale).sp,
+                                                    fontWeight = if (isBold) FontWeight.Bold else FontWeight.Medium,
+                                                    fontFamily = fontFamily
+                                                )
+                                            }
+                                            Icon(
+                                                imageVector = Icons.Default.ChevronRight,
+                                                contentDescription = null,
+                                                tint = if (isSelected) Color.White else backlightTextSecondary,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            IpodScreenDestination.PODCASTS_COUNTRIES -> {
+                                val list = uiState.podcastCountries
+                                LazyColumn(
+                                    state = rememberLazyListState(),
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(backlightBg)
+                                        .padding(horizontal = 6.dp, vertical = 3.dp),
+                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    itemsIndexed(list) { index, country ->
+                                        val isSelected = index == uiState.selectedIndex
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(4.dp))
+                                                .background(if (isSelected) backlightHighlight else Color.Transparent)
+                                                .clickable {
+                                                    viewModel?.loadPodcastsByCountry(country.code, country.name)
+                                                    onSelectDestination(IpodScreenDestination.PODCASTS_BY_COUNTRY)
+                                                }
+                                                .padding(horizontal = 8.dp, vertical = 5.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                    text = country.flagEmoji,
+                                                    fontSize = 14.sp,
+                                                    modifier = Modifier.padding(end = 6.dp)
+                                                )
+                                                Text(
+                                                    text = country.name,
+                                                    color = if (isSelected) Color.White else backlightTextPrimary,
+                                                    fontSize = (11.5f * fontScale).sp,
+                                                    fontWeight = if (isBold) FontWeight.Bold else FontWeight.Medium,
+                                                    fontFamily = fontFamily
+                                                )
+                                            }
+                                            Icon(
+                                                imageVector = Icons.Default.ChevronRight,
+                                                contentDescription = null,
+                                                tint = if (isSelected) Color.White else backlightTextSecondary,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            IpodScreenDestination.PODCAST_EPISODES_LIST -> {
+                                uiState.currentPodcastShow?.let { show ->
+                                    IpodPodcastEpisodesScreen(
+                                        show = show,
+                                        episodes = uiState.podcastEpisodes,
+                                        selectedIndex = uiState.selectedIndex,
+                                        onSelectEpisode = { ep ->
+                                            viewModel?.playPodcastEpisode(ep)
+                                            onSelectDestination(IpodScreenDestination.PODCAST_NOW_PLAYING)
+                                        },
+                                        isLoading = uiState.isPodcastLoading,
+                                        backlightBg = backlightBg,
+                                        backlightTextPrimary = backlightTextPrimary,
+                                        backlightTextSecondary = backlightTextSecondary,
+                                        backlightHighlight = backlightHighlight,
+                                        fontFamily = fontFamily,
+                                        fontScale = fontScale,
+                                        isBold = isBold
+                                    )
+                                }
+                            }
+                            IpodScreenDestination.PODCAST_NOW_PLAYING -> {
+                                val currentEp = viewModel?.currentPodcastEpisode?.collectAsState(initial = null)?.value
+                                val speed = viewModel?.playbackSpeed?.collectAsState(initial = 1.0f)?.value ?: 1.0f
+                                val currentChapter = viewModel?.currentChapter?.collectAsState(initial = null)?.value
+                                val chapters = viewModel?.currentPodcastChapters?.collectAsState(initial = emptyList())?.value ?: emptyList()
+                                IpodPodcastNowPlayingScreen(
+                                    episode = currentEp,
+                                    isPlaying = playbackStatus == RadioPlaybackStatus.PLAYING,
+                                    positionMs = audioPositionMs,
+                                    durationMs = audioDurationMs,
+                                    onTogglePlayPause = onPlayPauseClick,
+                                    onSeekRelative = { delta -> viewModel?.seekRelative(delta) },
+                                    onSeekTo = { posMs -> viewModel?.seekToPosition(posMs) },
+                                    currentChapter = currentChapter,
+                                    chapters = chapters,
+                                    playbackSpeed = speed,
+                                    onCycleSpeed = { viewModel?.cyclePlaybackSpeed(true) },
+                                    onOpenChaptersList = { onSelectDestination(IpodScreenDestination.PODCAST_CHAPTERS) },
+                                    volume = volume,
+                                    onStepVolumeUp = onStepVolumeUp,
+                                    onStepVolumeDown = onStepVolumeDown,
+                                    backlightBg = backlightBg,
+                                    backlightTextPrimary = backlightTextPrimary,
+                                    backlightTextSecondary = backlightTextSecondary,
+                                    fontFamily = fontFamily,
+                                    fontScale = fontScale,
+                                    isBold = isBold,
+                                    status = playbackStatus
+                                )
+                            }
+                            IpodScreenDestination.PODCAST_CHAPTERS -> {
+                                val chapters = viewModel?.currentPodcastChapters?.collectAsState(initial = emptyList())?.value ?: emptyList()
+                                val currentChapter = viewModel?.currentChapter?.collectAsState(initial = null)?.value
+                                IpodChaptersListScreen(
+                                    chapters = chapters,
+                                    currentChapter = currentChapter,
+                                    selectedIndex = uiState.selectedIndex,
+                                    onSelectChapter = { ch ->
+                                        viewModel?.selectPodcastChapter(ch)
+                                    },
+                                    backlightBg = backlightBg,
+                                    backlightTextPrimary = backlightTextPrimary,
+                                    backlightTextSecondary = backlightTextSecondary,
+                                    backlightHighlight = backlightHighlight,
+                                    fontFamily = fontFamily,
+                                    fontScale = fontScale,
+                                    isBold = isBold
+                                )
+                            }
+                            IpodScreenDestination.PODCASTS_CUSTOM_LIST -> {
+                                val customItems = uiState.customPodcasts.map { it.title to it.feedUrl }
+                                IpodCustomItemsListScreen(
+                                    title = "Meus Podcasts",
+                                    items = customItems,
+                                    selectedIndex = uiState.selectedIndex,
+                                    onAddNew = { onSelectDestination(IpodScreenDestination.ADD_CUSTOM_PODCAST) },
+                                    onSelectItem = { idx ->
+                                        val show = uiState.customPodcasts.getOrNull(idx)
+                                        if (show != null) {
+                                            viewModel?.selectPodcastShow(show)
+                                            onSelectDestination(IpodScreenDestination.PODCAST_EPISODES_LIST)
+                                        }
+                                    },
+                                    onDeleteItem = { idx ->
+                                        val show = uiState.customPodcasts.getOrNull(idx)
+                                        if (show != null) {
+                                            viewModel?.removeCustomPodcast(show.id)
+                                        }
+                                    },
+                                    backlightBg = backlightBg,
+                                    backlightTextPrimary = backlightTextPrimary,
+                                    backlightTextSecondary = backlightTextSecondary,
+                                    backlightHighlight = backlightHighlight,
+                                    fontFamily = fontFamily,
+                                    fontScale = fontScale,
+                                    isBold = isBold
+                                )
+                            }
+                            IpodScreenDestination.ADD_CUSTOM_PODCAST -> {
+                                IpodAddCustomUrlScreen(
+                                    target = CustomUrlTarget.PODCAST,
+                                    onSaveSuccess = { name, url ->
+                                        viewModel?.addCustomPodcast(name, url)
+                                        onSelectDestination(IpodScreenDestination.PODCASTS_CUSTOM_LIST)
+                                    },
+                                    onCancel = { onSelectDestination(IpodScreenDestination.PODCASTS_CUSTOM_LIST) },
+                                    backlightBg = backlightBg,
+                                    backlightTextPrimary = backlightTextPrimary,
+                                    backlightTextSecondary = backlightTextSecondary,
+                                    backlightHighlight = backlightHighlight,
+                                    fontFamily = fontFamily,
+                                    fontScale = fontScale,
+                                    isBold = isBold
+                                )
+                            }
+                            IpodScreenDestination.YOUTUBE_VIDEOS_LIST -> {
+                                IpodYouTubeListScreen(
+                                    videos = uiState.customYouTubeVideos,
+                                    selectedIndex = uiState.selectedIndex,
+                                    onSelectAddVideo = { onSelectDestination(IpodScreenDestination.ADD_CUSTOM_YOUTUBE) },
+                                    onSelectVideo = { video ->
+                                        viewModel?.playYouTubeVideo(video)
+                                    },
+                                    onDeleteVideo = { id ->
+                                        viewModel?.removeYouTubeVideo(id)
+                                    },
+                                    backlightTextPrimary = backlightTextPrimary,
+                                    backlightTextSecondary = backlightTextSecondary,
+                                    backlightHighlight = backlightHighlight,
+                                    fontFamily = fontFamily,
+                                    fontScale = fontScale,
+                                    isBold = isBold
+                                )
+                            }
+                            IpodScreenDestination.ADD_CUSTOM_YOUTUBE -> {
+                                IpodAddYouTubeUrlScreen(
+                                    onSaveSuccess = { title, url ->
+                                        viewModel?.addYouTubeVideo(title, url)
+                                        onSelectDestination(IpodScreenDestination.YOUTUBE_VIDEOS_LIST)
+                                    },
+                                    onCancel = { onSelectDestination(IpodScreenDestination.YOUTUBE_VIDEOS_LIST) },
+                                    backlightTextPrimary = backlightTextPrimary,
+                                    backlightTextSecondary = backlightTextSecondary,
+                                    backlightHighlight = backlightHighlight,
+                                    fontFamily = fontFamily,
+                                    fontScale = fontScale,
+                                    isBold = isBold
+                                )
+                            }
+                            IpodScreenDestination.YOUTUBE_PLAYER -> {
+                                uiState.currentYouTubeVideo?.let { video ->
+                                    IpodYouTubePlayerScreen(
+                                        video = video,
+                                        onBack = { onSelectDestination(IpodScreenDestination.YOUTUBE_VIDEOS_LIST) },
+                                        onToggleFullscreen = {
+                                            val activity = context as? android.app.Activity
+                                            activity?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                                        },
+                                        backlightTextPrimary = backlightTextPrimary,
+                                        backlightTextSecondary = backlightTextSecondary,
+                                        backlightHighlight = backlightHighlight,
+                                        fontFamily = fontFamily,
+                                        fontScale = fontScale,
+                                        isBold = isBold
+                                    )
+                                }
                             }
                             IpodScreenDestination.SETTINGS_THEMES -> {
                                 IpodSettingsScreen(
@@ -670,9 +1212,11 @@ fun IpodClassicScreen(
                                     backlightTextPrimary = backlightTextPrimary,
                                     backlightTextSecondary = backlightTextSecondary,
                                     backlightHighlight = backlightHighlight,
+                                    backlightBg = backlightBg,
                                     fontFamily = fontFamily,
                                     fontScale = fontScale,
-                                    isBold = isBold
+                                    isBold = isBold,
+                                    viewModel = viewModel
                                 )
                             }
                             IpodScreenDestination.EQUALIZER -> {
@@ -692,12 +1236,31 @@ fun IpodClassicScreen(
                                     isBold = isBold
                                 )
                             }
+                            IpodScreenDestination.AUDIO_OUTPUT_MENU -> {
+                                IpodAudioOutputScreen(
+                                    devices = availableAudioDevices,
+                                    selectedDevice = selectedAudioDevice,
+                                    selectedIndex = uiState.selectedIndex,
+                                    onSelectDevice = onSelectAudioDevice,
+                                    onOpenNativeChooser = onOpenNativeAudioChooser,
+                                    backlightBg = backlightBg,
+                                    backlightTextPrimary = backlightTextPrimary,
+                                    backlightTextSecondary = backlightTextSecondary,
+                                    backlightHighlight = backlightHighlight,
+                                    fontFamily = fontFamily,
+                                    fontScale = fontScale,
+                                    isBold = isBold
+                                )
+                            }
                             IpodScreenDestination.ABOUT -> {
                                 IpodAboutScreen(
                                     backlightBg = backlightBg,
                                     backlightTextPrimary = backlightTextPrimary,
                                     backlightTextSecondary = backlightTextSecondary,
-                                    backlightHighlight = backlightHighlight
+                                    backlightHighlight = backlightHighlight,
+                                    fontFamily = fontFamily,
+                                    fontScale = fontScale,
+                                    isBold = isBold
                                 )
                             }
                         }
@@ -726,23 +1289,45 @@ fun IpodClassicScreen(
 
 private fun getScreenTitle(uiState: UiState): String {
     return when (uiState.currentScreen) {
-        IpodScreenDestination.MAIN_MENU -> "IPod Class + Radio"
+        IpodScreenDestination.MAIN_MENU -> "MediaPod + Radio / Podcast"
+        IpodScreenDestination.AUDIO_OUTPUT_MENU -> "Saída de Áudio"
         IpodScreenDestination.RADIO_MENU -> "Rádio"
         IpodScreenDestination.NOW_PLAYING_RDS -> "Agora Tocando"
         IpodScreenDestination.FAVORITES -> "Favoritos"
         IpodScreenDestination.RECENTS -> "Recentes"
-        IpodScreenDestination.TOP_WORLD -> "Top Mundial"
-        IpodScreenDestination.GENRES_LIST -> "Gêneros"
+        IpodScreenDestination.TOP_BRAZIL -> "Top Brasil (100 Melhores)"
+        IpodScreenDestination.TOP_WORLD -> "Top Mundial (100 Melhores)"
+        IpodScreenDestination.GENRES_LIST -> "Gêneros Musicais"
         IpodScreenDestination.STATIONS_BY_GENRE -> uiState.activeGenre?.name ?: "Gênero"
-        IpodScreenDestination.COUNTRIES_LIST -> "Países & Regiões"
+        IpodScreenDestination.COUNTRIES_LIST -> "Países"
         IpodScreenDestination.STATIONS_BY_COUNTRY -> uiState.activeCountry?.name ?: "País"
-        IpodScreenDestination.SEARCH -> "Busca Mundial"
+        IpodScreenDestination.SEARCH -> "Busca de Emissoras"
+        IpodScreenDestination.RADIO_CUSTOM_LIST -> "Minhas Rádios"
+        IpodScreenDestination.ADD_CUSTOM_RADIO -> "Adicionar Rádio"
+        IpodScreenDestination.PODCASTS_MENU -> "Podcasts"
+        IpodScreenDestination.PODCASTS_FAVORITES -> "Podcasts Favoritos"
+        IpodScreenDestination.PODCASTS_RECENTS -> "Recentes (Podcasts)"
+        IpodScreenDestination.PODCASTS_TOP_BRAZIL -> "Top Brasil (Podcasts)"
+        IpodScreenDestination.PODCASTS_TOP_WORLD -> "Top Mundial (Podcasts)"
+        IpodScreenDestination.PODCASTS_CATEGORIES -> "Categorias de Podcasts"
+        IpodScreenDestination.PODCASTS_BY_CATEGORY -> uiState.activeCategoryName
+        IpodScreenDestination.PODCASTS_COUNTRIES -> "Países (Podcasts)"
+        IpodScreenDestination.PODCASTS_BY_COUNTRY -> uiState.activeCategoryName
+        IpodScreenDestination.PODCASTS_SEARCH -> "Buscar Podcasts"
+        IpodScreenDestination.PODCASTS_CUSTOM_LIST -> "Meus Podcasts"
+        IpodScreenDestination.ADD_CUSTOM_PODCAST -> "Adicionar Podcast"
+        IpodScreenDestination.PODCAST_EPISODES_LIST -> uiState.currentPodcastShow?.title ?: "Episódios"
+        IpodScreenDestination.PODCAST_NOW_PLAYING -> "Agora Tocando (Podcast)"
+        IpodScreenDestination.PODCAST_CHAPTERS -> "Capítulos do Podcast"
         IpodScreenDestination.MP3_FOLDERS -> "Pastas de Músicas"
         IpodScreenDestination.MP3_TRACKS_LIST -> uiState.currentAudioFolder?.name ?: "Músicas"
         IpodScreenDestination.MP3_NOW_PLAYING -> "Agora Tocando (MP3)"
         IpodScreenDestination.VIDEO_FOLDERS -> "Pastas de Vídeos"
         IpodScreenDestination.VIDEO_LIST -> uiState.currentVideoFolder?.name ?: "Vídeos"
         IpodScreenDestination.VIDEO_PLAYER -> "Vídeo Player"
+        IpodScreenDestination.YOUTUBE_VIDEOS_LIST -> "Vídeos no YouTube"
+        IpodScreenDestination.ADD_CUSTOM_YOUTUBE -> "Adicionar Vídeo YouTube"
+        IpodScreenDestination.YOUTUBE_PLAYER -> uiState.currentYouTubeVideo?.title ?: "YouTube Player"
         IpodScreenDestination.EQUALIZER -> "Equalizador"
         IpodScreenDestination.GAME_BRICK -> "Brick Game"
         IpodScreenDestination.SETTINGS_THEMES -> "Configurações"
@@ -766,10 +1351,11 @@ fun IpodClassicRadioMenuScreen(
             "Agora Tocando" to Icons.Default.PlayArrow,
             "Rádios Favoritas" to Icons.Default.Favorite,
             "Recentes" to Icons.Default.History,
-            "Top Mundial" to Icons.Default.Public,
+            "Top Brasil (100 Melhores)" to Icons.Default.Public,
+            "Top Mundial (100 Melhores)" to Icons.Default.Public,
             "Gêneros Musicais" to Icons.Default.MusicNote,
-            "Países & Cidades" to Icons.Default.LocationOn,
-            "Buscar Estação" to Icons.Default.Search
+            "Buscar Estação" to Icons.Default.Search,
+            "Minhas Rádios" to Icons.Default.Radio
         )
     }
 
@@ -815,9 +1401,10 @@ fun IpodClassicRadioMenuScreen(
                         text = title,
                         color = if (isSelected) Color.White else backlightTextPrimary,
                         fontSize = (12f * fontScale).sp,
+                        lineHeight = (14.5f * fontScale).sp,
                         fontWeight = if (isSelected || isBold) FontWeight.Black else FontWeight.Bold,
                         fontFamily = fontFamily,
-                        maxLines = 1,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
@@ -853,7 +1440,6 @@ private fun IpodMainMenuSplitView(
         "Recentes" to Icons.Default.History,
         "Top Mundial" to Icons.Default.Public,
         "Gêneros Musicais" to Icons.Default.MusicNote,
-        "Países & Cidades" to Icons.Default.LocationOn,
         "Buscar Estação" to Icons.Default.Search,
         "Brick Game" to Icons.Default.Gamepad,
         "Configurações" to Icons.Default.Settings,
@@ -896,9 +1482,10 @@ private fun IpodMainMenuSplitView(
                             text = title,
                             color = if (isSelected) Color.White else backlightTextPrimary,
                             fontSize = (11.5f * fontScale).sp,
+                            lineHeight = (13.5f * fontScale).sp,
                             fontWeight = if (isSelected || isBold) FontWeight.Black else FontWeight.Bold,
                             fontFamily = fontFamily,
-                            maxLines = 1,
+                            maxLines = 2,
                             overflow = TextOverflow.Ellipsis
                         )
                     }
@@ -937,12 +1524,21 @@ private fun IpodMainMenuSplitView(
                     .border(1.dp, backlightHighlight, RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Radio,
-                    contentDescription = null,
-                    tint = backlightTextPrimary,
-                    modifier = Modifier.size(38.dp)
-                )
+                if (playbackStatus == RadioPlaybackStatus.NO_INTERNET) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_wifi_off_alert),
+                        contentDescription = "Sem Internet",
+                        tint = backlightTextPrimary,
+                        modifier = Modifier.size(38.dp)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Radio,
+                        contentDescription = null,
+                        tint = backlightTextPrimary,
+                        modifier = Modifier.size(38.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -957,8 +1553,16 @@ private fun IpodMainMenuSplitView(
                 overflow = TextOverflow.Ellipsis
             )
 
+            val liveText = stringResource(R.string.status_live)
+            val bufferingText = stringResource(R.string.status_buffering)
+            val noInternetText = stringResource(R.string.msg_connection_error).uppercase()
             Text(
-                text = if (playbackStatus == RadioPlaybackStatus.PLAYING) "AO VIVO • ${currentStation?.displayFrequency ?: ""}" else "Pronto para tocar",
+                text = when (playbackStatus) {
+                    RadioPlaybackStatus.NO_INTERNET -> noInternetText
+                    RadioPlaybackStatus.PLAYING -> "$liveText • ${currentStation?.displayFrequency ?: ""}"
+                    RadioPlaybackStatus.BUFFERING -> bufferingText
+                    else -> "$liveText • ${currentStation?.displayFrequency ?: ""}"
+                },
                 color = backlightTextSecondary,
                 fontSize = (9f * fontScale).sp,
                 fontFamily = fontFamily,
@@ -1002,8 +1606,13 @@ private fun IpodGenresSplitView(
                 onValueChange = { searchQuery = it },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(42.dp)
+                    .defaultMinSize(minHeight = 46.dp)
                     .padding(horizontal = 4.dp, vertical = 2.dp),
+                textStyle = LocalTextStyle.current.copy(
+                    fontSize = 11.sp,
+                    lineHeight = 16.sp,
+                    platformStyle = PlatformTextStyle(includeFontPadding = false)
+                ),
                 placeholder = {
                     Text(
                         text = "Filtrar gêneros...",
@@ -1164,8 +1773,13 @@ private fun IpodCountriesSplitView(
                 onValueChange = { searchQuery = it },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(42.dp)
+                    .defaultMinSize(minHeight = 46.dp)
                     .padding(horizontal = 4.dp, vertical = 2.dp),
+                textStyle = LocalTextStyle.current.copy(
+                    fontSize = 11.sp,
+                    lineHeight = 16.sp,
+                    platformStyle = PlatformTextStyle(includeFontPadding = false)
+                ),
                 placeholder = {
                     Text(
                         text = "Filtrar países...",
@@ -1231,15 +1845,19 @@ private fun IpodCountriesSplitView(
                                     .border(0.8.dp, backlightTextPrimary.copy(alpha = 0.4f), RoundedCornerShape(2.dp)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                AsyncImage(
-                                    model = "https://flagcdn.com/w80/${country.code.lowercase()}.png",
-                                    contentDescription = country.name,
-                                    contentScale = ContentScale.Crop,
-                                    colorFilter = androidx.compose.ui.graphics.ColorFilter.colorMatrix(
-                                        androidx.compose.ui.graphics.ColorMatrix().apply { setToSaturation(0f) }
-                                    ),
-                                    modifier = Modifier.fillMaxSize()
-                                )
+                                if (country.code.equals("ALL", ignoreCase = true)) {
+                                    Text(text = "🌐", fontSize = 10.sp)
+                                } else {
+                                    AsyncImage(
+                                        model = "https://flagcdn.com/w80/${country.code.lowercase()}.png",
+                                        contentDescription = country.name,
+                                        contentScale = ContentScale.Crop,
+                                        colorFilter = androidx.compose.ui.graphics.ColorFilter.colorMatrix(
+                                            androidx.compose.ui.graphics.ColorMatrix().apply { setToSaturation(0f) }
+                                        ),
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
                             }
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
@@ -1343,11 +1961,55 @@ private fun IpodSettingsScreen(
     backlightTextPrimary: Color,
     backlightTextSecondary: Color,
     backlightHighlight: Color,
+    backlightBg: Color = Color.Black,
     fontFamily: FontFamily = FontFamily.Monospace,
     fontScale: Float = 1.0f,
-    isBold: Boolean = true
+    isBold: Boolean = true,
+    viewModel: RadioViewModel? = null
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    var backupStatusMessage by remember { mutableStateOf<String?>(null) }
+    var isBackupError by remember { mutableStateOf(false) }
+    var showBackupRestoreSuccessDialog by remember { mutableStateOf(false) }
+
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/octet-stream")
+    ) { uri ->
+        if (uri != null) {
+            coroutineScope.launch {
+                val success = BackupRestoreManager.exportBackupToUri(context, uri)
+                if (success) {
+                    backupStatusMessage = "Backup criptografado exportado com sucesso!"
+                    isBackupError = false
+                } else {
+                    backupStatusMessage = "Erro ao exportar arquivo de backup."
+                    isBackupError = true
+                }
+            }
+        }
+    }
+
+    val restoreLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            coroutineScope.launch {
+                val result = BackupRestoreManager.restoreBackupFromUri(context, uri)
+                when (result) {
+                    is BackupRestoreManager.RestoreResult.Success -> {
+                        showBackupRestoreSuccessDialog = true
+                        backupStatusMessage = null
+                        isBackupError = false
+                    }
+                    is BackupRestoreManager.RestoreResult.Error -> {
+                        backupStatusMessage = result.message
+                        isBackupError = true
+                    }
+                }
+            }
+        }
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -1857,6 +2519,342 @@ private fun IpodSettingsScreen(
                 )
             }
         }
+
+        // --- 8. MODO DOCK (CABECEIRA / NIGHTSTAND) ---
+        item {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "MODO DOCK (CABECEIRA / NIGHTSTAND)",
+                color = backlightTextSecondary,
+                fontSize = (10f * fontScale).sp,
+                fontWeight = FontWeight.Black,
+                fontFamily = fontFamily
+            )
+        }
+
+        // Escala de Tamanho da Fonte da Hora: 100%, 150%, 200%, 250%
+        item {
+            val prefs = remember { com.example.data.preferences.IpodPreferencesManager.getInstance(context) }
+            val currentScale = uiState.dockClockScale
+            Text(
+                text = "Tamanho da Fonte da Hora:",
+                color = backlightTextPrimary,
+                fontSize = (10f * fontScale).sp,
+                fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+                fontFamily = fontFamily
+            )
+            Spacer(modifier = Modifier.height(3.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                com.example.data.preferences.DockClockScale.values().forEach { scale ->
+                    val isSelected = currentScale == scale
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(if (isSelected) backlightHighlight else Color(0x22000000))
+                            .clickable {
+                                prefs.dockClockScale = scale
+                                viewModel?.setDockClockScale(scale)
+                            }
+                            .padding(vertical = 6.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = scale.displayName.replace(" (Padrão)", ""),
+                            color = if (isSelected) Color.White else backlightTextPrimary,
+                            fontSize = 10.sp,
+                            fontWeight = if (isSelected || isBold) FontWeight.Black else FontWeight.Bold,
+                            fontFamily = fontFamily
+                        )
+                    }
+                }
+            }
+        }
+
+        // Toggle Exibir Segundos
+        item {
+            val prefs = remember { com.example.data.preferences.IpodPreferencesManager.getInstance(context) }
+            val showSecs = uiState.dockShowSeconds
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0x33000000))
+                    .clickable {
+                        val next = !showSecs
+                        prefs.dockShowSeconds = next
+                        viewModel?.setDockShowSeconds(next)
+                    }
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Exibir Segundos (:ss)",
+                        color = backlightTextPrimary,
+                        fontSize = (10.5f * fontScale).sp,
+                        fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+                        fontFamily = fontFamily
+                    )
+                    Text(
+                        text = "Exibe contagem contínua a 50% da altura da hora",
+                        color = backlightTextSecondary,
+                        fontSize = 9.sp,
+                        fontFamily = fontFamily
+                    )
+                }
+                Text(
+                    text = if (showSecs) "✓ ATIVADO" else "DESATIVADO",
+                    color = if (showSecs) backlightHighlight else backlightTextSecondary,
+                    fontSize = 9.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = fontFamily
+                )
+            }
+        }
+
+        // --- BACKUP & RESTAURAÇÃO CRIPTOGRAFADOS (AES-256-GCM) ---
+        item {
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = "BACKUP CRIPTOGRAFADO (AES-256-GCM)",
+                color = backlightTextSecondary,
+                fontSize = (10f * fontScale).sp,
+                fontWeight = FontWeight.Black,
+                fontFamily = fontFamily
+            )
+        }
+
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0x28000000))
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = "Exporte ou restaure todas as suas preferências, favoritos, histórico recente, podcasts e configurações do dock em um arquivo com criptografia de ponta a ponta (AES-256-GCM) exclusivo do app.",
+                    color = backlightTextPrimary,
+                    fontSize = (9f * fontScale).sp,
+                    fontFamily = fontFamily
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    // Botão Exportar
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(backlightHighlight.copy(alpha = 0.85f))
+                            .clickable {
+                                val timestamp = java.text.SimpleDateFormat("yyyy_MM_dd_HHmmss", java.util.Locale.US).format(java.util.Date())
+                                exportLauncher.launch("Backup_PreferenciasMediaPod_$timestamp.enc")
+                            }
+                            .padding(vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Exportar Backup",
+                            color = Color.White,
+                            fontSize = (9.5f * fontScale).sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily
+                        )
+                    }
+
+                    // Botão Restaurar
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(backlightTextPrimary.copy(alpha = 0.18f))
+                            .clickable {
+                                restoreLauncher.launch(arrayOf("application/octet-stream", "*/*"))
+                            }
+                            .padding(vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Restaurar Backup",
+                            color = backlightTextPrimary,
+                            fontSize = (9.5f * fontScale).sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily
+                        )
+                    }
+                }
+
+                if (backupStatusMessage != null) {
+                    Text(
+                        text = backupStatusMessage!!,
+                        color = if (isBackupError) Color(0xFFDC2626) else backlightHighlight,
+                        fontSize = (9f * fontScale).sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily
+                    )
+                }
+            }
+        }
+
+        // --- GERENCIAMENTO DE HISTÓRICO (LIMPAR RECENTES) ---
+        item {
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = "GERENCIAMENTO DE HISTÓRICO",
+                color = backlightTextSecondary,
+                fontSize = (10f * fontScale).sp,
+                fontWeight = FontWeight.Black,
+                fontFamily = fontFamily
+            )
+        }
+
+        item {
+            var clearHistoryMsg by remember { mutableStateOf<String?>(null) }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0x28000000))
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = "Limpe seu histórico de emissoras e episódios escutados recentemente para liberar memória e manter sua lista organizada.",
+                    color = backlightTextPrimary,
+                    fontSize = (9f * fontScale).sp,
+                    fontFamily = fontFamily
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    // Limpar Rádios Recentes
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color(0x33000000))
+                            .border(0.8.dp, backlightHighlight.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                            .clickable {
+                                viewModel?.clearRecentStations()
+                                clearHistoryMsg = "Rádios recentes limpas com sucesso!"
+                            }
+                            .padding(vertical = 7.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Limpar Rádios",
+                            color = backlightTextPrimary,
+                            fontSize = (9f * fontScale).sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily
+                        )
+                    }
+
+                    // Limpar Podcasts Recentes
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color(0x33000000))
+                            .border(0.8.dp, backlightHighlight.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                            .clickable {
+                                viewModel?.clearRecentPodcasts()
+                                clearHistoryMsg = "Podcasts recentes limpos com sucesso!"
+                            }
+                            .padding(vertical = 7.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Limpar Podcasts",
+                            color = backlightTextPrimary,
+                            fontSize = (9f * fontScale).sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily
+                        )
+                    }
+                }
+
+                // Limpar Tudo
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(backlightHighlight.copy(alpha = 0.75f))
+                        .clickable {
+                            viewModel?.clearAllRecents()
+                            clearHistoryMsg = "Todo o histórico de recentes foi limpo!"
+                        }
+                        .padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Limpar Todos os Recentes",
+                        color = Color.White,
+                        fontSize = (9.5f * fontScale).sp,
+                        fontWeight = FontWeight.Black,
+                        fontFamily = fontFamily
+                    )
+                }
+
+                if (clearHistoryMsg != null) {
+                    Text(
+                        text = clearHistoryMsg!!,
+                        color = backlightHighlight,
+                        fontSize = (9f * fontScale).sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily
+                    )
+                }
+            }
+        }
+    }
+
+    if (showBackupRestoreSuccessDialog) {
+        AlertDialog(
+            onDismissRequest = { /* Não fecha sem reiniciar */ },
+            title = {
+                Text(
+                    text = stringResource(R.string.dialog_restart_title),
+                    color = backlightTextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = fontFamily
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.dialog_backup_success_msg),
+                    color = backlightTextSecondary,
+                    fontFamily = fontFamily,
+                    fontSize = 12.sp
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showBackupRestoreSuccessDialog = false
+                    com.example.util.AppRestartHelper.restartApp(context)
+                }) {
+                    Text(
+                        text = stringResource(R.string.btn_ok),
+                        color = backlightHighlight,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily
+                    )
+                }
+            },
+            containerColor = backlightBg,
+            shape = RoundedCornerShape(8.dp)
+        )
     }
 }
 
@@ -1865,46 +2863,49 @@ private fun IpodAboutScreen(
     backlightBg: Color,
     backlightTextPrimary: Color,
     backlightTextSecondary: Color,
-    backlightHighlight: Color
+    backlightHighlight: Color,
+    fontFamily: FontFamily = FontFamily.Monospace,
+    fontScale: Float = 1.0f,
+    isBold: Boolean = true
 ) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 10.dp, vertical = 6.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
+                    .clip(RoundedCornerShape(8.dp))
                     .background(Color(0x33000000))
-                    .border(1.5.dp, backlightHighlight.copy(alpha = 0.6f), RoundedCornerShape(10.dp))
-                    .padding(12.dp),
+                    .border(1.2.dp, backlightHighlight.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
+                    .padding(10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Icon(
                     imageVector = Icons.Default.Radio,
                     contentDescription = null,
                     tint = backlightHighlight,
-                    modifier = Modifier.size(38.dp)
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = "IPod Class + Radio",
-                    color = backlightTextPrimary,
-                    fontSize = 26.sp,
-                    fontWeight = FontWeight.Black,
-                    fontFamily = FontFamily.Monospace,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    modifier = Modifier.size(30.dp)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Versão 24 RC • Estabilidade Contínua de Streaming",
+                    text = "MediaPod + Radio / Podcast",
+                    color = backlightTextPrimary,
+                    fontSize = (15f * fontScale).sp,
+                    fontWeight = FontWeight.Black,
+                    fontFamily = fontFamily,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Versão 30.0 • i18n & Global RadioPod",
                     color = backlightHighlight,
-                    fontSize = 19.sp,
+                    fontSize = (11.5f * fontScale).sp,
                     fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Monospace,
+                    fontFamily = fontFamily,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
             }
@@ -1914,10 +2915,10 @@ private fun IpodAboutScreen(
             Text(
                 text = "INFORMAÇÕES DO AUTOR",
                 color = backlightTextSecondary,
-                fontSize = 19.sp,
+                fontSize = (11f * fontScale).sp,
                 fontWeight = FontWeight.Black,
-                fontFamily = FontFamily.Monospace,
-                letterSpacing = 1.sp
+                fontFamily = fontFamily,
+                letterSpacing = 0.8.sp
             )
         }
 
@@ -1925,23 +2926,25 @@ private fun IpodAboutScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(6.dp))
                     .background(Color(0x28000000))
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(10.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Column {
                     Text(
                         text = "Autor:",
                         color = backlightTextSecondary,
-                        fontSize = 19.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = (10f * fontScale).sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily
                     )
                     Text(
                         text = "Márcio Amaro",
                         color = backlightTextPrimary,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Black
+                        fontSize = (13f * fontScale).sp,
+                        fontWeight = FontWeight.Black,
+                        fontFamily = fontFamily
                     )
                 }
 
@@ -1956,15 +2959,16 @@ private fun IpodAboutScreen(
                     Text(
                         text = "E-mail:",
                         color = backlightTextSecondary,
-                        fontSize = 19.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = (10f * fontScale).sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily
                     )
                     Text(
                         text = "marcio.amaro@gmail.com",
                         color = backlightHighlight,
-                        fontSize = 21.sp,
+                        fontSize = (12f * fontScale).sp,
                         fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
+                        fontFamily = fontFamily
                     )
                 }
 
@@ -1979,14 +2983,16 @@ private fun IpodAboutScreen(
                     Text(
                         text = "Localização:",
                         color = backlightTextSecondary,
-                        fontSize = 19.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = (10f * fontScale).sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily
                     )
                     Text(
                         text = "Araras - SP / Brasil",
                         color = backlightTextPrimary,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Black
+                        fontSize = (13f * fontScale).sp,
+                        fontWeight = FontWeight.Black,
+                        fontFamily = fontFamily
                     )
                 }
             }
@@ -1996,10 +3002,10 @@ private fun IpodAboutScreen(
             Text(
                 text = "ESPECIFICAÇÕES DO SISTEMA",
                 color = backlightTextSecondary,
-                fontSize = 19.sp,
+                fontSize = (11f * fontScale).sp,
                 fontWeight = FontWeight.Black,
-                fontFamily = FontFamily.Monospace,
-                letterSpacing = 1.sp
+                fontFamily = fontFamily,
+                letterSpacing = 0.8.sp
             )
         }
 
@@ -2007,23 +3013,25 @@ private fun IpodAboutScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(6.dp))
                     .background(Color(0x28000000))
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(10.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Column {
                     Text(
                         text = "Controle:",
                         color = backlightTextSecondary,
-                        fontSize = 19.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = (10f * fontScale).sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily
                     )
                     Text(
                         text = "SlideCircle Click Háptica",
                         color = backlightTextPrimary,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Black
+                        fontSize = (12.5f * fontScale).sp,
+                        fontWeight = FontWeight.Black,
+                        fontFamily = fontFamily
                     )
                 }
 
@@ -2038,14 +3046,16 @@ private fun IpodAboutScreen(
                     Text(
                         text = "Decodificador:",
                         color = backlightTextSecondary,
-                        fontSize = 19.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = (10f * fontScale).sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily
                     )
                     Text(
                         text = "RDS / Radiotext (RT+)",
                         color = backlightTextPrimary,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Black
+                        fontSize = (12.5f * fontScale).sp,
+                        fontWeight = FontWeight.Black,
+                        fontFamily = fontFamily
                     )
                 }
 
@@ -2060,14 +3070,16 @@ private fun IpodAboutScreen(
                     Text(
                         text = "Integração Veicular:",
                         color = backlightTextSecondary,
-                        fontSize = 19.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = (10f * fontScale).sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily
                     )
                     Text(
                         text = "Modo Carro & Android Auto",
                         color = backlightTextPrimary,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Black
+                        fontSize = (12.5f * fontScale).sp,
+                        fontWeight = FontWeight.Black,
+                        fontFamily = fontFamily
                     )
                 }
 
@@ -2082,15 +3094,16 @@ private fun IpodAboutScreen(
                     Text(
                         text = "Versão Atual:",
                         color = backlightTextSecondary,
-                        fontSize = 19.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = (10f * fontScale).sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily
                     )
                     Text(
-                        text = "Versão 20 Beta",
+                        text = "Versão 30.0",
                         color = backlightHighlight,
-                        fontSize = 25.sp,
+                        fontSize = (13f * fontScale).sp,
                         fontWeight = FontWeight.Black,
-                        fontFamily = FontFamily.Monospace
+                        fontFamily = fontFamily
                     )
                 }
             }
@@ -2109,6 +3122,8 @@ fun IpodSearchScreen(
     selectedGenreTag: String?,
     selectedStateCode: String? = null,
     selectedCity: String? = null,
+    availableCities: List<String> = emptyList(),
+    isLoadingCities: Boolean = false,
     onSearchQueryChange: (String) -> Unit,
     onSearchCountryChange: (String) -> Unit,
     onSearchGenreChange: (String) -> Unit,
@@ -2121,352 +3136,537 @@ fun IpodSearchScreen(
     backlightTextPrimary: Color,
     backlightTextSecondary: Color,
     backlightHighlight: Color,
+    fontFamily: FontFamily = FontFamily.Monospace,
+    fontScale: Float = 1.0f,
+    isBold: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    val displayedStations = remember(stations, searchQuery, selectedCountryCode, selectedGenreTag, selectedStateCode, selectedCity) {
+    val isBrazil = selectedCountryCode?.equals("BR", ignoreCase = true) == true
+
+    var isCitySelectorOpen by remember { mutableStateOf(false) }
+    var cityFilterQuery by remember { mutableStateOf("") }
+
+    val displayedStations = remember(stations, searchQuery, selectedCountryCode, selectedGenreTag, selectedStateCode, selectedCity, isBrazil) {
         var list = stations
         if (selectedCountryCode != null && selectedCountryCode.isNotBlank() && !selectedCountryCode.equals("ALL", ignoreCase = true)) {
-            list = list.filter { it.countryCode.equals(selectedCountryCode, ignoreCase = true) }
+            if (isBrazil) {
+                list = list.filter { it.countryCode.equals("BR", ignoreCase = true) || it.country.contains("Brasil", ignoreCase = true) }
+            } else {
+                list = list.filter { it.countryCode.equals(selectedCountryCode, ignoreCase = true) }
+            }
         }
         if (selectedGenreTag != null && selectedGenreTag.isNotBlank() && !selectedGenreTag.equals("ALL", ignoreCase = true)) {
-            list = list.filter {
-                it.tags.contains(selectedGenreTag, ignoreCase = true) ||
-                it.primaryGenre.contains(selectedGenreTag, ignoreCase = true)
-            }
+            list = list.filter { com.example.util.RadioSearchEngine.matchesGenre(it, selectedGenreTag) }
         }
-        if (selectedStateCode != null && selectedStateCode.isNotBlank() && !selectedStateCode.equals("ALL", ignoreCase = true)) {
-            val st = selectedStateCode.trim().lowercase()
-            list = list.filter {
-                it.state.lowercase().contains(st) ||
-                it.tags.lowercase().contains(st)
+        // Filtro de Estado e Cidade aplicados EXCLUSIVAMENTE quando o país é o Brasil
+        if (isBrazil) {
+            if (selectedStateCode != null && selectedStateCode.isNotBlank() && !selectedStateCode.equals("ALL", ignoreCase = true)) {
+                list = list.filter { com.example.util.RadioSearchEngine.matchesUf(it, selectedStateCode) }
             }
-        }
-        if (selectedCity != null && selectedCity.isNotBlank() && !selectedCity.equals("ALL", ignoreCase = true)) {
-            val c = selectedCity.trim().lowercase()
-            list = list.filter {
-                it.city.lowercase().contains(c) ||
-                it.state.lowercase().contains(c) ||
-                it.name.lowercase().contains(c) ||
-                it.tags.lowercase().contains(c)
+            if (selectedCity != null && selectedCity.isNotBlank() && !selectedCity.equals("ALL", ignoreCase = true)) {
+                val c = com.example.util.RadioSearchEngine.normalize(selectedCity)
+                list = list.filter {
+                    com.example.util.RadioSearchEngine.normalize(it.city).contains(c) ||
+                    com.example.util.RadioSearchEngine.normalize(it.name).contains(c)
+                }
             }
         }
         if (searchQuery.isNotBlank()) {
-            val q = searchQuery.trim().lowercase()
-            list = list.filter {
-                it.name.lowercase().contains(q) ||
-                it.country.lowercase().contains(q) ||
-                it.city.lowercase().contains(q) ||
-                it.state.lowercase().contains(q) ||
-                it.primaryGenre.lowercase().contains(q) ||
-                it.tags.lowercase().contains(q)
-            }
+            list = list.filter { com.example.util.RadioSearchEngine.matchesMultiToken(it, searchQuery) }
         }
         list
     }
 
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
             .background(backlightBg)
-            .padding(horizontal = 6.dp, vertical = 4.dp)
             .testTag("ipod_search_screen")
     ) {
-        // Search Input Bar
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = onSearchQueryChange,
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(44.dp)
-                .testTag("search_text_input"),
-            placeholder = {
-                Text(
-                    text = "Buscar emissoras mundiais...",
-                    fontSize = 11.sp,
-                    color = backlightTextSecondary.copy(alpha = 0.7f)
-                )
-            },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Buscar",
-                    tint = backlightTextPrimary,
-                    modifier = Modifier.size(16.dp)
-                )
-            },
-            trailingIcon = {
-                if (searchQuery.isNotEmpty()) {
-                    IconButton(onClick = { onSearchQueryChange("") }) {
-                        Icon(
-                            imageVector = Icons.Default.Clear,
-                            contentDescription = "Limpar",
-                            tint = backlightTextSecondary,
-                            modifier = Modifier.size(16.dp)
-                        )
+                .fillMaxSize()
+                .padding(horizontal = 6.dp, vertical = 3.dp)
+        ) {
+            // Barra de Busca
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = onSearchQueryChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = 44.dp)
+                    .testTag("search_text_input"),
+                textStyle = LocalTextStyle.current.copy(
+                    fontSize = (11.5f * fontScale).sp,
+                    lineHeight = (15f * fontScale).sp,
+                    platformStyle = PlatformTextStyle(includeFontPadding = false)
+                ),
+                placeholder = {
+                    Text(
+                        text = "Buscar emissoras mundiais...",
+                        fontSize = (11f * fontScale).sp,
+                        color = backlightTextSecondary.copy(alpha = 0.7f)
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Buscar",
+                        tint = backlightTextPrimary,
+                        modifier = Modifier.size(15.dp)
+                    )
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { onSearchQueryChange("") }) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Limpar",
+                                tint = backlightTextSecondary,
+                                modifier = Modifier.size(15.dp)
+                            )
+                        }
                     }
-                }
-            },
-            singleLine = true,
-            shape = RoundedCornerShape(8.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = backlightHighlight,
-                unfocusedBorderColor = backlightHighlight.copy(alpha = 0.4f),
-                focusedTextColor = backlightTextPrimary,
-                unfocusedTextColor = backlightTextPrimary,
-                focusedContainerColor = Color(0x33000000),
-                unfocusedContainerColor = Color(0x22000000)
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(8.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = backlightHighlight,
+                    unfocusedBorderColor = backlightHighlight.copy(alpha = 0.4f),
+                    focusedTextColor = backlightTextPrimary,
+                    unfocusedTextColor = backlightTextPrimary,
+                    focusedContainerColor = Color(0x33000000),
+                    unfocusedContainerColor = Color(0x22000000)
+                )
             )
-        )
 
-        Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(3.dp))
 
-        // Country Filter Chips (Including "Todos" - requirement 4)
-        androidx.compose.foundation.lazy.LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 2.dp, vertical = 2.dp)
-        ) {
-            val countries = listOf(
-                "" to "Todos os Países",
-                "BR" to "Brasil",
-                "US" to "EUA",
-                "PT" to "Portugal",
-                "GB" to "Reino Unido",
-                "DE" to "Alemanha",
-                "IT" to "Itália",
-                "ES" to "Espanha",
-                "AR" to "Argentina",
-                "FR" to "França",
-                "JP" to "Japão"
-            )
-            items(countries.size) { idx ->
-                val (code, label) = countries[idx]
-                val isSelected = if (code.isEmpty()) selectedCountryCode.isNullOrEmpty() || selectedCountryCode == "ALL" else selectedCountryCode.equals(code, ignoreCase = true)
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(if (isSelected) backlightHighlight else Color(0x22000000))
-                        .clickable { onSearchCountryChange(code) }
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = label,
-                        color = if (isSelected) Color.White else backlightTextPrimary,
-                        fontSize = 10.sp,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                    )
-                }
-            }
-        }
-
-        // Genre Filter Chips (Including "Todos" - requirement 4)
-        androidx.compose.foundation.lazy.LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 2.dp, vertical = 2.dp)
-        ) {
-            val genres = listOf(
-                "" to "Todos os Gêneros",
-                "sertanejo" to "Sertanejo",
-                "pop" to "Pop",
-                "rock" to "Rock",
-                "mpb" to "MPB",
-                "gospel" to "Gospel",
-                "dance" to "Dance / EDM",
-                "news" to "Notícias",
-                "pagode" to "Pagode",
-                "jazz" to "Jazz",
-                "classical" to "Clássica"
-            )
-            items(genres.size) { idx ->
-                val (tag, label) = genres[idx]
-                val isSelected = if (tag.isEmpty()) selectedGenreTag.isNullOrEmpty() || selectedGenreTag == "ALL" else selectedGenreTag.equals(tag, ignoreCase = true)
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(if (isSelected) backlightHighlight else Color(0x22000000))
-                        .clickable { onSearchGenreChange(tag) }
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = label,
-                        color = if (isSelected) Color.White else backlightTextPrimary,
-                        fontSize = 10.sp,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                    )
-                }
-            }
-        }
-
-        // State (UF) Filter Chips - Requirement: "antes do filtro de cidade aplicar filtro de estado"
-        val isBrazil = selectedCountryCode.isNullOrEmpty() || selectedCountryCode.equals("BR", ignoreCase = true) || selectedCountryCode.equals("ALL", ignoreCase = true)
-        if (isBrazil) {
+            // Seletor de Países
             androidx.compose.foundation.lazy.LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 2.dp, vertical = 2.dp)
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 1.dp, vertical = 2.dp)
             ) {
-                items(CuratedData.BRAZILIAN_STATES.size) { idx ->
-                    val (code, label) = CuratedData.BRAZILIAN_STATES[idx]
-                    val isSelected = if (code.isEmpty()) selectedStateCode.isNullOrEmpty() || selectedStateCode == "ALL" else selectedStateCode.equals(code, ignoreCase = true)
+                val countryOptions = listOf(
+                    "BR" to "Brasil 🇧🇷",
+                    "ALL" to "Todos os Países 🌐",
+                    "US" to "EUA 🇺🇸",
+                    "PT" to "Portugal 🇵🇹",
+                    "ES" to "Espanha 🇪🇸",
+                    "AR" to "Argentina 🇦🇷",
+                    "FR" to "França 🇫🇷",
+                    "DE" to "Alemanha 🇩🇪",
+                    "IT" to "Itália 🇮🇹",
+                    "GB" to "Reino Unido 🇬🇧"
+                )
+                items(countryOptions.size) { idx ->
+                    val (code, label) = countryOptions[idx]
+                    val isSelected = if (code == "ALL") {
+                        selectedCountryCode.isNullOrEmpty() || selectedCountryCode.equals("ALL", ignoreCase = true)
+                    } else {
+                        selectedCountryCode.equals(code, ignoreCase = true)
+                    }
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .background(if (isSelected) backlightHighlight else Color(0x22000000))
-                            .clickable { onSearchStateChange(if (isSelected) "" else code) }
+                            .clickable { onSearchCountryChange(code) }
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
                             text = label,
                             color = if (isSelected) Color.White else backlightTextPrimary,
-                            fontSize = 10.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                            fontSize = (10f * fontScale).sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                            fontFamily = fontFamily
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            // Seletor de Gêneros Musicais
+            val searchGenres = remember {
+                listOf("" to "Todos os Gêneros") + CuratedData.GENRES.map { it.tag to it.name }
+            }
+            androidx.compose.foundation.lazy.LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 1.dp, vertical = 2.dp)
+            ) {
+                items(searchGenres.size) { idx ->
+                    val (tag, label) = searchGenres[idx]
+                    val isSelected = if (tag.isEmpty()) selectedGenreTag.isNullOrEmpty() || selectedGenreTag == "ALL" else selectedGenreTag.equals(tag, ignoreCase = true)
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(if (isSelected) backlightHighlight else Color(0x22000000))
+                            .clickable { onSearchGenreChange(tag) }
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = label,
+                            color = if (isSelected) Color.White else backlightTextPrimary,
+                            fontSize = (10f * fontScale).sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                            fontFamily = fontFamily
+                        )
+                    }
+                }
+            }
+
+            // Exibição condicional estrita: Estados e Cidades APENAS para o BRASIL
+            if (isBrazil) {
+                Spacer(modifier = Modifier.height(2.dp))
+
+                // Linha de Estados (UFs do Brasil)
+                androidx.compose.foundation.lazy.LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 1.dp, vertical = 2.dp)
+                ) {
+                    items(CuratedData.BRAZILIAN_STATES.size) { idx ->
+                        val (code, label) = CuratedData.BRAZILIAN_STATES[idx]
+                        val isSelected = if (code.isEmpty()) selectedStateCode.isNullOrEmpty() || selectedStateCode == "ALL" else selectedStateCode.equals(code, ignoreCase = true)
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (isSelected) backlightHighlight else Color(0x22000000))
+                                .clickable { onSearchStateChange(if (isSelected) "ALL" else code) }
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = label,
+                                color = if (isSelected) Color.White else backlightTextPrimary,
+                                fontSize = (10f * fontScale).sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                fontFamily = fontFamily
+                            )
+                        }
+                    }
+                }
+
+                // Combo Box iPod LCD para Cidades (ativado quando um estado específico é selecionado)
+                if (!selectedStateCode.isNullOrEmpty() && !selectedStateCode.equals("ALL", ignoreCase = true)) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    val hasCitySelected = !selectedCity.isNullOrEmpty() && !selectedCity.equals("ALL", ignoreCase = true)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 1.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (hasCitySelected) backlightHighlight.copy(alpha = 0.25f) else Color(0x22000000))
+                                .border(1.dp, if (hasCitySelected) backlightHighlight else backlightHighlight.copy(alpha = 0.4f), RoundedCornerShape(6.dp))
+                                .clickable { isCitySelectorOpen = true }
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = if (isLoadingCities) "IBGE: Carregando cidades..."
+                                    else if (hasCitySelected) "Cidade: $selectedCity ($selectedStateCode)"
+                                    else "Cidade: Todas as Cidades de $selectedStateCode",
+                                    color = backlightTextPrimary,
+                                    fontSize = (10f * fontScale).sp,
+                                    fontWeight = if (hasCitySelected) FontWeight.Bold else FontWeight.Normal,
+                                    fontFamily = fontFamily,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    text = "▼",
+                                    color = backlightHighlight,
+                                    fontSize = (10f * fontScale).sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                        if (hasCitySelected) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(backlightHighlight.copy(alpha = 0.25f))
+                                    .clickable { onSearchCityChange("ALL") }
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = "✕",
+                                    color = backlightTextPrimary,
+                                    fontSize = (10f * fontScale).sp,
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = fontFamily
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            // Banner de contagem de resultados
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 2.dp, vertical = 2.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "RESULTADOS (${displayedStations.size})",
+                    color = backlightTextSecondary,
+                    fontSize = (9f * fontScale).sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = fontFamily
+                )
+                if (isBrazil && (!selectedStateCode.isNullOrEmpty() || !selectedCity.isNullOrEmpty())) {
+                    Text(
+                        text = "FILTRADO: $selectedStateCode ${selectedCity?.takeIf { it != "ALL" } ?: ""}".trim(),
+                        color = backlightHighlight,
+                        fontSize = (9f * fontScale).sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(20.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    androidx.compose.material3.CircularProgressIndicator(
+                        color = backlightHighlight,
+                        modifier = Modifier.size(26.dp),
+                        strokeWidth = 2.dp
+                    )
+                }
+            } else if (displayedStations.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Default.Radio,
+                            contentDescription = null,
+                            tint = backlightHighlight.copy(alpha = 0.4f),
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Nenhuma emissora localizada",
+                            color = backlightTextPrimary,
+                            fontSize = (11f * fontScale).sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily
+                        )
+                        Text(
+                            text = if (isBrazil) "Tente alterar o estado/cidade ou limpar o filtro" else "Selecione 'Todos os Países' ou limpe a busca",
+                            color = backlightTextSecondary,
+                            fontSize = (9.5f * fontScale).sp,
+                            fontFamily = fontFamily
+                        )
+                    }
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(3.dp),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 2.dp)
+                ) {
+                    itemsIndexed(displayedStations, key = { _, st -> st.id }) { index, station ->
+                        val isSelected = index == selectedIndex
+                        val isPlayingThis = station.id == currentStationId
+                        val isFav = favorites.any { it.id == station.id }
+
+                        com.example.ui.components.StationItemView(
+                            station = station,
+                            isSelected = isSelected,
+                            isPlaying = isPlayingThis,
+                            isFavorite = isFav,
+                            onClick = { onSelectStation(station) },
+                            onToggleFavorite = { onToggleFavorite(station) },
+                            backlightTextPrimary = backlightTextPrimary,
+                            backlightTextSecondary = backlightTextSecondary,
+                            backlightHighlight = backlightHighlight
                         )
                     }
                 }
             }
         }
 
-        // City Filter Chips (Dynamic based on selected state)
-        val availableCities = remember(selectedCountryCode, selectedStateCode) {
-            if (isBrazil) {
-                CuratedData.getCitiesForState(selectedStateCode).filter { it != "Todas as Cidades" }
-            } else {
-                CuratedData.getCitiesForCountry(selectedCountryCode)
-            }
-        }
-        androidx.compose.foundation.lazy.LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 2.dp, vertical = 2.dp)
-        ) {
-            // First item: "Todas as Cidades"
-            item {
-                val isAllSelected = selectedCity.isNullOrEmpty() || selectedCity.equals("ALL", ignoreCase = true)
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(if (isAllSelected) backlightHighlight else Color(0x22000000))
-                        .clickable { onSearchCityChange("") }
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = "Todas as Cidades",
-                        color = if (isAllSelected) Color.White else backlightTextPrimary,
-                        fontSize = 10.sp,
-                        fontWeight = if (isAllSelected) FontWeight.Bold else FontWeight.Normal
-                    )
-                }
-            }
-            items(availableCities.size) { idx ->
-                val cityName = availableCities[idx]
-                val isSelected = selectedCity.equals(cityName, ignoreCase = true)
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(if (isSelected) backlightHighlight else Color(0x22000000))
-                        .clickable { onSearchCityChange(if (isSelected) "" else cityName) }
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = cityName,
-                        color = if (isSelected) Color.White else backlightTextPrimary,
-                        fontSize = 10.sp,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                    )
-                }
-            }
-        }
-
-        // Stations Count Banner
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 2.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "RESULTADOS (${displayedStations.size})",
-                color = backlightTextSecondary,
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = FontFamily.Monospace
-            )
-            if (!selectedCountryCode.isNullOrEmpty() || !selectedGenreTag.isNullOrEmpty()) {
-                Text(
-                    text = "FILTRADO",
-                    color = backlightHighlight,
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Monospace
-                )
-            }
-        }
-
-        if (isLoading) {
+        // Overlay do Seletor LCD de Cidades (quando o usuário clica no combo de cidades)
+        if (isCitySelectorOpen && isBrazil) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(20.dp),
-                contentAlignment = Alignment.Center
+                    .background(backlightBg)
+                    .padding(6.dp)
             ) {
-                androidx.compose.material3.CircularProgressIndicator(
-                    color = backlightHighlight,
-                    modifier = Modifier.size(28.dp),
-                    strokeWidth = 2.5.dp
-                )
-            }
-        } else if (displayedStations.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        imageVector = Icons.Default.Radio,
-                        contentDescription = null,
-                        tint = backlightHighlight.copy(alpha = 0.4f),
-                        modifier = Modifier.size(36.dp)
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = "Nenhuma emissora localizada",
-                        color = backlightTextPrimary,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Selecione 'Todos os Países' ou 'Todos os Gêneros'",
-                        color = backlightTextSecondary,
-                        fontSize = 10.sp
-                    )
-                }
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 2.dp)
-            ) {
-                itemsIndexed(displayedStations, key = { _, st -> st.id }) { index, station ->
-                    val isSelected = index == selectedIndex
-                    val isPlayingThis = station.id == currentStationId
-                    val isFav = favorites.any { it.id == station.id }
+                Column(modifier = Modifier.fillMaxSize()) {
+                    // Top Bar do Seletor
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "CIDADES DE $selectedStateCode (IBGE)",
+                                color = backlightTextPrimary,
+                                fontSize = (11.5f * fontScale).sp,
+                                fontWeight = FontWeight.Black,
+                                fontFamily = fontFamily
+                            )
+                            Text(
+                                text = if (isLoadingCities) "Consultando dados do IBGE..." else "${availableCities.size} municípios disponíveis",
+                                color = backlightTextSecondary,
+                                fontSize = (9f * fontScale).sp,
+                                fontFamily = fontFamily
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(backlightHighlight)
+                                .clickable {
+                                    isCitySelectorOpen = false
+                                    cityFilterQuery = ""
+                                }
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "FECHAR ✕",
+                                color = Color.White,
+                                fontSize = (9.5f * fontScale).sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = fontFamily
+                            )
+                        }
+                    }
 
-                    com.example.ui.components.StationItemView(
-                        station = station,
-                        isSelected = isSelected,
-                        isPlaying = isPlayingThis,
-                        isFavorite = isFav,
-                        onClick = { onSelectStation(station) },
-                        onToggleFavorite = { onToggleFavorite(station) },
-                        backlightTextPrimary = backlightTextPrimary,
-                        backlightTextSecondary = backlightTextSecondary,
-                        backlightHighlight = backlightHighlight
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    // Mini campo de busca para filtrar cidades
+                    OutlinedTextField(
+                        value = cityFilterQuery,
+                        onValueChange = { cityFilterQuery = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .defaultMinSize(minHeight = 40.dp),
+                        textStyle = LocalTextStyle.current.copy(
+                            fontSize = (10.5f * fontScale).sp,
+                            platformStyle = PlatformTextStyle(includeFontPadding = false)
+                        ),
+                        placeholder = {
+                            Text(
+                                text = "Filtrar por nome de cidade...",
+                                fontSize = (10f * fontScale).sp,
+                                color = backlightTextSecondary.copy(alpha = 0.7f)
+                            )
+                        },
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = backlightHighlight,
+                            unfocusedBorderColor = backlightHighlight.copy(alpha = 0.4f),
+                            focusedTextColor = backlightTextPrimary,
+                            unfocusedTextColor = backlightTextPrimary,
+                            focusedContainerColor = Color(0x33000000),
+                            unfocusedContainerColor = Color(0x22000000)
+                        )
                     )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    val filteredCities = remember(availableCities, cityFilterQuery) {
+                        if (cityFilterQuery.isBlank()) availableCities
+                        else {
+                            val q = cityFilterQuery.trim().lowercase()
+                            availableCities.filter { it.lowercase().contains(q) }
+                        }
+                    }
+
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        item {
+                            val isAllSelected = selectedCity.isNullOrEmpty() || selectedCity.equals("ALL", ignoreCase = true)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(if (isAllSelected) backlightHighlight else Color(0x18000000))
+                                    .clickable {
+                                        onSearchCityChange("ALL")
+                                        isCitySelectorOpen = false
+                                        cityFilterQuery = ""
+                                    }
+                                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "🌐 Todas as Cidades de $selectedStateCode",
+                                    color = if (isAllSelected) Color.White else backlightTextPrimary,
+                                    fontSize = (11f * fontScale).sp,
+                                    fontWeight = if (isAllSelected) FontWeight.Black else FontWeight.Bold,
+                                    fontFamily = fontFamily
+                                )
+                            }
+                        }
+
+                        itemsIndexed(filteredCities) { _, city ->
+                            val isSelected = selectedCity?.equals(city, ignoreCase = true) == true
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(if (isSelected) backlightHighlight else Color(0x12000000))
+                                    .clickable {
+                                        onSearchCityChange(city)
+                                        isCitySelectorOpen = false
+                                        cityFilterQuery = ""
+                                    }
+                                    .padding(horizontal = 8.dp, vertical = 5.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = city,
+                                    color = if (isSelected) Color.White else backlightTextPrimary,
+                                    fontSize = (10.5f * fontScale).sp,
+                                    fontWeight = if (isSelected) FontWeight.Black else FontWeight.Normal,
+                                    fontFamily = fontFamily
+                                )
+                                if (isSelected) {
+                                    Text(
+                                        text = "✓",
+                                        color = Color.White,
+                                        fontSize = (11f * fontScale).sp,
+                                        fontWeight = FontWeight.Black
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

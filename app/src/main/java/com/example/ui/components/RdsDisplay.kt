@@ -45,6 +45,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -56,6 +58,8 @@ import coil.request.ImageRequest
 import com.example.data.model.RadioStation
 import com.example.player.RadioPlaybackStatus
 import com.example.player.RdsInfo
+import androidx.compose.ui.res.painterResource
+import com.example.R
 
 @Composable
 fun RdsDisplay(
@@ -75,9 +79,20 @@ fun RdsDisplay(
     fontFamily: FontFamily = FontFamily.Monospace,
     fontScale: Float = 1.0f,
     isBold: Boolean = true,
+    liveSessionDurationSeconds: Long = 0L,
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+
+    val hours = liveSessionDurationSeconds / 3600
+    val minutes = (liveSessionDurationSeconds % 3600) / 60
+    val seconds = liveSessionDurationSeconds % 60
+    val sessionTimerFormatted = if (hours > 0) {
+        String.format(java.util.Locale.US, "%d:%02d:%02d", hours, minutes, seconds)
+    } else {
+        String.format(java.util.Locale.US, "%02d:%02d", minutes, seconds)
+    }
 
     val infiniteTransition = rememberInfiniteTransition(label = "rds_marquee")
     val bufferPulse by infiniteTransition.animateFloat(
@@ -110,22 +125,14 @@ fun RdsDisplay(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Monochrome RDS badge
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(2.dp))
-                        .background(if (status == RadioPlaybackStatus.PLAYING) backlightTextPrimary else backlightTextPrimary.copy(alpha = 0.25f))
-                        .padding(horizontal = 4.dp, vertical = 1.dp)
-                ) {
-                    Text(
-                        text = "RDS",
-                        color = if (status == RadioPlaybackStatus.PLAYING) backlightBg else backlightTextPrimary,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Black,
-                        fontFamily = FontFamily.Monospace
-                    )
-                }
-                Spacer(modifier = Modifier.width(4.dp))
+                // Flat Pixelated RDS Icon matching theme color
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_rds_pixel),
+                    contentDescription = "RDS Ativo",
+                    tint = if (status == RadioPlaybackStatus.PLAYING) backlightTextPrimary else backlightTextPrimary.copy(alpha = 0.35f),
+                    modifier = Modifier.size(width = 30.dp, height = 12.dp)
+                )
+                Spacer(modifier = Modifier.width(5.dp))
                 // STEREO pill
                 Box(
                     modifier = Modifier
@@ -270,65 +277,120 @@ fun RdsDisplay(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Buffering Alert or RDS Radio Text (RT) / Station Name Fallback
-        if (status == RadioPlaybackStatus.BUFFERING) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(3.dp))
-                    .background(backlightTextPrimary)
-                    .border(1.dp, backlightTextPrimary, RoundedCornerShape(3.dp))
-                    .padding(horizontal = 8.dp, vertical = 3.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "⏳ CARREGANDO BUFFER (5s)... AGUARDE A SINTONIA",
-                    color = backlightBg.copy(alpha = bufferPulse),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Black,
-                    fontFamily = FontFamily.Monospace,
-                    maxLines = 1
-                )
-            }
+        val rdsTextToDisplay = if (rdsInfo.radioText.isNotBlank()) {
+            rdsInfo.radioText.replace("/RDS", "", ignoreCase = true)
+                .replace("/ RDS", "", ignoreCase = true)
+                .trim()
         } else {
-            val rdsTextToDisplay = if (rdsInfo.radioText.isNotBlank()) {
-                rdsInfo.radioText.replace("/RDS", "", ignoreCase = true)
-                    .replace("/ RDS", "", ignoreCase = true)
-                    .trim()
-            } else {
-                station?.name?.uppercase() ?: "SINTONIZE UMA EMISSORA"
-            }
+            station?.name?.uppercase() ?: "SINTONIZE UMA EMISSORA"
+        }
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(3.dp))
-                    .background(backlightTextPrimary.copy(alpha = 0.1f))
-                    .border(1.dp, backlightTextPrimary.copy(alpha = 0.6f), RoundedCornerShape(3.dp))
-                    .padding(horizontal = 8.dp, vertical = 3.dp)
-            ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(3.dp))
+                .background(backlightTextPrimary.copy(alpha = 0.08f))
+                .border(1.dp, backlightTextPrimary.copy(alpha = 0.5f), RoundedCornerShape(3.dp))
+                .padding(horizontal = 8.dp, vertical = 3.dp)
+        ) {
+            Text(
+                text = rdsTextToDisplay,
+                color = backlightTextPrimary,
+                fontSize = (10.5f * fontScale).sp,
+                fontWeight = if (isBold) FontWeight.Black else FontWeight.Bold,
+                fontFamily = fontFamily,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+
+        Spacer(modifier = Modifier.height(3.dp))
+
+        // Barra de Reprodução / Indicadores de Status e Conexão (Live Streaming)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(3.dp))
+                .background(backlightTextPrimary.copy(alpha = 0.12f))
+                .border(1.dp, backlightTextPrimary.copy(alpha = 0.45f), RoundedCornerShape(3.dp))
+                .padding(horizontal = 6.dp, vertical = 3.dp)
+        ) {
+            if (status == RadioPlaybackStatus.NO_INTERNET) {
+                // Perda de conexão: Ícone sem conexão + VERIFIQUE A CONEXÃO COM A INTERNET
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_wifi_off_alert),
+                            contentDescription = "Sem Conexão",
+                            tint = backlightTextPrimary,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text(
+                            text = "VERIFIQUE A CONEXÃO COM A INTERNET",
+                            color = backlightTextPrimary,
+                            fontSize = (7.8f * fontScale).sp,
+                            fontWeight = FontWeight.Black,
+                            fontFamily = fontFamily,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(backlightTextPrimary)
+                            .clickable { onRetry() }
+                            .padding(horizontal = 5.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "RECONECTAR",
+                            color = backlightBg,
+                            fontSize = (7.5f * fontScale).sp,
+                            fontWeight = FontWeight.Black,
+                            fontFamily = fontFamily
+                        )
+                    }
+                }
+            } else {
+                // Modo Rádio Normal (Live Streaming):
+                // Lado esquerdo: ícone monocromático de antena/transmissão + AO VIVO
+                // Lado direito: tempo de reprodução contínua da sessão atual (hh:mm:ss)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_live_antenna),
+                            contentDescription = "Transmissão Ao Vivo",
+                            tint = backlightTextPrimary,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = if (status == RadioPlaybackStatus.BUFFERING) stringResource(R.string.status_tuning) else stringResource(R.string.status_live),
+                            color = backlightTextPrimary,
+                            fontSize = (8.5f * fontScale).sp,
+                            fontWeight = FontWeight.Black,
+                            fontFamily = fontFamily
+                        )
+                    }
+
                     Text(
-                        text = rdsTextToDisplay,
+                        text = sessionTimerFormatted,
                         color = backlightTextPrimary,
-                        fontSize = (11f * fontScale).sp,
-                        fontWeight = if (isBold) FontWeight.Black else FontWeight.Bold,
-                        fontFamily = fontFamily,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(
-                        text = "AO VIVO",
-                        color = backlightTextSecondary,
-                        fontSize = (8.5f * fontScale).sp,
+                        fontSize = (9f * fontScale).sp,
                         fontWeight = FontWeight.Bold,
-                        fontFamily = fontFamily,
-                        modifier = Modifier.padding(start = 4.dp)
+                        fontFamily = FontFamily.Monospace
                     )
                 }
             }

@@ -3,6 +3,7 @@ package com.example.ui.screens
 import android.view.ViewGroup
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,6 +29,7 @@ import androidx.media3.ui.PlayerView
 import com.example.data.model.LocalVideoTrack
 import com.example.data.model.MediaFolder
 import com.example.player.LocalVideoPlayerManager
+import com.example.ui.components.IpodInteractiveProgressBar
 
 @Composable
 fun IpodVideoFoldersScreen(
@@ -292,9 +294,17 @@ fun IpodVideoPlayerScreen(
     val progress = if (durationMs > 0) (positionMs.toFloat() / durationMs.toFloat()).coerceIn(0f, 1f) else 0f
 
     val posSecs = (positionMs / 1000).coerceAtLeast(0)
-    val posFormatted = String.format(java.util.Locale.US, "%d:%02d", posSecs / 60, posSecs % 60)
-    val durSecs = (durationMs / 1000).coerceAtLeast(0)
-    val durFormatted = String.format(java.util.Locale.US, "%d:%02d", durSecs / 60, durSecs % 60)
+    val posFormatted = if (posSecs >= 3600) {
+        String.format(java.util.Locale.US, "%d:%02d:%02d", posSecs / 3600, (posSecs % 3600) / 60, posSecs % 60)
+    } else {
+        String.format(java.util.Locale.US, "%02d:%02d", posSecs / 60, posSecs % 60)
+    }
+    val remainingSecs = ((durationMs - positionMs) / 1000).coerceAtLeast(0)
+    val remainingFormatted = if (remainingSecs >= 3600) {
+        String.format(java.util.Locale.US, "-%d:%02d:%02d", remainingSecs / 3600, (remainingSecs % 3600) / 60, remainingSecs % 60)
+    } else {
+        String.format(java.util.Locale.US, "-%02d:%02d", remainingSecs / 60, remainingSecs % 60)
+    }
 
     Box(
         modifier = Modifier
@@ -357,21 +367,14 @@ fun IpodVideoPlayerScreen(
                 .background(Color(0xCC000000))
                 .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
-            // Seek bar
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(4.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(Color(0x55FFFFFF))
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(progress)
-                        .fillMaxHeight()
-                        .background(Color(0xFF00E5FF))
-                )
-            }
+            IpodInteractiveProgressBar(
+                positionMs = positionMs,
+                durationMs = durationMs,
+                onSeekTo = { targetMs -> videoPlayerManager.seekToPosition(targetMs) },
+                backlightTextPrimary = Color(0xFF00E5FF),
+                backlightTextSecondary = Color(0xFFAAAAAA),
+                fontFamily = fontFamily
+            )
 
             Spacer(modifier = Modifier.height(3.dp))
 
@@ -380,12 +383,28 @@ fun IpodVideoPlayerScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = posFormatted,
-                    color = Color.White,
-                    fontSize = 9.sp,
-                    fontFamily = fontFamily
-                )
+                val currentSpeed by videoPlayerManager.playbackSpeed.collectAsState()
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(3.dp))
+                        .background(if (currentSpeed != 1.0f) Color(0xFF00E5FF) else Color(0x33FFFFFF))
+                        .border(1.dp, Color(0xFF00E5FF).copy(alpha = 0.5f), RoundedCornerShape(3.dp))
+                        .clickable {
+                            val speeds = listOf(0.5f, 1.0f, 1.5f, 2.0f)
+                            val idx = speeds.indexOfFirst { kotlin.math.abs(it - currentSpeed) < 0.05f }
+                            val next = if (idx in 0 until speeds.size - 1) speeds[idx + 1] else speeds[0]
+                            videoPlayerManager.setPlaybackSpeed(next)
+                        }
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "⚡ ${currentSpeed}x",
+                        color = if (currentSpeed != 1.0f) Color.Black else Color.White,
+                        fontSize = 8.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily
+                    )
+                }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(
@@ -424,13 +443,6 @@ fun IpodVideoPlayerScreen(
                         )
                     }
                 }
-
-                Text(
-                    text = durFormatted,
-                    color = Color(0xFFAAAAAA),
-                    fontSize = 9.sp,
-                    fontFamily = fontFamily
-                )
             }
         }
     }
@@ -460,9 +472,17 @@ fun FullscreenLandscapeVideoPlayer(
     }
 
     val posSecs = (positionMs / 1000).coerceAtLeast(0)
-    val posFormatted = String.format(java.util.Locale.US, "%d:%02d", posSecs / 60, posSecs % 60)
-    val durSecs = (durationMs / 1000).coerceAtLeast(0)
-    val durFormatted = String.format(java.util.Locale.US, "%d:%02d", durSecs / 60, durSecs % 60)
+    val posFormatted = if (posSecs >= 3600) {
+        String.format(java.util.Locale.US, "%d:%02d:%02d", posSecs / 3600, (posSecs % 3600) / 60, posSecs % 60)
+    } else {
+        String.format(java.util.Locale.US, "%02d:%02d", posSecs / 60, posSecs % 60)
+    }
+    val remainingSecs = ((durationMs - positionMs) / 1000).coerceAtLeast(0)
+    val remainingFormatted = if (remainingSecs >= 3600) {
+        String.format(java.util.Locale.US, "-%d:%02d:%02d", remainingSecs / 3600, (remainingSecs % 3600) / 60, remainingSecs % 60)
+    } else {
+        String.format(java.util.Locale.US, "-%02d:%02d", remainingSecs / 60, remainingSecs % 60)
+    }
 
     Box(
         modifier = Modifier
@@ -627,7 +647,8 @@ fun FullscreenLandscapeVideoPlayer(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = posFormatted,
@@ -635,8 +656,30 @@ fun FullscreenLandscapeVideoPlayer(
                             fontSize = 11.sp,
                             fontFamily = FontFamily.Monospace
                         )
+
+                        val currentSpeed by videoPlayerManager.playbackSpeed.collectAsState()
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(if (currentSpeed != 1.0f) Color(0xFF00E5FF) else Color(0x44FFFFFF))
+                                .clickable {
+                                    val speeds = listOf(0.5f, 1.0f, 1.5f, 2.0f)
+                                    val idx = speeds.indexOfFirst { kotlin.math.abs(it - currentSpeed) < 0.05f }
+                                    val next = if (idx in 0 until speeds.size - 1) speeds[idx + 1] else speeds[0]
+                                    videoPlayerManager.setPlaybackSpeed(next)
+                                }
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                text = "⚡ ${currentSpeed}x",
+                                color = if (currentSpeed != 1.0f) Color.Black else Color.White,
+                                fontSize = 10.5.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
                         Text(
-                            text = durFormatted,
+                            text = remainingFormatted,
                             color = Color(0xFF94A3B8),
                             fontSize = 11.sp,
                             fontFamily = FontFamily.Monospace

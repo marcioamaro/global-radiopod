@@ -1,0 +1,54 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="14dp"
+    android:viewportWidth="36"
+    android:viewportHeight="14">
+
+    <!-- Pixel Frame Outer Border -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M 1,1 H 35 V 13 H 1 Z M 2,2 V 12 H 34 V 2 Z" />
+
+    <!-- Letter 'R' (Matrix 7x9 pixels at x=4, y=3) -->
+    <!-- Column 1 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M 5,3 H 7 V 11 H 5 Z" />
+    <!-- Top bar & middle bar -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M 7,3 H 11 V 5 H 7 Z M 7,6 H 11 V 8 H 7 Z" />
+    <!-- Top right vertical -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M 11,3 H 13 V 7 H 11 Z" />
+    <!-- Diagonal leg -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M 9,8 H 11 V 9.5 H 9 Z M 11,9.5 H 13 V 11 H 11 Z" />
+
+    <!-- Letter 'D' (Matrix 7x9 pixels at x=15, y=3) -->
+    <!-- Left vertical -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M 16,3 H 18 V 11 H 16 Z" />
+    <!-- Top bar & bottom bar -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M 18,3 H 22 V 5 H 18 Z M 18,9 H 22 V 11 H 18 Z" />
+    <!-- Right vertical curved curve -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M 22,5 H 24 V 9 H 22 Z" />
+
+    <!-- Letter 'S' (Matrix 7x9 pixels at x=26, y=3) -->
+    <!-- Top bar, middle bar, bottom bar -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M 27,3 H 33 V 5 H 27 Z M 27,6 H 33 V 8 H 27 Z M 27,9 H 33 V 11 H 27 Z" />
+    <!-- Upper-left vertical & Lower-right vertical -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M 27,4 H 29 V 7 H 27 Z M 31,7 H 33 V 10 H 31 Z" />
+
+</vector>

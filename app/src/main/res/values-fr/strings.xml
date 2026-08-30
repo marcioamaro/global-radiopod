@@ -1,0 +1,93 @@
+<resources>
+    <string name="app_name">MediaPod + Radio / Podcast</string>
+    <string name="media_notification_channel_name">Radio &amp; Podcasts en arrière-plan</string>
+
+    <!-- Main Menu -->
+    <string name="menu_radio">Radio</string>
+    <string name="menu_podcasts">Podcasts</string>
+    <string name="menu_mp3">Musique</string>
+    <string name="menu_video">Vidéos</string>
+    <string name="menu_youtube">YouTube</string>
+    <string name="menu_equalizer">Égaliseur</string>
+    <string name="menu_audio_output">Sortie Audio</string>
+    <string name="menu_game">Jeu de Briques</string>
+    <string name="menu_car_mode">Mode Voiture</string>
+    <string name="menu_dock_mode">Mode Station</string>
+    <string name="menu_settings">Paramètres</string>
+    <string name="menu_about">À Propos</string>
+    <string name="menu_close_app">Fermer l\'application</string>
+
+    <!-- Radio Submenu -->
+    <string name="radio_now_playing">En Lecture</string>
+    <string name="radio_favorites">Favoris</string>
+    <string name="radio_recents">Récents</string>
+    <string name="radio_top_brazil">Top Brésil (Top 100)</string>
+    <string name="radio_top_world">Top Mondial (Top 100)</string>
+    <string name="radio_genres">Genres &amp; Styles</string>
+    <string name="radio_countries">Pays</string>
+    <string name="radio_search">Rechercher une Station</string>
+
+    <!-- Podcasts Submenu -->
+    <string name="podcast_now_playing">En Lecture</string>
+    <string name="podcast_favorites">Podcasts Favoris</string>
+    <string name="podcast_recents">Podcasts Récents</string>
+    <string name="podcast_top_brazil">Top Brésil (Top 100)</string>
+    <string name="podcast_top_world">Top Mondial (Top 100)</string>
+    <string name="podcast_categories">Catégories &amp; Genres</string>
+    <string name="podcast_by_country">Par Pays</string>
+    <string name="podcast_search">Rechercher un Podcast</string>
+    <string name="podcast_custom">Mes Podcasts</string>
+
+    <!-- Settings Submenu -->
+    <string name="settings_theme">Thème du Châssis</string>
+    <string name="settings_backlight">Rétroéclairage (LCD)</string>
+    <string name="settings_wheel">Style de Molette</string>
+    <string name="settings_font">Police de Caractères</string>
+    <string name="settings_font_size">Taille du Texte</string>
+    <string name="settings_language">Langue</string>
+    <string name="settings_auto_play">Lecture au Démarrage</string>
+    <string name="settings_sound">Son de la Molette</string>
+    <string name="settings_haptics">Retour Haptique</string>
+    <string name="settings_sleep_timer">Minuterie de Sommeil</string>
+    <string name="settings_dock_clock_scale">Taille de l\'Horloge</string>
+    <string name="settings_dock_show_seconds">Afficher les Secondes (:ss)</string>
+    <string name="settings_backup_export">Exporter Sauvegarde (.enc)</string>
+    <string name="settings_backup_restore">Restaurer Sauvegarde (.enc)</string>
+    <string name="settings_clear_history">Effacer l\'Historique</string>
+
+    <!-- Player & Status -->
+    <string name="status_live">EN DIRECT</string>
+    <string name="status_tuning">SYNTONISATION...</string>
+    <string name="status_buffering">CHARGEMENT...</string>
+    <string name="status_paused">EN PAUSE</string>
+    <string name="status_stopped">ARRÊTÉ</string>
+    <string name="status_digital_rds">EN DIRECT • Diffusion Numérique RDS</string>
+    <string name="speed">Vitesse</string>
+    <string name="chapters">Chapitres</string>
+    <string name="volume">Volume</string>
+    <string name="dock_extra_dim">Atténuation Supplémentaire</string>
+
+    <!-- Equalizer -->
+    <string name="eq_title">Égaliseur</string>
+    <string name="eq_active">ÉGALISEUR ACTIF</string>
+    <string name="eq_disabled">ÉGALISEUR DÉSACTIVÉ</string>
+    <string name="eq_on">ACTIVÉ</string>
+    <string name="eq_off">DÉSACTIVÉ</string>
+    <string name="eq_presets">PRÉRÉGLAGES AUDIO :</string>
+    <string name="eq_frequencies">CONTRÔLES DE FRÉQUENCE (-12dB à +12dB) :</string>
+
+    <!-- Messages & Alerts -->
+    <string name="msg_no_episodes">Aucun épisode disponible pour le moment</string>
+    <string name="msg_connection_error">Vérifiez la connexion Internet</string>
+    <string name="msg_invalid_backup">Fichier de sauvegarde invalide ou incompatible</string>
+    <string name="msg_history_cleared">Historique effacé avec succès</string>
+
+    <!-- Dialogs & Buttons -->
+    <string name="dialog_restart_title">Redémarrage Nécessaire</string>
+    <string name="dialog_language_restart_msg">L\'application va redémarrer en toute sécurité pour appliquer la nouvelle langue. Continuer ?</string>
+    <string name="dialog_backup_success_msg">Paramètres restaurés avec succès. L\'application va redémarrer maintenant pour charger vos préférences.</string>
+    <string name="btn_continue">Continuer</string>
+    <string name="btn_cancel">Annuler</string>
+    <string name="btn_close">Fermer</string>
+    <string name="btn_ok">OK</string>
+</resources>

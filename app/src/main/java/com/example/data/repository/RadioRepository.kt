@@ -1,7 +1,10 @@
 package com.example.data.repository
 
+import com.example.data.api.DialTunerApiClient
 import com.example.data.api.RadioApiClient
 import com.example.data.db.FavoriteStationDao
+import com.example.data.db.RadioStationDao
+import com.example.data.db.toCatalogEntity
 import com.example.data.db.toDomain
 import com.example.data.db.toEntity
 import com.example.data.model.RadioStation
@@ -13,7 +16,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 class RadioRepository(
-    private val favoriteDao: FavoriteStationDao
+    private val favoriteDao: FavoriteStationDao,
+    private val stationDao: RadioStationDao? = null
 ) {
     val favoritesFlow: Flow<List<RadioStation>> = favoriteDao.getAllFavorites()
         .map { list -> list.map { it.toDomain() }.sortedBy { it.name.trim().lowercase() } }
@@ -43,88 +47,56 @@ class RadioRepository(
         favoriteDao.deleteFavoriteById(stationId)
     }
 
-    suspend fun getTopStations(limit: Int = 60): List<RadioStation> = withContext(Dispatchers.IO) {
-        try {
-            val api = RadioApiClient.getService()
-            val list = api.getTopVotedStations(limit)
-            if (list.isNotEmpty()) {
-                val favIds = getFavoriteIdsSet()
-                return@withContext list.map { it.toDomain(favIds.contains(it.stationUuid)) }
-                    .sortedBy { it.name.trim().lowercase() }
-            }
-        } catch (e: Exception) {
+    private suspend fun ensureDatabaseSeeded(): List<RadioStation> {
+        if (stationDao == null) return CuratedData.CURATED_GLOBAL_STATIONS
+        val count = try { stationDao.getStationCount() } catch (_: Exception) { 0 }
+        return if (count < CuratedData.CURATED_GLOBAL_STATIONS.size) {
             try {
-                val backupApi = RadioApiClient.rotateServer()
-                val list = backupApi.getTopClickedStations(limit)
-                if (list.isNotEmpty()) {
-                    val favIds = getFavoriteIdsSet()
-                    return@withContext list.map { it.toDomain(favIds.contains(it.stationUuid)) }
-                        .sortedBy { it.name.trim().lowercase() }
-                }
+                stationDao.insertStations(CuratedData.CURATED_GLOBAL_STATIONS.map { it.toCatalogEntity() })
+                stationDao.getAllStationsDirect().map { it.toDomain() }
             } catch (_: Exception) {
-                // Fallback to curated
+                CuratedData.CURATED_GLOBAL_STATIONS
+            }
+        } else {
+            try {
+                stationDao.getAllStationsDirect().map { it.toDomain() }
+            } catch (_: Exception) {
+                CuratedData.CURATED_GLOBAL_STATIONS
             }
         }
+    }
+
+    suspend fun getTopStations(): List<RadioStation> = withContext(Dispatchers.IO) {
         val favIds = getFavoriteIdsSet()
-        CuratedData.CURATED_GLOBAL_STATIONS
+        val stations = ensureDatabaseSeeded()
+        stations
             .map { it.copy(isFavorite = favIds.contains(it.id)) }
             .sortedBy { it.name.trim().lowercase() }
     }
 
-    suspend fun getStationsByGenre(tag: String, limit: Int = 60): List<RadioStation> = withContext(Dispatchers.IO) {
-        try {
-            val api = RadioApiClient.getService()
-            val list = api.getStationsByTag(tag = tag, limit = limit)
-            if (list.isNotEmpty()) {
-                val favIds = getFavoriteIdsSet()
-                return@withContext list.map { it.toDomain(favIds.contains(it.stationUuid)) }
-                    .sortedBy { it.name.trim().lowercase() }
-            }
-        } catch (e: Exception) {
-            try {
-                val backupApi = RadioApiClient.rotateServer()
-                val list = backupApi.searchStations(tag = tag, limit = limit)
-                if (list.isNotEmpty()) {
-                    val favIds = getFavoriteIdsSet()
-                    return@withContext list.map { it.toDomain(favIds.contains(it.stationUuid)) }
-                        .sortedBy { it.name.trim().lowercase() }
-                }
-            } catch (_: Exception) {
-                // Fallback
-            }
-        }
+    suspend fun getStationsByGenre(tag: String): List<RadioStation> = withContext(Dispatchers.IO) {
         val favIds = getFavoriteIdsSet()
-        CuratedData.CURATED_GLOBAL_STATIONS
-            .filter { it.tags.contains(tag, ignoreCase = true) }
+        val stations = ensureDatabaseSeeded()
+        stations
+            .filter { com.example.util.RadioSearchEngine.matchesGenre(it, tag) }
             .map { it.copy(isFavorite = favIds.contains(it.id)) }
             .sortedBy { it.name.trim().lowercase() }
     }
 
-    suspend fun getStationsByCountry(countryCode: String, limit: Int = 60): List<RadioStation> = withContext(Dispatchers.IO) {
-        try {
-            val api = RadioApiClient.getService()
-            val list = api.getStationsByCountryCode(countryCode = countryCode.lowercase(), limit = limit)
-            if (list.isNotEmpty()) {
-                val favIds = getFavoriteIdsSet()
-                return@withContext list.map { it.toDomain(favIds.contains(it.stationUuid)) }
-                    .sortedBy { it.name.trim().lowercase() }
-            }
-        } catch (e: Exception) {
-            try {
-                val backupApi = RadioApiClient.rotateServer()
-                val list = backupApi.searchStations(countryCode = countryCode.uppercase(), limit = limit)
-                if (list.isNotEmpty()) {
-                    val favIds = getFavoriteIdsSet()
-                    return@withContext list.map { it.toDomain(favIds.contains(it.stationUuid)) }
-                        .sortedBy { it.name.trim().lowercase() }
-                }
-            } catch (_: Exception) {
-                // Fallback
-            }
-        }
+    suspend fun getStationsByCountry(countryCode: String): List<RadioStation> = withContext(Dispatchers.IO) {
         val favIds = getFavoriteIdsSet()
-        CuratedData.CURATED_GLOBAL_STATIONS
-            .filter { it.countryCode.equals(countryCode, ignoreCase = true) }
+        val isAll = countryCode.isBlank() || countryCode.equals("ALL", ignoreCase = true)
+        val isBrazil = countryCode.equals("BR", ignoreCase = true)
+
+        val stations = ensureDatabaseSeeded()
+        stations
+            .filter { station ->
+                when {
+                    isAll -> true
+                    isBrazil -> station.countryCode.equals("BR", ignoreCase = true) || station.country.contains("Brasil", ignoreCase = true)
+                    else -> station.countryCode.equals(countryCode, ignoreCase = true)
+                }
+            }
             .map { it.copy(isFavorite = favIds.contains(it.id)) }
             .sortedBy { it.name.trim().lowercase() }
     }
@@ -134,8 +106,7 @@ class RadioRepository(
         countryCode: String? = null,
         genreTag: String? = null,
         stateCode: String? = null,
-        city: String? = null,
-        limit: Int = 80
+        city: String? = null
     ): List<RadioStation> = withContext(Dispatchers.IO) {
         val cleanQuery = query.trim().ifBlank { null }
         val cleanCountry = if (countryCode.isNullOrBlank() || countryCode.equals("ALL", ignoreCase = true)) null else countryCode
@@ -143,80 +114,89 @@ class RadioRepository(
         val cleanState = if (stateCode.isNullOrBlank() || stateCode.equals("ALL", ignoreCase = true)) null else stateCode.trim()
         val cleanCity = if (city.isNullOrBlank() || city.equals("ALL", ignoreCase = true)) null else city.trim()
 
-        // If all parameters are null/blank, return top curated
-        if (cleanQuery == null && cleanCountry == null && cleanTag == null && cleanState == null && cleanCity == null) {
-            val favIds = getFavoriteIdsSet()
-            return@withContext CuratedData.CURATED_GLOBAL_STATIONS
-                .map { it.copy(isFavorite = favIds.contains(it.id)) }
-                .sortedBy { it.name.trim().lowercase() }
-        }
-
-        val apiStateParam = cleanState ?: cleanCity
-
-        try {
-            val api = RadioApiClient.getService()
-            val list = api.searchStations(
-                name = cleanQuery ?: cleanCity,
-                tag = cleanTag,
-                countryCode = cleanCountry,
-                state = apiStateParam,
-                limit = limit
-            )
-            if (list.isNotEmpty()) {
-                val favIds = getFavoriteIdsSet()
-                return@withContext list.map { it.toDomain(favIds.contains(it.stationUuid)) }
-                    .sortedBy { it.name.trim().lowercase() }
-            }
-        } catch (e: Exception) {
-            try {
-                val backupApi = RadioApiClient.rotateServer()
-                val list = backupApi.searchStations(
-                    name = cleanQuery ?: cleanCity,
-                    tag = cleanTag,
-                    countryCode = cleanCountry,
-                    state = apiStateParam,
-                    limit = limit
-                )
-                if (list.isNotEmpty()) {
-                    val favIds = getFavoriteIdsSet()
-                    return@withContext list.map { it.toDomain(favIds.contains(it.stationUuid)) }
-                        .sortedBy { it.name.trim().lowercase() }
-                }
-            } catch (_: Exception) {
-                // Fallback
-            }
-        }
+        val isCountryBrazil = cleanCountry?.equals("BR", ignoreCase = true) == true
 
         val favIds = getFavoriteIdsSet()
-        CuratedData.CURATED_GLOBAL_STATIONS
+        val stations = ensureDatabaseSeeded()
+        val localMatches = stations
             .filter { station ->
-                val matchQuery = cleanQuery == null ||
-                        station.name.contains(cleanQuery, ignoreCase = true) ||
-                        station.country.contains(cleanQuery, ignoreCase = true) ||
-                        station.city.contains(cleanQuery, ignoreCase = true) ||
-                        station.state.contains(cleanQuery, ignoreCase = true) ||
-                        station.tags.contains(cleanQuery, ignoreCase = true)
+                // 1. Busca textual por múltiplos tokens (AND)
+                val matchQuery = cleanQuery == null || com.example.util.RadioSearchEngine.matchesMultiToken(station, cleanQuery)
 
-                val matchCountry = cleanCountry == null ||
-                        station.countryCode.equals(cleanCountry, ignoreCase = true)
+                // 2. Filtro de País
+                val matchCountry = when {
+                    cleanCountry == null -> true
+                    isCountryBrazil -> station.countryCode.equals("BR", ignoreCase = true) || station.country.contains("Brasil", ignoreCase = true)
+                    else -> station.countryCode.equals(cleanCountry, ignoreCase = true)
+                }
 
-                val matchTag = cleanTag == null ||
-                        station.tags.contains(cleanTag, ignoreCase = true) ||
-                        station.primaryGenre.contains(cleanTag, ignoreCase = true)
+                // 3. Filtro de Gênero
+                val matchTag = cleanTag == null || com.example.util.RadioSearchEngine.matchesGenre(station, cleanTag)
 
-                val matchState = cleanState == null ||
-                        station.state.equals(cleanState, ignoreCase = true) ||
-                        station.tags.contains(cleanState, ignoreCase = true)
+                // 4. Filtro de Estado / UF (quando Brasil)
+                val matchState = when {
+                    !isCountryBrazil -> true
+                    cleanState == null -> true
+                    else -> com.example.util.RadioSearchEngine.matchesUf(station, cleanState)
+                }
 
-                val matchCity = cleanCity == null ||
-                        station.city.contains(cleanCity, ignoreCase = true) ||
-                        station.name.contains(cleanCity, ignoreCase = true) ||
-                        station.tags.contains(cleanCity, ignoreCase = true)
+                // 5. Filtro de Cidade (quando Brasil)
+                val matchCity = when {
+                    !isCountryBrazil || cleanCity == null -> true
+                    else -> {
+                        val normCity = com.example.util.RadioSearchEngine.normalize(cleanCity)
+                        com.example.util.RadioSearchEngine.normalize(station.city).contains(normCity) ||
+                        com.example.util.RadioSearchEngine.normalize(station.name).contains(normCity)
+                    }
+                }
 
                 matchQuery && matchCountry && matchTag && matchState && matchCity
             }
             .map { it.copy(isFavorite = favIds.contains(it.id)) }
             .sortedBy { it.name.trim().lowercase() }
+
+        // Enriquecimento sob demanda online quando houver query e poucos resultados locais
+        if (cleanQuery != null && cleanQuery.length >= 3 && localMatches.size < 5) {
+            try {
+                enrichStationsFromOnlineApis(cleanQuery)
+            } catch (_: Exception) {}
+        }
+
+        localMatches
+    }
+
+    private suspend fun enrichStationsFromOnlineApis(query: String) {
+        if (stationDao == null) return
+        try {
+            // Consulta DialTuner API para rádios brasileiras
+            val dialResults = DialTunerApiClient.api.search(query)
+            val newEntities = mutableListOf<com.example.data.db.RadioStationEntity>()
+            for (item in dialResults) {
+                val streamUrl = item.stream ?: item.backup
+                if (!streamUrl.isNullOrBlank() && item.name.isNotBlank()) {
+                    val id = "dialtuner_${item.id ?: java.util.UUID.randomUUID().toString().take(8)}"
+                    val entity = com.example.data.db.RadioStationEntity(
+                        id = id,
+                        name = item.name.trim(),
+                        streamUrl = streamUrl,
+                        favicon = item.cover ?: "",
+                        homepage = item.url ?: "",
+                        tags = (item.genres ?: listOf(item.genre ?: "")).filterNotNull().joinToString(", "),
+                        country = item.country ?: "Brasil",
+                        countryCode = item.cc ?: "BR",
+                        state = item.region ?: "",
+                        city = item.city ?: "",
+                        codec = item.format ?: "AAC",
+                        bitrate = item.bitrate ?: 128,
+                        votes = item.id?.toInt() ?: 1000
+                    )
+                    newEntities.add(entity)
+                }
+            }
+            if (newEntities.isNotEmpty()) {
+                stationDao.insertStations(newEntities)
+            }
+        } catch (_: Exception) {}
     }
 
     private suspend fun getFavoriteIdsSet(): Set<String> {

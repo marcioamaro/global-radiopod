@@ -17,8 +17,8 @@ android {
     applicationId = "com.aistudio.worldradio.ipodapp"
     minSdk = 24
     targetSdk = 36
-    versionCode = 24
-    versionName = "Versão 24 RC"
+    versionCode = 33
+    versionName = "33.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -41,10 +41,15 @@ android {
 
   buildTypes {
     release {
-      isCrunchPngs = false
-      isMinifyEnabled = false
+      isCrunchPngs = true
+      isMinifyEnabled = true
+      isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = signingConfigs.getByName("release")
+      signingConfig = if (file("${rootDir}/my-upload-key.jks").exists()) {
+        signingConfigs.getByName("release")
+      } else {
+        signingConfigs.getByName("debugConfig")
+      }
     }
     debug { signingConfig = signingConfigs.getByName("debugConfig") }
   }
@@ -103,6 +108,9 @@ dependencies {
   implementation(libs.androidx.media3.session)
   implementation(libs.androidx.media3.ui)
   implementation("androidx.media:media:1.7.0")
+  implementation(libs.androidx.mediarouter)
+  implementation(libs.play.services.cast.framework)
+  implementation("androidx.appcompat:appcompat:1.7.0")
   implementation(libs.converter.moshi)
   implementation(libs.firebase.ai)
   // Uncomment to use Firestore:

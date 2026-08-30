@@ -1,0 +1,93 @@
+<resources>
+    <string name="app_name">MediaPod + Radio / Podcast</string>
+    <string name="media_notification_channel_name">Hintergrund Radio &amp; Podcasts</string>
+
+    <!-- Main Menu -->
+    <string name="menu_radio">Radio</string>
+    <string name="menu_podcasts">Podcasts</string>
+    <string name="menu_mp3">Musik-Player</string>
+    <string name="menu_video">Video-Player</string>
+    <string name="menu_youtube">YouTube</string>
+    <string name="menu_equalizer">Equalizer</string>
+    <string name="menu_audio_output">Audioausgabe</string>
+    <string name="menu_game">Brick Game</string>
+    <string name="menu_car_mode">Fahrmodus</string>
+    <string name="menu_dock_mode">Dock-Modus</string>
+    <string name="menu_settings">Einstellungen</string>
+    <string name="menu_about">Über</string>
+    <string name="menu_close_app">App Beenden</string>
+
+    <!-- Radio Submenu -->
+    <string name="radio_now_playing">Aktuelle Wiedergabe</string>
+    <string name="radio_favorites">Favoriten</string>
+    <string name="radio_recents">Zuletzt Gehört</string>
+    <string name="radio_top_brazil">Top Brasilien (Top 100)</string>
+    <string name="radio_top_world">Top Weltweit (Top 100)</string>
+    <string name="radio_genres">Genres &amp; Stile</string>
+    <string name="radio_countries">Länder</string>
+    <string name="radio_search">Sender Suchen</string>
+
+    <!-- Podcasts Submenu -->
+    <string name="podcast_now_playing">Aktuelle Wiedergabe</string>
+    <string name="podcast_favorites">Favoriten-Podcasts</string>
+    <string name="podcast_recents">Kürzliche Podcasts</string>
+    <string name="podcast_top_brazil">Top Brasilien (Top 100)</string>
+    <string name="podcast_top_world">Top Weltweit (Top 100)</string>
+    <string name="podcast_categories">Kategorien &amp; Genres</string>
+    <string name="podcast_by_country">Nach Land</string>
+    <string name="podcast_search">Podcast Suchen</string>
+    <string name="podcast_custom">Eigene Podcasts</string>
+
+    <!-- Settings Submenu -->
+    <string name="settings_theme">Gehäuse-Design</string>
+    <string name="settings_backlight">Hintergrundbeleuchtung (LCD)</string>
+    <string name="settings_wheel">Click-Wheel Stil</string>
+    <string name="settings_font">Schriftart</string>
+    <string name="settings_font_size">Schriftgröße</string>
+    <string name="settings_language">Sprache</string>
+    <string name="settings_auto_play">Autoplay beim Start</string>
+    <string name="settings_sound">Wheel-Klickton</string>
+    <string name="settings_haptics">Haptisches Feedback</string>
+    <string name="settings_sleep_timer">Sleep-Timer</string>
+    <string name="settings_dock_clock_scale">Uhr-Schriftgröße</string>
+    <string name="settings_dock_show_seconds">Sekunden Anzeigen (:ss)</string>
+    <string name="settings_backup_export">Backup Exportieren (.enc)</string>
+    <string name="settings_backup_restore">Backup Wiederherstellen (.enc)</string>
+    <string name="settings_clear_history">Verlauf Löschen</string>
+
+    <!-- Player & Status -->
+    <string name="status_live">LIVE</string>
+    <string name="status_tuning">ABSTIMMUNG...</string>
+    <string name="status_buffering">PUFFERN...</string>
+    <string name="status_paused">PAUSIERT</string>
+    <string name="status_stopped">GESTOPPT</string>
+    <string name="status_digital_rds">LIVE • Digitale RDS-Übertragung</string>
+    <string name="speed">Geschwindigkeit</string>
+    <string name="chapters">Kapitel</string>
+    <string name="volume">Lautstärke</string>
+    <string name="dock_extra_dim">Extra Abdunkeln</string>
+
+    <!-- Equalizer -->
+    <string name="eq_title">Equalizer</string>
+    <string name="eq_active">EQUALIZER AKTIV</string>
+    <string name="eq_disabled">EQUALIZER DEAKTIVIERT</string>
+    <string name="eq_on">EIN</string>
+    <string name="eq_off">AUS</string>
+    <string name="eq_presets">AUDIO-PRESETS:</string>
+    <string name="eq_frequencies">FREQUENZREGLER (-12dB bis +12dB):</string>
+
+    <!-- Messages & Alerts -->
+    <string name="msg_no_episodes">Zurzeit sind keine Episoden verfügbar</string>
+    <string name="msg_connection_error">Internetverbindung prüfen</string>
+    <string name="msg_invalid_backup">Ungültige oder inkompatible Sicherungsdatei</string>
+    <string name="msg_history_cleared">Verlauf erfolgreich gelöscht</string>
+
+    <!-- Dialogs & Buttons -->
+    <string name="dialog_restart_title">Neustart Erforderlich</string>
+    <string name="dialog_language_restart_msg">Die Anwendung wird sicher neu gestartet, um die neue Sprache anzuwenden. Fortfahren?</string>
+    <string name="dialog_backup_success_msg">Einstellungen erfolgreich wiederhergestellt. Die Anwendung startet nun neu, um Ihre Einstellungen zu laden.</string>
+    <string name="btn_continue">Fortfahren</string>
+    <string name="btn_cancel">Abbrechen</string>
+    <string name="btn_close">Schließen</string>
+    <string name="btn_ok">OK</string>
+</resources>

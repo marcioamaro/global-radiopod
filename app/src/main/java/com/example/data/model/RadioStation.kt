@@ -5,21 +5,21 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class RadioStationDto(
-    @Json(name = "stationuuid") val stationUuid: String? = null,
-    @Json(name = "name") val name: String? = null,
-    @Json(name = "url") val url: String? = null,
-    @Json(name = "url_resolved") val urlResolved: String? = null,
-    @Json(name = "homepage") val homepage: String? = null,
-    @Json(name = "favicon") val favicon: String? = null,
-    @Json(name = "tags") val tags: String? = null,
-    @Json(name = "country") val country: String? = null,
-    @Json(name = "countrycode") val countryCode: String? = null,
-    @Json(name = "state") val state: String? = null,
-    @Json(name = "language") val language: String? = null,
-    @Json(name = "votes") val votes: Int? = null,
-    @Json(name = "codec") val codec: String? = null,
-    @Json(name = "bitrate") val bitrate: Int? = null,
-    @Json(name = "clickcount") val clickCount: Int? = null
+    @field:Json(name = "stationuuid") val stationUuid: String? = null,
+    @field:Json(name = "name") val name: String? = null,
+    @field:Json(name = "url") val url: String? = null,
+    @field:Json(name = "url_resolved") val urlResolved: String? = null,
+    @field:Json(name = "homepage") val homepage: String? = null,
+    @field:Json(name = "favicon") val favicon: String? = null,
+    @field:Json(name = "tags") val tags: String? = null,
+    @field:Json(name = "country") val country: String? = null,
+    @field:Json(name = "countrycode") val countryCode: String? = null,
+    @field:Json(name = "state") val state: String? = null,
+    @field:Json(name = "language") val language: String? = null,
+    @field:Json(name = "votes") val votes: Int? = null,
+    @field:Json(name = "codec") val codec: String? = null,
+    @field:Json(name = "bitrate") val bitrate: Int? = null,
+    @field:Json(name = "clickcount") val clickCount: Int? = null
 )
 
 data class RadioStation(
@@ -70,6 +70,19 @@ data class RadioStation(
             }
         }
         return list
+    }
+
+    fun penalizeStreamUrl(failedUrl: String): RadioStation {
+        val currentAll = getAllStreamCandidates().toMutableList()
+        if (currentAll.remove(failedUrl)) {
+            currentAll.add(failedUrl)
+        }
+        val newPrimary = currentAll.firstOrNull() ?: streamUrl
+        val newAlts = if (currentAll.size > 1) currentAll.drop(1) else emptyList()
+        return this.copy(
+            streamUrl = newPrimary,
+            alternativeStreamUrls = newAlts
+        )
     }
     val displayFrequency: String
         get() {

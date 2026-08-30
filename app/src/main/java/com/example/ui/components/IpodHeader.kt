@@ -7,6 +7,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -43,6 +44,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.painterResource
+import com.example.R
 import com.example.player.RadioPlaybackStatus
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -61,6 +64,9 @@ fun IpodHeader(
     fontFamily: FontFamily = FontFamily.Monospace,
     fontScale: Float = 1.0f,
     isBold: Boolean = true,
+    showAudioOutputIcon: Boolean = false,
+    onAudioOutputClick: (() -> Unit)? = null,
+    playbackSpeed: Float = 1.0f,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -123,18 +129,25 @@ fun IpodHeader(
                         )
                     }
                     RadioPlaybackStatus.BUFFERING -> {
-                        Box(
-                            modifier = Modifier
-                                .size(10.dp)
-                                .alpha(bufferAlpha)
-                                .clip(RoundedCornerShape(5.dp))
-                                .background(backlightTextPrimary)
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_hourglass_flat),
+                            contentDescription = "Bufferizando",
+                            tint = backlightTextPrimary.copy(alpha = bufferAlpha),
+                            modifier = Modifier.size(13.dp)
                         )
                     }
                     RadioPlaybackStatus.PAUSED -> {
                         Icon(
                             imageVector = Icons.Default.Pause,
                             contentDescription = "Pausado",
+                            tint = backlightTextPrimary.copy(alpha = 0.6f),
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+                    RadioPlaybackStatus.NO_INTERNET -> {
+                        Icon(
+                            imageVector = Icons.Default.Pause,
+                            contentDescription = "Pausado (Sem Conexão)",
                             tint = backlightTextPrimary.copy(alpha = 0.6f),
                             modifier = Modifier.size(14.dp)
                         )
@@ -167,8 +180,26 @@ fun IpodHeader(
                 modifier = Modifier.weight(1f, fill = false).padding(horizontal = 8.dp)
             )
 
-            // Right: Battery & Sleep timer
+            // Right: Audio Output Switcher, Battery & Sleep timer
             Row(verticalAlignment = Alignment.CenterVertically) {
+                if (showAudioOutputIcon || onAudioOutputClick != null) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(3.dp))
+                            .clickable(enabled = onAudioOutputClick != null) { onAudioOutputClick?.invoke() }
+                            .padding(horizontal = 4.dp, vertical = 2.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_audio_output_classic),
+                            contentDescription = "Saída de Áudio",
+                            tint = backlightTextPrimary,
+                            modifier = Modifier.size(13.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(3.dp))
+                }
+
                 if (sleepTimerMinutes > 0) {
                     Icon(
                         imageVector = Icons.Default.Timer,
@@ -183,6 +214,37 @@ fun IpodHeader(
                         fontWeight = FontWeight.Bold,
                         fontFamily = fontFamily,
                         modifier = Modifier.padding(start = 2.dp, end = 4.dp)
+                    )
+                }
+
+                // Indicador discreto de velocidade na barra LCD quando diferente de 1.0x
+                if (playbackSpeed != 1.0f) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(backlightTextPrimary)
+                            .padding(horizontal = 3.5.dp, vertical = 1.dp)
+                    ) {
+                        Text(
+                            text = "${playbackSpeed}x",
+                            color = backlightHighlight,
+                            fontSize = (8f * fontScale).sp,
+                            fontWeight = FontWeight.Black,
+                            fontFamily = fontFamily
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(4.dp))
+                }
+
+                // Ícone de status de conexão OBRIGATORIAMENTE ao lado ESQUERDO do relógio LCD
+                if (status == RadioPlaybackStatus.NO_INTERNET) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_wifi_off_alert),
+                        contentDescription = "Sem Conexão com a Internet",
+                        tint = backlightTextPrimary,
+                        modifier = Modifier
+                            .size(15.dp)
+                            .padding(end = 4.dp)
                     )
                 }
 

@@ -1,4 +1,93 @@
 <resources>
-    <string name="app_name">IPod Class + Radio</string>
-    <string name="media_notification_channel_name">Rádio em Segundo Plano &amp; Tela de Bloqueio</string>
+    <string name="app_name">MediaPod + Radio / Podcast</string>
+    <string name="media_notification_channel_name">Background Radio &amp; Podcasts</string>
+
+    <!-- Main Menu -->
+    <string name="menu_radio">Radio</string>
+    <string name="menu_podcasts">Podcasts</string>
+    <string name="menu_mp3">Music Player</string>
+    <string name="menu_video">Video Player</string>
+    <string name="menu_youtube">YouTube</string>
+    <string name="menu_equalizer">Equalizer</string>
+    <string name="menu_audio_output">Audio Output</string>
+    <string name="menu_game">Brick Game</string>
+    <string name="menu_car_mode">Car Mode</string>
+    <string name="menu_dock_mode">Dock Mode</string>
+    <string name="menu_settings">Settings</string>
+    <string name="menu_about">About</string>
+    <string name="menu_close_app">Encerrar</string>
+
+    <!-- Radio Submenu -->
+    <string name="radio_now_playing">Now Playing</string>
+    <string name="radio_favorites">Favorites</string>
+    <string name="radio_recents">Recents</string>
+    <string name="radio_top_brazil">Top Brazil (1,307 Stations)</string>
+    <string name="radio_top_world">Top World</string>
+    <string name="radio_genres">Genres &amp; Styles</string>
+    <string name="radio_countries">Countries</string>
+    <string name="radio_search">Search Station</string>
+
+    <!-- Podcasts Submenu -->
+    <string name="podcast_now_playing">Now Playing</string>
+    <string name="podcast_favorites">Favorite Podcasts</string>
+    <string name="podcast_recents">Recent Podcasts</string>
+    <string name="podcast_top_brazil">Top Brazil (Top 100)</string>
+    <string name="podcast_top_world">Top Worldwide (Top 100)</string>
+    <string name="podcast_categories">Categories &amp; Genres</string>
+    <string name="podcast_by_country">By Country</string>
+    <string name="podcast_search">Search Podcast</string>
+    <string name="podcast_custom">My Custom Podcasts</string>
+
+    <!-- Settings Submenu -->
+    <string name="settings_theme">Chassis Theme</string>
+    <string name="settings_backlight">Backlight Theme</string>
+    <string name="settings_wheel">Click Wheel Style</string>
+    <string name="settings_font">Font Family</string>
+    <string name="settings_font_size">Font Size</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_auto_play">Auto-Play on Launch</string>
+    <string name="settings_sound">Wheel Click Sound</string>
+    <string name="settings_haptics">Haptic Feedback</string>
+    <string name="settings_sleep_timer">Sleep Timer</string>
+    <string name="settings_dock_clock_scale">Clock Font Size</string>
+    <string name="settings_dock_show_seconds">Show Seconds (:ss)</string>
+    <string name="settings_backup_export">Export Backup (.enc)</string>
+    <string name="settings_backup_restore">Restore Backup (.enc)</string>
+    <string name="settings_clear_history">Clear History</string>
+
+    <!-- Player & Status -->
+    <string name="status_live">LIVE</string>
+    <string name="status_tuning">TUNING...</string>
+    <string name="status_buffering">BUFFERING...</string>
+    <string name="status_paused">PAUSED</string>
+    <string name="status_stopped">STOPPED</string>
+    <string name="status_digital_rds">LIVE • Digital RDS Broadcast</string>
+    <string name="speed">Speed</string>
+    <string name="chapters">Chapters</string>
+    <string name="volume">Volume</string>
+    <string name="dock_extra_dim">Extra Dim</string>
+
+    <!-- Equalizer -->
+    <string name="eq_title">Equalizer</string>
+    <string name="eq_active">EQUALIZER ACTIVE</string>
+    <string name="eq_disabled">EQUALIZER DISABLED</string>
+    <string name="eq_on">ON</string>
+    <string name="eq_off">OFF</string>
+    <string name="eq_presets">AUDIO PRESETS:</string>
+    <string name="eq_frequencies">FREQUENCY CONTROLS (-12dB to +12dB):</string>
+
+    <!-- Messages & Alerts -->
+    <string name="msg_no_episodes">No episodes available at this moment</string>
+    <string name="msg_connection_error">Check internet connection</string>
+    <string name="msg_invalid_backup">Invalid or incompatible backup file</string>
+    <string name="msg_history_cleared">History successfully cleared</string>
+
+    <!-- Dialogs & Buttons -->
+    <string name="dialog_restart_title">Restart Required</string>
+    <string name="dialog_language_restart_msg">The application will restart safely to apply the new language. Continue?</string>
+    <string name="dialog_backup_success_msg">Preferences restored successfully. The application will restart now to load your configuration.</string>
+    <string name="btn_continue">Continue</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_close">Close</string>
+    <string name="btn_ok">OK</string>
 </resources>
