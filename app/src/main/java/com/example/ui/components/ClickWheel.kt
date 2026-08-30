@@ -249,8 +249,9 @@ fun ClickWheel(
             androidx.compose.foundation.Image(
                 painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.ic_pear_logo),
                 contentDescription = "Botão Central Pera",
-                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(textColor.copy(alpha = 0.38f)),
-                modifier = Modifier.size(centerSize * 0.35f)
+                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(textColor.copy(alpha = 0.42f)),
+                contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+                modifier = Modifier.size(width = centerSize * 0.32f, height = centerSize * 0.45f)
             )
         }
     }

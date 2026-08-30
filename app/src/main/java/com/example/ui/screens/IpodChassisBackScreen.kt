@@ -61,6 +61,22 @@ fun IpodChassisBackScreen(
     val laserTextColor = Color(0xFF444C55)
     val laserHighlightColor = Color(0x66FFFFFF)
 
+    val freeSpaceGb = remember {
+        try {
+            val stat = android.os.StatFs(android.os.Environment.getDataDirectory().path)
+            val availableBytes = stat.availableBytes
+            val gb = (availableBytes / (1024L * 1024L * 1024L)).toInt()
+            gb.coerceAtLeast(1)
+        } catch (_: Exception) {
+            16
+        }
+    }
+
+    val deviceModel = remember {
+        val model = android.os.Build.MODEL ?: ""
+        if (model.isNotBlank()) " • $model" else ""
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -200,15 +216,18 @@ fun IpodChassisBackScreen(
                     // Logotipo da Pêra Gravado a Laser no Metal com Efeito de Baixo-Relevo
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.size(92.dp)
+                        modifier = Modifier
+                            .width(68.dp)
+                            .height(96.dp)
                     ) {
                         // Sombra de chanfro gravado no metal
                         Image(
                             painter = painterResource(id = R.drawable.ic_pear_logo),
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(laserHighlightColor),
+                            contentScale = ContentScale.Fit,
                             modifier = Modifier
-                                .size(88.dp)
+                                .fillMaxSize()
                                 .offset(x = 1.dp, y = 1.2.dp)
                         )
                         // Imagem gravada oficial
@@ -216,8 +235,8 @@ fun IpodChassisBackScreen(
                             painter = painterResource(id = R.drawable.ic_pear_logo),
                             contentDescription = "Logotipo Pêra MediaPod",
                             colorFilter = ColorFilter.tint(laserTextColor),
-                            modifier = Modifier.size(88.dp),
-                            contentScale = ContentScale.Fit
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
 
@@ -235,7 +254,7 @@ fun IpodChassisBackScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Badge de Capacidade Gravado no Metal
+                    // Badge de Espaço Livre Gravado no Metal
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
@@ -244,9 +263,9 @@ fun IpodChassisBackScreen(
                             .padding(horizontal = 14.dp, vertical = 3.dp)
                     ) {
                         Text(
-                            text = "160GB",
+                            text = "FREE SPACE ${freeSpaceGb}GB",
                             color = laserTextColor,
-                            fontSize = 11.5.sp,
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = FontFamily.SansSerif,
                             letterSpacing = 0.8.sp
@@ -284,9 +303,9 @@ fun IpodChassisBackScreen(
                     Spacer(modifier = Modifier.height(2.dp))
 
                     Text(
-                        text = "Rated 5V ⎓ 1A Max. • Serial No: MPOD-MARCIO-AMARO-BR • v37.0",
+                        text = "Rated 5V ⎓ 1A Max. • Serial No: PROD-051-811312X-40.0$deviceModel",
                         color = laserTextColor.copy(alpha = 0.80f),
-                        fontSize = 7.6.sp,
+                        fontSize = 7.3.sp,
                         fontWeight = FontWeight.Normal,
                         fontFamily = FontFamily.Monospace,
                         textAlign = TextAlign.Center

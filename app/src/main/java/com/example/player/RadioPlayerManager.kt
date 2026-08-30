@@ -114,6 +114,9 @@ class RadioPlayerManager private constructor(private val context: Context) {
     private val _sleepTimerMinutes = MutableStateFlow(0)
     val sleepTimerMinutes: StateFlow<Int> = _sleepTimerMinutes.asStateFlow()
 
+    private val _sleepTimerSecondsRemaining = MutableStateFlow(0L)
+    val sleepTimerSecondsRemaining: StateFlow<Long> = _sleepTimerSecondsRemaining.asStateFlow()
+
     // Active Media Type (Isolamento exclusivo de fila de reprodução)
     private val _activeMediaType = MutableStateFlow<ActiveMediaType>(ActiveMediaType.LIVE_RADIO)
     val activeMediaType: StateFlow<ActiveMediaType> = _activeMediaType.asStateFlow()
@@ -1494,17 +1497,21 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
     fun setSleepTimer(minutes: Int) {
         sleepTimerJob?.cancel()
+        val totalSeconds = minutes * 60L
+        _sleepTimerSecondsRemaining.value = totalSeconds
         _sleepTimerMinutes.value = minutes
-        if (minutes > 0) {
+        if (totalSeconds > 0L) {
             sleepTimerJob = scope.launch {
-                var remaining = minutes
-                while (remaining > 0 && isActive) {
-                    delay(60_000L)
-                    remaining -= 1
-                    _sleepTimerMinutes.value = remaining
+                var remaining = totalSeconds
+                while (remaining > 0L && isActive) {
+                    delay(1000L)
+                    remaining -= 1L
+                    _sleepTimerSecondsRemaining.value = remaining
+                    _sleepTimerMinutes.value = ((remaining + 59L) / 60L).toInt()
                 }
                 if (isActive) {
                     pause()
+                    _sleepTimerSecondsRemaining.value = 0L
                     _sleepTimerMinutes.value = 0
                 }
             }
@@ -1829,25 +1836,31 @@ class RadioPlayerManager private constructor(private val context: Context) {
         if (!isVolumeListenerRegistered) {
             try {
                 val filter = android.content.IntentFilter("android.media.VOLUME_CHANGED_ACTION")
-                context.registerReceiver(volumeReceiver, filter)
+                androidx.core.content.ContextCompat.registerReceiver(
+                    context,
+                    volumeReceiver,
+                    filter,
+                    androidx.core.content.ContextCompat.RECEIVER_EXPORTED
+                )
                 context.contentResolver.registerContentObserver(
                     android.provider.Settings.System.CONTENT_URI,
                     true,
                     volumeObserver
                 )
                 isVolumeListenerRegistered = true
+                syncVolumeFromNativeStream()
             } catch (_: Exception) {}
         }
     }
 
-    private fun syncVolumeFromNativeStream() {
+    fun syncVolumeFromNativeStream() {
         try {
             audioManager?.let { am ->
                 val max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
                 val current = am.getStreamVolume(AudioManager.STREAM_MUSIC)
                 if (max > 0) {
                     val ratio = (current.toFloat() / max.toFloat()).coerceIn(0f, 1f)
-                    if (kotlin.math.abs(_volume.value - ratio) > 0.01f) {
+                    if (kotlin.math.abs(_volume.value - ratio) > 0.005f) {
                         _volume.value = ratio
                         _isMuted.value = (ratio <= 0.01f)
                     }

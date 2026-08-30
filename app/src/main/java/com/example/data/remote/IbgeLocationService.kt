@@ -60,11 +60,18 @@ object IbgeLocationService {
 
                 if (cities.isNotEmpty()) {
                     // Ordena respeitando acentuação da língua portuguesa
-                    val collator = Collator.getInstance(Locale("pt", "BR"))
+                    val collator = Collator.getInstance(Locale.forLanguageTag("pt-BR"))
                     cities.sortWith(collator)
 
+                    // Garante São Paulo em PRIMEIRO lugar na lista de cidades
+                    val spIndex = cities.indexOfFirst { it.equals("São Paulo", ignoreCase = true) }
+                    if (spIndex > 0) {
+                        val spCity = cities.removeAt(spIndex)
+                        cities.add(0, spCity)
+                    }
+
                     memoryCache[cleanUf] = cities
-                    Log.d(TAG, "IBGE: Carregados ${cities.size} municípios para $cleanUf com sucesso")
+                    Log.d(TAG, "IBGE: Carregados ${cities.size} municípios para $cleanUf com sucesso (São Paulo no topo)")
                     return@withContext cities
                 }
             } else {
@@ -75,7 +82,12 @@ object IbgeLocationService {
         }
 
         // 3. Fallback inteligente: base pré-curada local caso esteja sem internet
-        val fallback = CuratedData.getCitiesForState(cleanUf).filter { it != "Todas as Cidades" }
+        val fallback = CuratedData.getCitiesForState(cleanUf).filter { it != "Todas as Cidades" }.toMutableList()
+        val spIndexFallback = fallback.indexOfFirst { it.equals("São Paulo", ignoreCase = true) }
+        if (spIndexFallback > 0) {
+            val spCity = fallback.removeAt(spIndexFallback)
+            fallback.add(0, spCity)
+        }
         if (fallback.isNotEmpty()) {
             memoryCache[cleanUf] = fallback
         }

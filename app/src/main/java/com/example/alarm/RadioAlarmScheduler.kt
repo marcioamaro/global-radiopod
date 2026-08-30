@@ -27,8 +27,10 @@ object RadioAlarmScheduler {
 
         val intent = Intent(context, RadioAlarmReceiver::class.java).apply {
             action = ACTION_TRIGGER_ALARM
+            putExtra("stationId", config.stationId)
             putExtra("stationName", config.stationName)
             putExtra("stationStreamUrl", config.stationStreamUrl)
+            putExtra("stationFavicon", config.stationFavicon)
             putExtra("volume", config.volume)
             putExtra("vibrate", config.vibrate)
             putExtra("snoozeMinutes", config.snoozeMinutes)

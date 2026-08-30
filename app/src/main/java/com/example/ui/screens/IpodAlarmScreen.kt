@@ -22,10 +22,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material3.CircularProgressIndicator
 import com.example.alarm.RadioAlarmScheduler
+import com.example.alarm.RadioAlarmStreamValidator
+import com.example.alarm.AlarmValidationResult
 import com.example.data.model.RadioAlarmConfig
 import com.example.data.model.RadioStation
 import com.example.data.preferences.IpodPreferencesManager
+import com.example.data.repository.CuratedData
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 @Composable
@@ -42,19 +47,45 @@ fun IpodAlarmScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val prefs = remember { IpodPreferencesManager.getInstance(context) }
     var alarmConfig by remember { mutableStateOf(prefs.getRadioAlarmConfig()) }
     var selectedIndex by remember { mutableStateOf(0) }
     var isSelectingStation by remember { mutableStateOf(false) }
 
+    // Feedback de Salvamento
+    var validationErrorMessage by remember { mutableStateOf<String?>(null) }
+    var validationSuccessMessage by remember { mutableStateOf<String?>(null) }
+
     fun updateConfig(newConfig: RadioAlarmConfig) {
         alarmConfig = newConfig
-        prefs.saveRadioAlarmConfig(newConfig)
-        if (newConfig.isEnabled) {
-            RadioAlarmScheduler.scheduleAlarm(context, newConfig)
-        } else {
-            RadioAlarmScheduler.cancelAlarm(context)
+    }
+
+    fun onSaveAlarm() {
+        validationErrorMessage = null
+        validationSuccessMessage = null
+
+        val targetStation = if (alarmConfig.stationStreamUrl.isBlank()) {
+            favorites.firstOrNull() ?: CuratedData.CURATED_GLOBAL_STATIONS.firstOrNull { it.countryCode.equals("BR", ignoreCase = true) }
+        } else null
+
+        val finalConfig = alarmConfig.copy(
+            isEnabled = true,
+            stationId = targetStation?.id ?: alarmConfig.stationId,
+            stationName = targetStation?.name ?: alarmConfig.stationName,
+            stationStreamUrl = targetStation?.streamUrl ?: alarmConfig.stationStreamUrl,
+            stationFavicon = targetStation?.favicon ?: alarmConfig.stationFavicon
+        )
+
+        if (finalConfig.stationStreamUrl.isBlank()) {
+            validationErrorMessage = "Selecione uma rádio para o alarme."
+            return
         }
+
+        alarmConfig = finalConfig
+        prefs.saveRadioAlarmConfig(finalConfig)
+        RadioAlarmScheduler.scheduleAlarm(context, finalConfig)
+        validationSuccessMessage = "Alarme salvo e ativado para às ${finalConfig.formattedTime} com a rádio ${finalConfig.stationName}!"
     }
 
     if (isSelectingStation) {
@@ -96,13 +127,17 @@ fun IpodAlarmScreen(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            if (favorites.isEmpty()) {
+            val availableStations = remember(favorites) {
+                if (favorites.isNotEmpty()) favorites else CuratedData.CURATED_GLOBAL_STATIONS.filter { it.countryCode.equals("BR", ignoreCase = true) }.take(30)
+            }
+
+            if (availableStations.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Nenhuma rádio favorita salva.\nAdicione rádios aos favoritos para despertar com elas!",
+                        text = "Nenhuma rádio disponível para seleção.",
                         color = backlightTextSecondary,
                         fontSize = (11f * fontScale).sp,
                         fontFamily = fontFamily
@@ -113,7 +148,7 @@ fun IpodAlarmScreen(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    itemsIndexed(favorites) { _, station ->
+                    itemsIndexed(availableStations) { _, station ->
                         val isChosen = alarmConfig.stationId == station.id
                         Row(
                             modifier = Modifier
@@ -121,13 +156,11 @@ fun IpodAlarmScreen(
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(if (isChosen) backlightHighlight else Color(0x18000000))
                                 .clickable {
-                                    updateConfig(
-                                        alarmConfig.copy(
-                                            stationId = station.id,
-                                            stationName = station.name,
-                                            stationStreamUrl = station.streamUrl,
-                                            stationFavicon = station.favicon
-                                        )
+                                    alarmConfig = alarmConfig.copy(
+                                        stationId = station.id,
+                                        stationName = station.name,
+                                        stationStreamUrl = station.streamUrl,
+                                        stationFavicon = station.favicon
                                     )
                                     isSelectingStation = false
                                 }
@@ -218,20 +251,28 @@ fun IpodAlarmScreen(
                         .border(1.dp, backlightTextPrimary.copy(alpha = 0.4f), RoundedCornerShape(4.dp))
                         .clickable {
                             val toggled = !alarmConfig.isEnabled
-                            // Se ligar e não tiver rádio selecionada, pega a primeira dos favoritos
-                            val targetStation = if (alarmConfig.stationStreamUrl.isBlank() && favorites.isNotEmpty()) {
-                                favorites.first()
+                            val targetStation = if (alarmConfig.stationStreamUrl.isBlank()) {
+                                favorites.firstOrNull() ?: CuratedData.CURATED_GLOBAL_STATIONS.firstOrNull { it.countryCode.equals("BR", ignoreCase = true) }
                             } else null
 
-                            updateConfig(
-                                alarmConfig.copy(
-                                    isEnabled = toggled,
-                                    stationId = targetStation?.id ?: alarmConfig.stationId,
-                                    stationName = targetStation?.name ?: alarmConfig.stationName,
-                                    stationStreamUrl = targetStation?.streamUrl ?: alarmConfig.stationStreamUrl,
-                                    stationFavicon = targetStation?.favicon ?: alarmConfig.stationFavicon
-                                )
+                            val updated = alarmConfig.copy(
+                                isEnabled = toggled,
+                                stationId = targetStation?.id ?: alarmConfig.stationId,
+                                stationName = targetStation?.name ?: alarmConfig.stationName,
+                                stationStreamUrl = targetStation?.streamUrl ?: alarmConfig.stationStreamUrl,
+                                stationFavicon = targetStation?.favicon ?: alarmConfig.stationFavicon
                             )
+                            alarmConfig = updated
+                            prefs.saveRadioAlarmConfig(updated)
+                            if (toggled) {
+                                RadioAlarmScheduler.scheduleAlarm(context, updated)
+                                validationSuccessMessage = "Despertador ativado para às ${updated.formattedTime} com a rádio ${updated.stationName}!"
+                                validationErrorMessage = null
+                            } else {
+                                RadioAlarmScheduler.cancelAlarm(context)
+                                validationSuccessMessage = "Despertador desativado."
+                                validationErrorMessage = null
+                            }
                         }
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
@@ -533,23 +574,89 @@ fun IpodAlarmScreen(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Botão Voltar ao Menu
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(4.dp))
-                .background(backlightHighlight.copy(alpha = 0.2f))
-                .clickable(onClick = onBack)
-                .padding(vertical = 6.dp),
-            contentAlignment = Alignment.Center
+        // Mensagens de Feedback (Sucesso / Erro / Indicador de Carregamento)
+        if (validationSuccessMessage != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color(0xFF166534).copy(alpha = 0.3f))
+                    .border(1.dp, Color(0xFF16A34A), RoundedCornerShape(4.dp))
+                    .padding(horizontal = 8.dp, vertical = 5.dp)
+            ) {
+                Text(
+                    text = "✓ $validationSuccessMessage",
+                    color = backlightTextPrimary,
+                    fontSize = (10f * fontScale).sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = fontFamily
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+
+        if (validationErrorMessage != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color(0xFFDC2626).copy(alpha = 0.25f))
+                    .border(1.dp, Color(0xFFB91C1C), RoundedCornerShape(4.dp))
+                    .padding(horizontal = 8.dp, vertical = 5.dp)
+            ) {
+                Text(
+                    text = "✕ $validationErrorMessage",
+                    color = backlightTextPrimary,
+                    fontSize = (9.5f * fontScale).sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = fontFamily
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+
+        // Botões de Ação: Salvar e Voltar
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text(
-                text = "CONCLUIR E VOLTAR ✕",
-                color = backlightTextPrimary,
-                fontSize = (10.5f * fontScale).sp,
-                fontWeight = FontWeight.Black,
-                fontFamily = fontFamily
-            )
+            // Botão Salvar
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(backlightHighlight)
+                    .clickable { onSaveAlarm() }
+                    .padding(vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "SALVAR ALARME",
+                    color = Color.White,
+                    fontSize = (11f * fontScale).sp,
+                    fontWeight = FontWeight.Black,
+                    fontFamily = fontFamily
+                )
+            }
+
+            // Botão Voltar ao Menu
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(backlightHighlight.copy(alpha = 0.2f))
+                    .clickable(onClick = onBack)
+                    .padding(vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "VOLTAR ✕",
+                    color = backlightTextPrimary,
+                    fontSize = (11f * fontScale).sp,
+                    fontWeight = FontWeight.Black,
+                    fontFamily = fontFamily
+                )
+            }
         }
     }
 }

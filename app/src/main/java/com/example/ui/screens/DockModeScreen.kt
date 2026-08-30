@@ -231,14 +231,14 @@ fun DockModeScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFF0284C7).copy(alpha = 0.22f))
-                                .border(1.dp, Color(0xFF38BDF8), RoundedCornerShape(12.dp))
+                                .background(Color(0xFFDC2626).copy(alpha = 0.25f))
+                                .border(1.dp, Color(0xFFB91C1C), RoundedCornerShape(12.dp))
                                 .padding(horizontal = 10.dp, vertical = 6.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Alarm,
                                 contentDescription = "Alarme Ativo",
-                                tint = Color(0xFF38BDF8),
+                                tint = Color(0xFFDC2626),
                                 modifier = Modifier.size(15.dp)
                             )
                             Spacer(modifier = Modifier.width(5.dp))

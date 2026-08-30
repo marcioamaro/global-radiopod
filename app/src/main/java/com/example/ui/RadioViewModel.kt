@@ -212,6 +212,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     val visualizerAmplitudes: StateFlow<List<Float>> = playerManager.visualizerAmplitudes
     val volume: StateFlow<Float> = playerManager.volume
     val sleepTimerMinutes: StateFlow<Int> = playerManager.sleepTimerMinutes
+    val sleepTimerSecondsRemaining: StateFlow<Long> = playerManager.sleepTimerSecondsRemaining
     val errorMessage: StateFlow<String?> = playerManager.errorMessage
 
     // Audio Output Switcher & MediaRouter
@@ -842,8 +843,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                     8 -> toggleDisplayMode()
                     9 -> enterDockMode()
                     10 -> navigateTo(IpodScreenDestination.SETTINGS_THEMES)
-                    11 -> navigateTo(IpodScreenDestination.ABOUT)
-                    12 -> exitApplication()
+                    11 -> exitApplication()
                 }
             }
             IpodScreenDestination.AUDIO_OUTPUT_MENU -> {
@@ -1468,15 +1468,17 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun selectCountry(country: CountryCategory) {
-        val isBrazil = country.code.equals("BR", ignoreCase = true)
+        val isBrazil = country.code.equals("BR", ignoreCase = true) || country.name.contains("Brasil", ignoreCase = true)
+        val defaultState = if (isBrazil) "SP" else "ALL"
+        val defaultCity = if (isBrazil) "São Paulo" else "ALL"
         _uiState.value = _uiState.value.copy(
             activeCountry = country,
             activeCategoryName = country.name,
             searchCountryCode = country.code,
-            searchStateCode = "ALL",
-            searchCity = "ALL",
+            searchStateCode = defaultState,
+            searchCity = defaultCity,
             availableCities = emptyList(),
-            isLoadingCities = false,
+            isLoadingCities = isBrazil,
             searchQuery = "",
             isLoadingList = true,
             stationsList = emptyList()
@@ -1489,6 +1491,9 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                 stationsList = stations
             )
             playbackQueue = stations
+            if (isBrazil) {
+                onSearchStateChanged("SP", defaultCity = "São Paulo")
+            }
         }
     }
 
@@ -1513,15 +1518,21 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun onSearchCountryChanged(countryCode: String) {
-        val isBrazil = countryCode.equals("BR", ignoreCase = true)
+        val isBrazil = countryCode.equals("BR", ignoreCase = true) || countryCode.equals("Brasil", ignoreCase = true)
+        val defaultState = if (isBrazil) "SP" else "ALL"
+        val defaultCity = if (isBrazil) "São Paulo" else "ALL"
         _uiState.value = _uiState.value.copy(
             searchCountryCode = countryCode,
-            searchStateCode = if (isBrazil) _uiState.value.searchStateCode else "ALL",
-            searchCity = "ALL",
-            availableCities = if (isBrazil) _uiState.value.availableCities else emptyList(),
-            isLoadingCities = false
+            searchStateCode = defaultState,
+            searchCity = defaultCity,
+            availableCities = emptyList(),
+            isLoadingCities = isBrazil
         )
-        executeSearch()
+        if (isBrazil) {
+            onSearchStateChanged("SP", defaultCity = "São Paulo")
+        } else {
+            executeSearch()
+        }
     }
 
     fun onSearchGenreChanged(genreTag: String) {
@@ -1529,24 +1540,36 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         executeSearch()
     }
 
-    fun onSearchStateChanged(stateCode: String) {
+    fun onSearchStateChanged(stateCode: String, defaultCity: String? = null) {
         val cleanState = if (stateCode.isBlank()) "ALL" else stateCode
         val isBrazil = _uiState.value.searchCountryCode.equals("BR", ignoreCase = true) ||
                        _uiState.value.searchCountryCode.equals("ALL", ignoreCase = true) ||
                        _uiState.value.searchCountryCode.isBlank()
+        val isSp = isBrazil && cleanState.equals("SP", ignoreCase = true)
+        val chosenCity = defaultCity ?: if (isSp) "São Paulo" else "ALL"
         
         _uiState.value = _uiState.value.copy(
             searchStateCode = cleanState,
-            searchCity = "ALL", // Reset city when state changes
+            searchCity = chosenCity,
             availableCities = emptyList(),
             isLoadingCities = isBrazil && cleanState != "ALL"
         )
 
         if (isBrazil && cleanState != "ALL") {
             viewModelScope.launch {
-                val cities = com.example.data.remote.IbgeLocationService.getCitiesForState(cleanState)
+                val rawCities = com.example.data.remote.IbgeLocationService.getCitiesForState(cleanState)
+                // Garante que "São Paulo" apareça em primeiro na lista de cidades
+                val sortedCities = if (isSp) {
+                    val spIndex = rawCities.indexOfFirst { it.equals("São Paulo", ignoreCase = true) }
+                    if (spIndex > 0) {
+                        val list = rawCities.toMutableList()
+                        val sp = list.removeAt(spIndex)
+                        listOf(sp) + list
+                    } else rawCities
+                } else rawCities
+
                 _uiState.value = _uiState.value.copy(
-                    availableCities = cities,
+                    availableCities = sortedCities,
                     isLoadingCities = false
                 )
             }
@@ -1639,6 +1662,10 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     fun setVolume(vol: Float) {
         playerManager.setVolumeLevel(vol)
         prefs.volumeLevel = vol
+    }
+
+    fun syncVolumeFromSystem() {
+        playerManager.syncVolumeFromNativeStream()
     }
 
     fun stepVolumeUp() {
@@ -1814,7 +1841,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun getItemCountForCurrentScreen(): Int {
         return when (_uiState.value.currentScreen) {
-            IpodScreenDestination.MAIN_MENU -> 13
+            IpodScreenDestination.MAIN_MENU -> 12
             IpodScreenDestination.AUDIO_OUTPUT_MENU -> audioRouteManager.availableDevices.value.size + 1
             IpodScreenDestination.RADIO_MENU -> 9
             IpodScreenDestination.PODCASTS_MENU -> 9

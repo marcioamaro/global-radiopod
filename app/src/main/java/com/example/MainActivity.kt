@@ -64,21 +64,26 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onKeyDown(keyCode: Int, event: android.view.KeyEvent?): Boolean {
-        val audioRouteManager = com.example.player.AudioRouteManager.getInstance(this)
-        if (audioRouteManager.isCastingActive()) {
-            when (keyCode) {
-                android.view.KeyEvent.KEYCODE_VOLUME_UP -> {
-                    audioRouteManager.adjustVolumeDelta(0.05f)
-                    return true
+    override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
+        if (event.keyCode == android.view.KeyEvent.KEYCODE_VOLUME_UP || event.keyCode == android.view.KeyEvent.KEYCODE_VOLUME_DOWN) {
+            val audioRouteManager = com.example.player.AudioRouteManager.getInstance(this)
+            if (audioRouteManager.isCastingActive()) {
+                if (event.action == android.view.KeyEvent.ACTION_DOWN) {
+                    val delta = if (event.keyCode == android.view.KeyEvent.KEYCODE_VOLUME_UP) 0.05f else -0.05f
+                    audioRouteManager.adjustVolumeDelta(delta)
                 }
-                android.view.KeyEvent.KEYCODE_VOLUME_DOWN -> {
-                    audioRouteManager.adjustVolumeDelta(-0.05f)
-                    return true
-                }
+                return true
             }
+            val handled = super.dispatchKeyEvent(event)
+            viewModel.syncVolumeFromSystem()
+            return handled
         }
-        return super.onKeyDown(keyCode, event)
+        return super.dispatchKeyEvent(event)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.syncVolumeFromSystem()
     }
 }
 
@@ -92,6 +97,7 @@ fun MainScreen(viewModel: RadioViewModel) {
     val favorites by viewModel.favorites.collectAsState()
     val volume by viewModel.volume.collectAsState()
     val sleepTimerMinutes by viewModel.sleepTimerMinutes.collectAsState()
+    val sleepTimerSecondsRemaining by viewModel.sleepTimerSecondsRemaining.collectAsState()
     val liveSessionDurationSeconds by viewModel.liveSessionDurationSeconds.collectAsState()
     val currentLocalAudio by viewModel.currentLocalAudio.collectAsState()
     val audioPositionMs by viewModel.audioPositionMs.collectAsState()
@@ -265,6 +271,7 @@ fun MainScreen(viewModel: RadioViewModel) {
                                 volume = volume,
                                 favorites = favorites,
                                 sleepTimerMinutes = sleepTimerMinutes,
+                                sleepTimerSecondsRemaining = sleepTimerSecondsRemaining,
                                 onRotaryScroll = { steps -> viewModel.onRotaryScroll(steps) },
                                 onCenterClick = { viewModel.onCenterButtonPress() },
                                 onMenuClick = { viewModel.navigateBack() },

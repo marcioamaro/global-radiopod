@@ -1,6 +1,7 @@
 package com.example.alarm
 
 import android.content.Context
+import android.content.Intent
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.media.Ringtone
@@ -74,8 +75,10 @@ class RadioAlarmActivity : ComponentActivity() {
             )
         }
 
+        val stationId = intent.getStringExtra("stationId") ?: ""
         val stationName = intent.getStringExtra("stationName") ?: "Rádio Favorita"
         val stationStreamUrl = intent.getStringExtra("stationStreamUrl") ?: ""
+        val stationFavicon = intent.getStringExtra("stationFavicon") ?: ""
         val volume = intent.getFloatExtra("volume", 0.85f)
         val vibrate = intent.getBooleanExtra("vibrate", true)
         val snoozeMinutes = intent.getIntExtra("snoozeMinutes", 10)
@@ -85,12 +88,29 @@ class RadioAlarmActivity : ComponentActivity() {
             startVibration()
         }
 
-        // Iniciar áudio: Tenta rádio via stream; se falhar em 5s, toca alarme nativo de backup
-        startAlarmAudio(stationStreamUrl, volume)
+        val curated = com.example.data.repository.CuratedData.CURATED_GLOBAL_STATIONS.firstOrNull {
+            (stationId.isNotBlank() && it.id == stationId) ||
+            (stationStreamUrl.isNotBlank() && it.streamUrl == stationStreamUrl)
+        }
+
+        val station = curated ?: com.example.data.model.RadioStation(
+            id = stationId.ifBlank { "alarm_station" },
+            name = stationName,
+            streamUrl = stationStreamUrl,
+            alternativeStreamUrls = emptyList(),
+            favicon = stationFavicon,
+            country = "Brasil",
+            countryCode = "BR",
+            codec = "MP3",
+            bitrate = 128
+        )
+
+        // Iniciar áudio: Aciona o player de rádio oficial usando toda a infraestrutura existente
+        startAlarmAudio(station, volume)
 
         setContent {
             AlarmScreen(
-                stationName = stationName,
+                stationName = station.name,
                 onSnooze = {
                     snoozeAlarm(snoozeMinutes)
                 },
@@ -119,9 +139,7 @@ class RadioAlarmActivity : ComponentActivity() {
         }
     }
 
-    private var alarmJob: Job? = null
     private var fallbackWatchdogJob: Job? = null
-    @Volatile private var isRadioStabilized = false
 
     private fun isNetworkAvailable(): Boolean {
         return try {
@@ -134,107 +152,46 @@ class RadioAlarmActivity : ComponentActivity() {
         }
     }
 
-    private fun startAlarmAudio(streamUrl: String, volume: Float) {
-        if (streamUrl.isBlank()) {
+    private fun startAlarmAudio(station: com.example.data.model.RadioStation, volume: Float) {
+        val playerManager = com.example.player.RadioPlayerManager.getInstance(applicationContext)
+
+        // Aplica o volume configurado no alarme
+        playerManager.setVolumeLevel(volume)
+
+        // Se offline ou sem URL de stream, aciona fallback sonoro imediatamente
+        if (!isNetworkAvailable() || station.streamUrl.isBlank()) {
+            android.util.Log.w("RadioAlarmActivity", "Sem conexão ou stream vazio no alarme. Acionando fallback sonoro.")
             playFallbackAlarmSound()
             return
         }
 
-        // Se offline e sem rede conectada, aciona imediatamente o fallback local de segurança
-        if (!isNetworkAvailable()) {
-            android.util.Log.w("RadioAlarmActivity", "Sem conexão com a internet detectada no alarme. Acionando fallback sonoro imediatamente.")
-            playFallbackAlarmSound()
-            return
+        // Aciona o player oficial com todas as funções existentes (ExoPlayer, ICY, RDS, multi-stream, buffer, wake lock)
+        if (playerManager.currentStation.value?.id != station.id || playerManager.playbackStatus.value != com.example.player.RadioPlaybackStatus.PLAYING) {
+            playerManager.playStation(station)
         }
 
-        isRadioStabilized = false
-        val startTime = System.currentTimeMillis()
-        val totalWindowMs = 30_000L // Janela total de 30 segundos
-
-        // Watchdog de segurança estrito: se em 30 segundos o streaming não estabilizar, dispara fallback sonoro
-        fallbackWatchdogJob = activityScope.launch {
-            delay(totalWindowMs)
-            if (!isRadioStabilized && !isFinishing) {
-                android.util.Log.w("RadioAlarmActivity", "Janela de 30s esgotada sem streaming estável. Acionando fallback de segurança.")
-                stopMediaPlayer()
-                playFallbackAlarmSound()
-            }
-        }
-
-        // Loop de retry insistente a cada ~4s dentro da janela de 30s
-        alarmJob = activityScope.launch {
-            var attempt = 1
-            while (isActive && !isRadioStabilized && (System.currentTimeMillis() - startTime < totalWindowMs)) {
-                android.util.Log.i("RadioAlarmActivity", "Tentativa de conexão #$attempt para rádio do alarme...")
-                var attemptSuccess = false
-                try {
-                    stopMediaPlayer()
-                    val mp = MediaPlayer().apply {
-                        setAudioAttributes(
-                            AudioAttributes.Builder()
-                                .setUsage(AudioAttributes.USAGE_ALARM)
-                                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                                .build()
-                        )
-                        setDataSource(streamUrl)
-                        setVolume(volume, volume)
-                        isLooping = true
-                    }
-                    mediaPlayer = mp
-
-                    val prepared = withTimeoutOrNull(4500L) {
-                        suspendCancellableCoroutine<Boolean> { cont ->
-                            mp.setOnPreparedListener {
-                                if (cont.isActive) cont.resume(true) {}
-                            }
-                            mp.setOnErrorListener { _, what, extra ->
-                                android.util.Log.w("RadioAlarmActivity", "Erro de stream tentativa #$attempt: what=$what, extra=$extra")
-                                if (cont.isActive) cont.resume(false) {}
-                                true
-                            }
-                            try {
-                                mp.prepareAsync()
-                            } catch (e: Exception) {
-                                if (cont.isActive) cont.resume(false) {}
-                            }
-                        }
-                    } ?: false
-
-                    if (prepared && !isRadioStabilized && isActive) {
-                        mp.start()
-                        delay(1000L)
-                        if (mp.isPlaying) {
-                            isRadioStabilized = true
-                            attemptSuccess = true
-                            fallbackWatchdogJob?.cancel()
-                            android.util.Log.i("RadioAlarmActivity", "Streaming do alarme conectado e estabilizado com sucesso!")
-                            break
-                        }
-                    }
-                } catch (e: Exception) {
-                    android.util.Log.e("RadioAlarmActivity", "Falha na tentativa #$attempt", e)
-                }
-
-                if (!attemptSuccess && !isRadioStabilized && isActive) {
-                    attempt++
-                    delay(1000L)
-                }
-            }
-
-            if (!isRadioStabilized && !isFinishing) {
-                stopMediaPlayer()
-                playFallbackAlarmSound()
-            }
-        }
-    }
-
-    private fun stopMediaPlayer() {
+        // Inicia o RadioMediaService para manter o foreground e notificação
         try {
-            mediaPlayer?.stop()
-            mediaPlayer?.reset()
-            mediaPlayer?.release()
-        } catch (_: Exception) {}
-        mediaPlayer = null
+            val serviceIntent = Intent(applicationContext, com.example.service.RadioMediaService::class.java).apply {
+                action = com.example.service.RadioMediaService.ACTION_PLAY
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent)
+            } else {
+                startService(serviceIntent)
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("RadioAlarmActivity", "Não foi possível iniciar RadioMediaService diretamente", e)
+        }
+
+        // Watchdog de segurança: se em 15 segundos o streaming não estiver tocando ou der erro de rede, toca o ringtone de backup
+        fallbackWatchdogJob = activityScope.launch {
+            delay(15_000L)
+            if (playerManager.playbackStatus.value != com.example.player.RadioPlaybackStatus.PLAYING && !isFinishing) {
+                android.util.Log.w("RadioAlarmActivity", "RadioPlayerManager não iniciou reprodução em 15s. Acionando fallback de segurança.")
+                playFallbackAlarmSound()
+            }
+        }
     }
 
     private fun playFallbackAlarmSound() {
@@ -261,8 +218,10 @@ class RadioAlarmActivity : ComponentActivity() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as? android.app.AlarmManager
         val intent = android.content.Intent(this, RadioAlarmReceiver::class.java).apply {
             action = RadioAlarmScheduler.ACTION_TRIGGER_ALARM
+            putExtra("stationId", currentConfig.stationId)
             putExtra("stationName", currentConfig.stationName)
             putExtra("stationStreamUrl", currentConfig.stationStreamUrl)
+            putExtra("stationFavicon", currentConfig.stationFavicon)
             putExtra("volume", currentConfig.volume)
             putExtra("vibrate", currentConfig.vibrate)
             putExtra("snoozeMinutes", snoozeMinutes)
@@ -301,11 +260,13 @@ class RadioAlarmActivity : ComponentActivity() {
     }
 
     private fun stopAllAudioAndVibration() {
-        alarmJob?.cancel()
-        alarmJob = null
         fallbackWatchdogJob?.cancel()
         fallbackWatchdogJob = null
-        stopMediaPlayer()
+
+        try {
+            val playerManager = com.example.player.RadioPlayerManager.getInstance(applicationContext)
+            playerManager.pause()
+        } catch (_: Exception) {}
 
         try {
             fallbackRingtone?.stop()
@@ -379,14 +340,14 @@ fun AlarmScreen(
                         .size(80.dp)
                         .scale(pulseScale)
                         .clip(CircleShape)
-                        .background(Color(0xFF0284C7).copy(alpha = 0.2f))
-                        .border(2.dp, Color(0xFF38BDF8), CircleShape),
+                        .background(Color(0xFFDC2626).copy(alpha = 0.2f))
+                        .border(2.dp, Color(0xFFDC2626), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Alarm,
                         contentDescription = "Alarme Tocando",
-                        tint = Color(0xFF38BDF8),
+                        tint = Color(0xFFDC2626),
                         modifier = Modifier.size(44.dp)
                     )
                 }
@@ -395,7 +356,7 @@ fun AlarmScreen(
 
                 Text(
                     text = "DESPERTADOR MEDIAPOD",
-                    color = Color(0xFF38BDF8),
+                    color = Color(0xFFDC2626),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = 2.sp,

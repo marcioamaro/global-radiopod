@@ -120,6 +120,7 @@ fun IpodClassicScreen(
     volume: Float = 0.8f,
     favorites: List<RadioStation>,
     sleepTimerMinutes: Int,
+    sleepTimerSecondsRemaining: Long = 0L,
     onRotaryScroll: (Int) -> Unit,
     onCenterClick: () -> Unit,
     onMenuClick: () -> Unit,
@@ -303,11 +304,26 @@ fun IpodClassicScreen(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     // Modo Dormir (Sleep Timer) Pill Button
+                    val isSleepActive = sleepTimerMinutes > 0 || sleepTimerSecondsRemaining > 0L
+                    val sleepSec = sleepTimerSecondsRemaining
+                    val sleepFormatted = if (sleepSec > 0L) {
+                        val m = sleepSec / 60
+                        val s = sleepSec % 60
+                        String.format(java.util.Locale.US, "%02d:%02d", m, s)
+                    } else if (sleepTimerMinutes > 0) {
+                        "${sleepTimerMinutes}:00"
+                    } else null
+
+                    // HOLD standard colors: Red when active, neutral Click Wheel colors when off
+                    val sleepPillColor = if (isSleepActive) Color(0xFFDC2626) else wheelTextColor
+                    val sleepBorderColor = if (isSleepActive) Color(0xFFB91C1C) else wheelColor
+                    val sleepBgColor = if (isSleepActive) Color(0xFFDC2626).copy(alpha = 0.25f) else wheelColor.copy(alpha = 0.22f)
+
                     Row(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (sleepTimerMinutes > 0) wheelColor.copy(alpha = 0.4f) else wheelColor.copy(alpha = 0.22f))
-                            .border(1.2.dp, if (sleepTimerMinutes > 0) Color(0xFF38BDF8) else wheelColor, RoundedCornerShape(12.dp))
+                            .background(sleepBgColor)
+                            .border(1.2.dp, sleepBorderColor, RoundedCornerShape(12.dp))
                             .clickable {
                                 val nextTimer = when (sleepTimerMinutes) {
                                     0 -> 15
@@ -328,13 +344,13 @@ fun IpodClassicScreen(
                         Icon(
                             imageVector = Icons.Default.Timer,
                             contentDescription = "Modo Dormir",
-                            tint = if (sleepTimerMinutes > 0) Color(0xFF38BDF8) else wheelTextColor,
+                            tint = sleepPillColor,
                             modifier = Modifier.size(13.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = if (sleepTimerMinutes > 0) "SONO ${sleepTimerMinutes}m" else "DORMIR",
-                            color = if (sleepTimerMinutes > 0) Color(0xFF38BDF8) else wheelTextColor,
+                            text = if (sleepFormatted != null) "SONO $sleepFormatted" else "DORMIR",
+                            color = sleepPillColor,
                             fontSize = (9f * fontScale).sp,
                             fontWeight = if (isBold) FontWeight.Black else FontWeight.Bold,
                             fontFamily = fontFamily
@@ -408,18 +424,18 @@ fun IpodClassicScreen(
 
                     val computedTicker = when {
                         isVideoPlaying && currentVideoTrack != null -> {
-                            "▶ Reproduzindo Vídeo: ${currentVideoTrack.title}"
+                            "Reproduzindo Vídeo: ${currentVideoTrack.title}"
                         }
                         playbackStatus == RadioPlaybackStatus.PLAYING -> {
                             when {
-                                currentLocalAudio != null -> "▶ Reproduzindo MP3: ${currentLocalAudio.title}"
-                                currentEp != null -> "▶ Reproduzindo Podcast: ${currentEp.title}"
+                                currentLocalAudio != null -> "Reproduzindo MP3: ${currentLocalAudio.title}"
+                                currentEp != null -> "Reproduzindo Podcast: ${currentEp.title}"
                                 currentStation != null -> {
                                     val citySuffix = if (!currentStation.city.isNullOrBlank()) " (${currentStation.city})" else ""
-                                    "▶ Reproduzindo Rádio: ${currentStation.name}$citySuffix"
+                                    "Reproduzindo Rádio: ${currentStation.name}$citySuffix"
                                 }
                                 uiState.currentScreen == IpodScreenDestination.YOUTUBE_PLAYER && uiState.currentYouTubeVideo != null -> {
-                                    "▶ Reproduzindo YouTube: ${uiState.currentYouTubeVideo.title}"
+                                    "Reproduzindo YouTube: ${uiState.currentYouTubeVideo.title}"
                                 }
                                 else -> null
                             }
@@ -467,7 +483,6 @@ fun IpodClassicScreen(
                                             5 -> onSelectDestination(IpodScreenDestination.GAME_BRICK)
                                             6 -> onToggleDisplayMode()
                                             7 -> onSelectDestination(IpodScreenDestination.SETTINGS_THEMES)
-                                            8 -> onSelectDestination(IpodScreenDestination.ABOUT)
                                             9 -> onSelectDestination(IpodScreenDestination.PODCASTS_MENU)
                                             10 -> {
                                                 viewModel?.loadYouTubeVideos()
@@ -1411,19 +1426,23 @@ fun IpodClassicScreen(
                     centerButtonColor = centerButtonColor
                 )
 
-                // Sininho no canto inferior direito do chassi que acessa as configurações de alarme
+                // Sininho no canto inferior direito do chassi que acessa as configurações de alarme (Padrão HOLD)
                 val isAlarmActive = remember(uiState.currentScreen) {
                     try {
                         com.example.data.preferences.IpodPreferencesManager.getInstance(context).getRadioAlarmConfig().isEnabled
                     } catch (_: Exception) { false }
                 }
+                val alarmColor = if (isAlarmActive) Color(0xFFDC2626) else Color.White.copy(alpha = 0.5f)
+                val alarmBorderColor = if (isAlarmActive) Color(0xFFB91C1C) else Color.White.copy(alpha = 0.2f)
+                val alarmBgColor = if (isAlarmActive) Color(0xFFDC2626).copy(alpha = 0.25f) else Color.White.copy(alpha = 0.08f)
+
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(end = 6.dp, bottom = 2.dp)
                         .clip(CircleShape)
-                        .background(if (isAlarmActive) Color(0xFF0284C7).copy(alpha = 0.3f) else Color.White.copy(alpha = 0.08f))
-                        .border(1.2.dp, if (isAlarmActive) Color(0xFF38BDF8) else Color.White.copy(alpha = 0.2f), CircleShape)
+                        .background(alarmBgColor)
+                        .border(1.2.dp, alarmBorderColor, CircleShape)
                         .clickable {
                             onSelectDestination(IpodScreenDestination.ALARM_CONFIG)
                         }
@@ -1433,7 +1452,7 @@ fun IpodClassicScreen(
                     Icon(
                         imageVector = Icons.Default.Alarm,
                         contentDescription = "Configurações de Alarme",
-                        tint = if (isAlarmActive) Color(0xFF38BDF8) else Color.White.copy(alpha = 0.5f),
+                        tint = alarmColor,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -1598,8 +1617,7 @@ private fun IpodMainMenuSplitView(
         "Gêneros Musicais" to Icons.Default.MusicNote,
         "Buscar Estação" to Icons.Default.Search,
         "Brick Game" to Icons.Default.Gamepad,
-        "Configurações" to Icons.Default.Settings,
-        "Sobre o Aplicativo" to Icons.Default.Info
+        "Configurações" to Icons.Default.Settings
     )
 
     Row(modifier = Modifier.fillMaxSize()) {
@@ -3062,7 +3080,10 @@ private fun IpodAboutScreen(
                     painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.ic_pear_logo),
                     contentDescription = "Logo Pera",
                     colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(backlightTextPrimary),
-                    modifier = Modifier.size(42.dp)
+                    contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+                    modifier = Modifier
+                        .width(36.dp)
+                        .height(48.dp)
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
@@ -3447,7 +3468,13 @@ fun IpodSearchScreen(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .background(if (isSelected) backlightHighlight else Color(0x22000000))
-                            .clickable { onSearchCountryChange(code) }
+                            .clickable {
+                                onSearchCountryChange(code)
+                                if (code.equals("BR", ignoreCase = true)) {
+                                    onSearchStateChange("SP")
+                                    onSearchCityChange("São Paulo")
+                                }
+                            }
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -3793,10 +3820,18 @@ fun IpodSearchScreen(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     val filteredCities = remember(availableCities, cityFilterQuery) {
-                        if (cityFilterQuery.isBlank()) availableCities
+                        val base = if (cityFilterQuery.isBlank()) availableCities
                         else {
                             val normQ = com.example.util.RadioSearchEngine.normalize(cityFilterQuery)
                             availableCities.filter { com.example.util.RadioSearchEngine.normalize(it).contains(normQ) }
+                        }
+                        val spIndex = base.indexOfFirst { it.equals("São Paulo", ignoreCase = true) }
+                        if (spIndex > 0) {
+                            val mutable = base.toMutableList()
+                            val sp = mutable.removeAt(spIndex)
+                            listOf(sp) + mutable
+                        } else {
+                            base
                         }
                     }
 

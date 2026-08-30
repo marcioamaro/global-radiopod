@@ -252,10 +252,12 @@ class RadioAuditAndSearchTest {
 
     @Test
     fun testBrazilianStatesSortedAlphabeticallyWithCollator() {
-        val states = CuratedData.BRAZILIAN_STATES.filter { it.first.isNotEmpty() }.map { it.second }
+        assertEquals("São Paulo deve estar no topo absoluto (índice 0)", "SP", CuratedData.BRAZILIAN_STATES[0].first)
+        assertEquals("Opção Todos os Estados deve estar no índice 1", "", CuratedData.BRAZILIAN_STATES[1].first)
+        val otherStates = CuratedData.BRAZILIAN_STATES.filter { it.first.isNotEmpty() && it.first != "SP" }.map { it.second }
         val collator = java.text.Collator.getInstance(java.util.Locale.forLanguageTag("pt-BR"))
-        val sorted = states.sortedWith(collator)
-        assertEquals("Brazilian states must be sorted alphabetically by name with pt-BR collator", sorted, states)
+        val sorted = otherStates.sortedWith(collator)
+        assertEquals("Demais estados brasileiros devem estar ordenados alfabeticamente A-Z via collator pt-BR", sorted, otherStates)
     }
 
     @Test

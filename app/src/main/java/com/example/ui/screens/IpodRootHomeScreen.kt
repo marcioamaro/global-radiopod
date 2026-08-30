@@ -65,7 +65,6 @@ fun IpodRootHomeScreen(
         RootMenuItem(stringResource(R.string.menu_car_mode), Icons.Default.DirectionsCar, 6),
         RootMenuItem(stringResource(R.string.menu_dock_mode), Icons.Default.Schedule, 11),
         RootMenuItem(stringResource(R.string.menu_settings), Icons.Default.Settings, 7),
-        RootMenuItem(stringResource(R.string.menu_about), Icons.Default.Info, 8),
         RootMenuItem(stringResource(R.string.menu_close_app), Icons.Default.PowerSettingsNew, 12)
     )
 

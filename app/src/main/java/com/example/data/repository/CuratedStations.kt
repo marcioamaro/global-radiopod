@@ -127,6 +127,7 @@ object CuratedData {
     )
 
     val BRAZILIAN_STATES = listOf(
+        "SP" to "São Paulo (SP)",
         "" to "Todos os Estados",
         "AC" to "Acre (AC)",
         "AL" to "Alagoas (AL)",
@@ -152,7 +153,6 @@ object CuratedData {
         "RO" to "Rondônia (RO)",
         "RR" to "Roraima (RR)",
         "SC" to "Santa Catarina (SC)",
-        "SP" to "São Paulo (SP)",
         "SE" to "Sergipe (SE)",
         "TO" to "Tocantins (TO)"
     )
@@ -214,7 +214,7 @@ object CuratedData {
         "RS" to listOf("Todas as Cidades"),
         "SC" to listOf("Todas as Cidades", "Joinville", "Santa Catarina, SC"),
         "SE" to listOf("Todas as Cidades"),
-        "SP" to listOf("Todas as Cidades", "Barreiras", "Brasil", "Cajazeiras", "Fortaleza", "Patos de Minas, MG", "Santos, Sao Paulo Brazil", "Sao Paulo Brazil", "State of São Paulo", "São Paulo", "São Paulo Braszil", "São Paulo SP", "Taubaté, SP"),
+        "SP" to listOf("São Paulo", "Campinas", "Santos", "Ribeirão Preto", "São José dos Campos", "Sorocaba", "Araras", "Taubaté", "Todas as Cidades"),
         "TO" to listOf("Todas as Cidades")
     )
 
