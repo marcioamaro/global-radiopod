@@ -841,13 +841,13 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
         // Atualiza MediaMetadata no Android Auto e central de notificações
         try {
-            val radioIconUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.ic_radio_retro}")
+            val appLogoUri = Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
             val offlineMetadata = MediaMetadata.Builder()
                 .setTitle(station.name)
                 .setArtist("VERIFIQUE A CONEXÃO COM A INTERNET")
                 .setSubtitle("VERIFIQUE A CONEXÃO COM A INTERNET")
                 .setAlbumTitle("Sem conexão")
-                .setArtworkUri(radioIconUri)
+                .setArtworkUri(appLogoUri)
                 .build()
             exoPlayer?.playlistMetadata = offlineMetadata
         } catch (_: Exception) {}
@@ -870,13 +870,13 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
         // Atualiza MediaMetadata no Android Auto e notificações
         try {
-            val podcastIconUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.ic_podcast_retro}")
+            val appLogoUri = Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
             val offlineMetadata = MediaMetadata.Builder()
                 .setTitle(episode.title)
                 .setArtist("VERIFIQUE A CONEXÃO COM A INTERNET")
                 .setSubtitle("VERIFIQUE A CONEXÃO COM A INTERNET")
                 .setAlbumTitle(episode.showTitle)
-                .setArtworkUri(podcastIconUri)
+                .setArtworkUri(appLogoUri)
                 .build()
             exoPlayer?.playlistMetadata = offlineMetadata
         } catch (_: Exception) {}
@@ -952,13 +952,13 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
         // Notificar Android Auto e MediaSession para exibição limpa no painel veicular
         try {
-            val radioIconUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.ic_radio_retro}")
+            val appLogoUri = Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
             val errorMetadata = MediaMetadata.Builder()
                 .setTitle(station.name)
                 .setArtist(errorNotice)
                 .setSubtitle(errorNotice)
                 .setAlbumTitle("Falha remota")
-                .setArtworkUri(radioIconUri)
+                .setArtworkUri(appLogoUri)
                 .build()
             exoPlayer?.setPlaylistMetadata(errorMetadata)
         } catch (_: Exception) {}
@@ -966,12 +966,12 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
     private fun playStreamUrl(station: RadioStation, streamUrl: String) {
         val subtitle = "${station.city} ${station.country} • ${station.primaryGenre}".trim().ifEmpty { station.name }
-        val radioIconUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.ic_radio_retro}")
+        val appLogoUri = Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
         val mediaMetadata = MediaMetadata.Builder()
             .setTitle(station.name)
             .setArtist(subtitle)
             .setAlbumTitle(station.country)
-            .setArtworkUri(radioIconUri)
+            .setArtworkUri(appLogoUri)
             .setIsPlayable(true)
             .build()
 
@@ -1141,12 +1141,12 @@ class RadioPlayerManager private constructor(private val context: Context) {
             }
         }
 
-        val podcastIconUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.ic_podcast_retro}")
+        val appLogoUri = Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
         val mediaMetadata = MediaMetadata.Builder()
             .setTitle(episode.title)
             .setArtist(episode.showTitle)
             .setAlbumTitle(episode.publishDate.ifBlank { "Podcast" })
-            .setArtworkUri(podcastIconUri)
+            .setArtworkUri(appLogoUri)
             .setIsPlayable(true)
             .build()
 
@@ -1402,6 +1402,9 @@ class RadioPlayerManager private constructor(private val context: Context) {
         if (AudioRouteManager.getInstance(context).isCastingActive()) {
             AudioRouteManager.getInstance(context).pause()
         }
+        try {
+            LocalVideoPlayerManager.getInstance(context).pause()
+        } catch (_: Exception) {}
         userInitiatedPause = true
         cancelBufferingWatchdog()
         streamingTimeoutJob?.cancel()
@@ -1501,16 +1504,30 @@ class RadioPlayerManager private constructor(private val context: Context) {
         _sleepTimerSecondsRemaining.value = totalSeconds
         _sleepTimerMinutes.value = minutes
         if (totalSeconds > 0L) {
-            sleepTimerJob = scope.launch {
-                var remaining = totalSeconds
-                while (remaining > 0L && isActive) {
-                    delay(1000L)
-                    remaining -= 1L
-                    _sleepTimerSecondsRemaining.value = remaining
-                    _sleepTimerMinutes.value = ((remaining + 59L) / 60L).toInt()
+            val targetEndMs = System.currentTimeMillis() + totalSeconds * 1000L
+            sleepTimerJob = scope.launch(Dispatchers.Main) {
+                while (isActive) {
+                    val now = System.currentTimeMillis()
+                    val remainingMs = targetEndMs - now
+                    if (remainingMs <= 0L) {
+                        break
+                    }
+                    val remainingSec = (remainingMs + 999L) / 1000L
+                    _sleepTimerSecondsRemaining.value = remainingSec
+                    _sleepTimerMinutes.value = ((remainingSec + 59L) / 60L).toInt()
+                    delay(1000L.coerceAtMost(remainingMs))
                 }
                 if (isActive) {
                     pause()
+                    try {
+                        LocalVideoPlayerManager.getInstance(context).pause()
+                    } catch (_: Exception) {}
+                    try {
+                        val pauseIntent = Intent(context, RadioMediaService::class.java).apply {
+                            action = RadioMediaService.ACTION_PAUSE
+                        }
+                        context.startService(pauseIntent)
+                    } catch (_: Exception) {}
                     _sleepTimerSecondsRemaining.value = 0L
                     _sleepTimerMinutes.value = 0
                 }
@@ -1540,11 +1557,12 @@ class RadioPlayerManager private constructor(private val context: Context) {
     fun updateNotificationAndSessionMetadata(title: String, artist: String, album: String, artworkUri: Uri?) {
         scope.launch(Dispatchers.Main) {
             try {
+                val appLogoUri = Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
                 val metadata = MediaMetadata.Builder()
                     .setTitle(title)
                     .setArtist(artist)
                     .setAlbumTitle(album)
-                    .setArtworkUri(artworkUri)
+                    .setArtworkUri(appLogoUri)
                     .build()
                 exoPlayer?.playlistMetadata = metadata
             } catch (e: Exception) {

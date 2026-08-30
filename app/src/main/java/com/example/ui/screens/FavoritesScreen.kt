@@ -1,6 +1,7 @@
 package com.example.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -87,8 +88,9 @@ fun FavoritesScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(6.dp))
-                .background(backlightHighlight.copy(alpha = 0.2f))
-                .padding(horizontal = 8.dp, vertical = 4.dp),
+                .background(Color(0x22000000))
+                .border(1.dp, backlightTextPrimary.copy(alpha = 0.45f), RoundedCornerShape(6.dp))
+                .padding(horizontal = 8.dp, vertical = 5.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -103,17 +105,17 @@ fun FavoritesScreen(
                     text = "ESTAÇÕES FAVORITAS",
                     color = backlightTextPrimary,
                     fontSize = (11 * fontScale).sp,
-                    fontWeight = if (isBold) FontWeight.Black else FontWeight.Bold,
+                    fontWeight = FontWeight.Black,
                     fontFamily = fontFamily,
                     modifier = Modifier.padding(start = 4.dp)
                 )
             }
             Text(
                 text = "${displayedFavorites.size}/${favorites.size} SALVAS",
-                color = backlightTextSecondary,
+                color = backlightTextPrimary.copy(alpha = 0.85f),
                 fontSize = (10 * fontScale).sp,
                 fontFamily = fontFamily,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Black
             )
         }
 
@@ -129,14 +131,16 @@ fun FavoritesScreen(
                 textStyle = androidx.compose.material3.LocalTextStyle.current.copy(
                     fontSize = (11.5f * fontScale).sp,
                     lineHeight = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
                     platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false)
                 ),
                 placeholder = {
                     Text(
                         text = "Filtrar favoritos...",
                         fontSize = (11 * fontScale).sp,
-                        color = backlightTextSecondary.copy(alpha = 0.7f),
-                        fontFamily = fontFamily
+                        color = backlightTextPrimary.copy(alpha = 0.65f),
+                        fontFamily = fontFamily,
+                        fontWeight = FontWeight.SemiBold
                     )
                 },
                 leadingIcon = {
@@ -153,7 +157,7 @@ fun FavoritesScreen(
                             Icon(
                                 imageVector = Icons.Default.Clear,
                                 contentDescription = "Limpar",
-                                tint = backlightTextSecondary,
+                                tint = backlightTextPrimary.copy(alpha = 0.8f),
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -162,12 +166,12 @@ fun FavoritesScreen(
                 singleLine = true,
                 shape = RoundedCornerShape(8.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = backlightHighlight,
-                    unfocusedBorderColor = backlightHighlight.copy(alpha = 0.4f),
+                    focusedBorderColor = backlightTextPrimary,
+                    unfocusedBorderColor = backlightTextPrimary.copy(alpha = 0.55f),
                     focusedTextColor = backlightTextPrimary,
                     unfocusedTextColor = backlightTextPrimary,
-                    focusedContainerColor = Color(0x33000000),
-                    unfocusedContainerColor = Color(0x22000000)
+                    focusedContainerColor = Color(0x26000000),
+                    unfocusedContainerColor = Color(0x18000000)
                 )
             )
         }

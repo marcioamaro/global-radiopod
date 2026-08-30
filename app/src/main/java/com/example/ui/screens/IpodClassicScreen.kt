@@ -121,6 +121,7 @@ fun IpodClassicScreen(
     favorites: List<RadioStation>,
     sleepTimerMinutes: Int,
     sleepTimerSecondsRemaining: Long = 0L,
+    brickGameCenterAction: Long = 0L,
     onRotaryScroll: (Int) -> Unit,
     onCenterClick: () -> Unit,
     onMenuClick: () -> Unit,
@@ -314,10 +315,10 @@ fun IpodClassicScreen(
                         "${sleepTimerMinutes}:00"
                     } else null
 
-                    // HOLD standard colors: Red when active, neutral Click Wheel colors when off
-                    val sleepPillColor = if (isSleepActive) Color(0xFFDC2626) else wheelTextColor
-                    val sleepBorderColor = if (isSleepActive) Color(0xFFB91C1C) else wheelColor
-                    val sleepBgColor = if (isSleepActive) Color(0xFFDC2626).copy(alpha = 0.25f) else wheelColor.copy(alpha = 0.22f)
+                    // Flat harmonized Click Wheel colors for Sleep Mode (sem vermelho)
+                    val sleepPillColor = if (isSleepActive) wheelTextColor else wheelTextColor.copy(alpha = 0.65f)
+                    val sleepBorderColor = if (isSleepActive) wheelTextColor else wheelColor
+                    val sleepBgColor = if (isSleepActive) wheelTextColor.copy(alpha = 0.15f) else wheelColor.copy(alpha = 0.22f)
 
                     Row(
                         modifier = Modifier
@@ -645,6 +646,7 @@ fun IpodClassicScreen(
                                 IpodBrickGameScreen(
                                     paddlePositionRatio = uiState.gamePaddlePosition,
                                     onPaddleMove = onPaddleMove,
+                                    centerActionTrigger = brickGameCenterAction,
                                     soundAndHaptics = effectiveSoundAndHaptics,
                                     backlightBg = backlightBg,
                                     backlightTextPrimary = backlightTextPrimary,
@@ -1366,36 +1368,31 @@ fun IpodClassicScreen(
                                     onShowChassisBack = onShowChassisBack
                                 )
                             }
-                            IpodScreenDestination.ALARM_CONFIG -> {
-                                IpodAlarmScreen(
-                                    favorites = favorites,
-                                    onBack = onMenuClick,
-                                    backlightBg = backlightBg,
-                                    backlightTextPrimary = backlightTextPrimary,
-                                    backlightTextSecondary = backlightTextSecondary,
-                                    backlightHighlight = backlightHighlight,
-                                    fontFamily = fontFamily,
-                                    fontScale = fontScale,
-                                    isBold = isBold
-                                )
-                            }
                         }
                     }
                 }
 
-                // Banner LCD retrô para feedback do Modo Dormir (Inversão monocromática com alto contraste)
+                // Banner LCD retrô para feedback do Modo Dormir (Inversão monocromática com alto contraste - Flat LCD)
                 if (showSleepBanner && sleepBannerMessage != null) {
-                    Box(
+                    Row(
                         modifier = Modifier
                             .align(Alignment.TopCenter)
                             .padding(top = 28.dp)
                             .clip(RoundedCornerShape(4.dp))
                             .background(backlightTextPrimary)
                             .border(1.dp, backlightBg, RoundedCornerShape(4.dp))
-                            .padding(horizontal = 12.dp, vertical = 5.dp)
+                            .padding(horizontal = 10.dp, vertical = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        Icon(
+                            imageVector = Icons.Default.Timer,
+                            contentDescription = "Dormir",
+                            tint = backlightBg,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(modifier = Modifier.width(5.dp))
                         Text(
-                            text = "⏰ $sleepBannerMessage",
+                            text = sleepBannerMessage ?: "",
                             color = backlightBg,
                             fontSize = (10.5f * fontScale).sp,
                             fontWeight = FontWeight.Black,
@@ -1407,7 +1404,7 @@ fun IpodClassicScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Interactive Click Wheel at Bottom with dynamic user-configured colors and Alarm Bell
+            // Interactive Click Wheel at Bottom with dynamic user-configured colors
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1425,37 +1422,6 @@ fun IpodClassicScreen(
                     textColor = wheelTextColor,
                     centerButtonColor = centerButtonColor
                 )
-
-                // Sininho no canto inferior direito do chassi que acessa as configurações de alarme (Padrão HOLD)
-                val isAlarmActive = remember(uiState.currentScreen) {
-                    try {
-                        com.example.data.preferences.IpodPreferencesManager.getInstance(context).getRadioAlarmConfig().isEnabled
-                    } catch (_: Exception) { false }
-                }
-                val alarmColor = if (isAlarmActive) Color(0xFFDC2626) else Color.White.copy(alpha = 0.5f)
-                val alarmBorderColor = if (isAlarmActive) Color(0xFFB91C1C) else Color.White.copy(alpha = 0.2f)
-                val alarmBgColor = if (isAlarmActive) Color(0xFFDC2626).copy(alpha = 0.25f) else Color.White.copy(alpha = 0.08f)
-
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(end = 6.dp, bottom = 2.dp)
-                        .clip(CircleShape)
-                        .background(alarmBgColor)
-                        .border(1.2.dp, alarmBorderColor, CircleShape)
-                        .clickable {
-                            onSelectDestination(IpodScreenDestination.ALARM_CONFIG)
-                        }
-                        .padding(8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Alarm,
-                        contentDescription = "Configurações de Alarme",
-                        tint = alarmColor,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
             }
         }
     }
@@ -1506,7 +1472,6 @@ private fun getScreenTitle(uiState: UiState): String {
         IpodScreenDestination.GAME_BRICK -> "Brick Game"
         IpodScreenDestination.SETTINGS_THEMES -> "Configurações"
         IpodScreenDestination.ABOUT -> "Sobre o Aplicativo"
-        IpodScreenDestination.ALARM_CONFIG -> "Despertador / Alarme"
     }
 }
 

@@ -88,29 +88,29 @@ fun StationLargeCard(
         Modifier.border(
             2.dp,
             backlightTextPrimary,
-            RoundedCornerShape(12.dp)
+            RoundedCornerShape(10.dp)
         )
     } else if (isSelected) {
-        Modifier.border(1.5.dp, backlightHighlight, RoundedCornerShape(12.dp))
+        Modifier.border(1.5.dp, backlightTextPrimary, RoundedCornerShape(10.dp))
     } else {
-        Modifier.border(0.8.dp, backlightHighlight.copy(alpha = 0.25f), RoundedCornerShape(12.dp))
+        Modifier.border(1.dp, backlightTextPrimary.copy(alpha = 0.45f), RoundedCornerShape(10.dp))
     }
 
     val cardBg = if (isSelected) {
         backlightHighlight.copy(alpha = 0.28f)
     } else {
-        Color(0x33000000)
+        Color(0x22000000)
     }
 
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(10.dp))
             .then(borderModifier)
             .clickable(onClick = onClick)
             .testTag("favorite_large_card_${station.id}"),
         colors = CardDefaults.cardColors(containerColor = cardBg),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(10.dp)
     ) {
         Row(
             modifier = Modifier
@@ -118,19 +118,19 @@ fun StationLargeCard(
                 .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Extra-Large Icon/Logo (76dp) - Standard retro LCD radio badge
+            // Extra-Large Icon/Logo (72dp) - Padrão Flat Monocromático LCD puro
             Box(
                 modifier = Modifier
-                    .size(76.dp)
+                    .size(72.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(backlightTextPrimary.copy(alpha = 0.14f))
-                    .border(1.5.dp, if (isPlaying) backlightTextPrimary else backlightTextPrimary.copy(alpha = 0.5f), RoundedCornerShape(8.dp)),
+                    .background(Color(0x18000000))
+                    .border(1.5.dp, backlightTextPrimary, RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Radio,
                     contentDescription = "Logotipo Rádio",
-                    tint = if (isSelected) Color.White else backlightTextPrimary,
+                    tint = backlightTextPrimary,
                     modifier = Modifier.size(44.dp)
                 )
             }
@@ -151,7 +151,7 @@ fun StationLargeCard(
                         text = station.name,
                         color = backlightTextPrimary,
                         fontSize = (15 * fontScale).sp,
-                        fontWeight = if (isBold || isPlaying) FontWeight.Black else FontWeight.Bold,
+                        fontWeight = FontWeight.Black,
                         fontFamily = fontFamily,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -165,7 +165,7 @@ fun StationLargeCard(
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = "Remover dos Favoritos",
-                            tint = backlightTextPrimary.copy(alpha = 0.7f),
+                            tint = backlightTextPrimary.copy(alpha = 0.75f),
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -175,67 +175,77 @@ fun StationLargeCard(
 
                 Text(
                     text = "${station.country} • ${station.primaryGenre}",
-                    color = backlightTextSecondary,
+                    color = backlightTextPrimary.copy(alpha = 0.8f),
                     fontSize = (12 * fontScale).sp,
                     fontFamily = fontFamily,
-                    fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+                    fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
 
                 Spacer(modifier = Modifier.height(6.dp))
 
+                // Linha de baixo padronizada: os 3 itens com o mesmo formato, cor e borda
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    // Frequency Chip
+                    val chipShape = RoundedCornerShape(4.dp)
+                    val chipBg = Color(0xFF0F172A)
+                    val chipBorder = 0.8.dp
+                    val chipBorderColor = backlightHighlight.copy(alpha = 0.4f)
+                    val chipPadding = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+
+                    // 1. Frequency Chip (Mesmo padrão dos dois itens à direita)
+                    val freqText = station.displayFrequency.ifBlank { "FM STEREO" }
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(backlightHighlight.copy(alpha = 0.3f))
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                            .clip(chipShape)
+                            .background(chipBg)
+                            .border(chipBorder, chipBorderColor, chipShape)
+                            .then(chipPadding)
                     ) {
                         Text(
-                            text = station.displayFrequency,
-                            color = backlightTextPrimary,
+                            text = freqText,
+                            color = backlightTextSecondary,
                             fontSize = (10 * fontScale).sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = fontFamily
                         )
                     }
 
-                    // Bitrate Chip
+                    // 2. Bitrate Chip
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(Color(0xFF0F172A))
-                            .border(0.8.dp, backlightHighlight.copy(alpha = 0.4f), RoundedCornerShape(4.dp))
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                            .clip(chipShape)
+                            .background(chipBg)
+                            .border(chipBorder, chipBorderColor, chipShape)
+                            .then(chipPadding)
                     ) {
                         Text(
-                            text = "${station.bitrate}k ${station.codec}",
+                            text = "${station.bitrate}k ${station.codec}".trim().ifEmpty { "128k MP3" },
                             color = backlightTextSecondary,
                             fontSize = (10 * fontScale).sp,
+                            fontWeight = FontWeight.Bold,
                             fontFamily = fontFamily
                         )
                     }
 
-                    if (isPlaying) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(backlightTextPrimary)
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.status_live),
-                                color = Color.Black,
-                                fontSize = (9 * fontScale).sp,
-                                fontWeight = FontWeight.Black,
-                                fontFamily = fontFamily
-                            )
-                        }
+                    // 3. Status Chip (Ao Vivo)
+                    Box(
+                        modifier = Modifier
+                            .clip(chipShape)
+                            .background(chipBg)
+                            .border(chipBorder, if (isPlaying) backlightTextPrimary else chipBorderColor, chipShape)
+                            .then(chipPadding)
+                    ) {
+                        Text(
+                            text = if (isPlaying) stringResource(R.string.status_live) else "AO VIVO",
+                            color = if (isPlaying) backlightTextPrimary else backlightTextSecondary,
+                            fontSize = (9.5f * fontScale).sp,
+                            fontWeight = FontWeight.Black,
+                            fontFamily = fontFamily
+                        )
                     }
                 }
             }

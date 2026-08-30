@@ -98,6 +98,7 @@ fun MainScreen(viewModel: RadioViewModel) {
     val volume by viewModel.volume.collectAsState()
     val sleepTimerMinutes by viewModel.sleepTimerMinutes.collectAsState()
     val sleepTimerSecondsRemaining by viewModel.sleepTimerSecondsRemaining.collectAsState()
+    val brickGameCenterAction by viewModel.brickGameCenterAction.collectAsState()
     val liveSessionDurationSeconds by viewModel.liveSessionDurationSeconds.collectAsState()
     val currentLocalAudio by viewModel.currentLocalAudio.collectAsState()
     val audioPositionMs by viewModel.audioPositionMs.collectAsState()
@@ -272,6 +273,7 @@ fun MainScreen(viewModel: RadioViewModel) {
                                 favorites = favorites,
                                 sleepTimerMinutes = sleepTimerMinutes,
                                 sleepTimerSecondsRemaining = sleepTimerSecondsRemaining,
+                                brickGameCenterAction = brickGameCenterAction,
                                 onRotaryScroll = { steps -> viewModel.onRotaryScroll(steps) },
                                 onCenterClick = { viewModel.onCenterButtonPress() },
                                 onMenuClick = { viewModel.navigateBack() },

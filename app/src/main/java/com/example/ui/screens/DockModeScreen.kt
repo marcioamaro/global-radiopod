@@ -216,41 +216,6 @@ fun DockModeScreen(
                             modifier = Modifier.size(20.dp)
                         )
                     }
-
-                    // Indicador de Alarme Ativo e Contagem Regressiva
-                    val alarmConfig = remember {
-                        try {
-                            com.example.data.preferences.IpodPreferencesManager.getInstance(context).getRadioAlarmConfig()
-                        } catch (_: Exception) {
-                            com.example.data.model.RadioAlarmConfig()
-                        }
-                    }
-                    if (alarmConfig.isEnabled) {
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFFDC2626).copy(alpha = 0.25f))
-                                .border(1.dp, Color(0xFFB91C1C), RoundedCornerShape(12.dp))
-                                .padding(horizontal = 10.dp, vertical = 6.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Alarm,
-                                contentDescription = "Alarme Ativo",
-                                tint = Color(0xFFDC2626),
-                                modifier = Modifier.size(15.dp)
-                            )
-                            Spacer(modifier = Modifier.width(5.dp))
-                            Text(
-                                text = "⏰ ${alarmConfig.formattedTime} (${alarmConfig.getRemainingTimeString()})",
-                                color = Color(0xFFE0F2FE),
-                                fontSize = 11.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.Monospace
-                            )
-                        }
-                    }
                 }
 
                 Row(

@@ -229,19 +229,6 @@ class RadioAuditAndSearchTest {
         }
     }
 
-    @Test
-    fun testRadioAlarmConfigNextTimeCalculation() {
-        val config = com.example.data.model.RadioAlarmConfig(
-            isEnabled = true,
-            hour = 7,
-            minute = 30,
-            stationName = "Kiss FM"
-        )
-        val nextMs = config.calculateNextAlarmTimeMs()
-        assertTrue("Next alarm time must be in the future", nextMs > System.currentTimeMillis())
-        val remainingStr = config.getRemainingTimeString()
-        assertTrue("Remaining string must be descriptive", remainingStr.startsWith("em ") || remainingStr == "Agora")
-    }
 
     @Test
     fun testAccentInsensitiveNormalization() {

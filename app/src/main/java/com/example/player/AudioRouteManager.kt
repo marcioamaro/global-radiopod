@@ -1,6 +1,7 @@
 package com.example.player
 
 import android.content.Context
+import com.example.R
 import androidx.mediarouter.media.MediaControlIntent
 import androidx.mediarouter.media.MediaRouteSelector
 import androidx.mediarouter.media.MediaRouter
@@ -244,11 +245,10 @@ class AudioRouteManager private constructor(private val context: Context) {
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_ARTIST, station.country.ifBlank { "Brasil" })
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_SUBTITLE, "${station.city} • ${station.primaryGenre}".trim())
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_ALBUM_TITLE, "MediaPod • Rádio")
-                    if (station.favicon.isNotBlank()) {
-                        try {
-                            addImage(com.google.android.gms.common.images.WebImage(android.net.Uri.parse(station.favicon)))
-                        } catch (_: Exception) {}
-                    }
+                    try {
+                        val appIconUri = android.net.Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
+                        addImage(com.google.android.gms.common.images.WebImage(appIconUri))
+                    } catch (_: Exception) {}
                 }
                 val mediaInfo = com.google.android.gms.cast.MediaInfo.Builder(streamUrl)
                     .setStreamType(com.google.android.gms.cast.MediaInfo.STREAM_TYPE_LIVE)
@@ -264,11 +264,10 @@ class AudioRouteManager private constructor(private val context: Context) {
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_ARTIST, podcast.showTitle)
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_SUBTITLE, podcast.publishDate.ifBlank { "Podcast" })
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_ALBUM_TITLE, "MediaPod • Podcast")
-                    if (podcast.artworkUrl.isNotBlank()) {
-                        try {
-                            addImage(com.google.android.gms.common.images.WebImage(android.net.Uri.parse(podcast.artworkUrl)))
-                        } catch (_: Exception) {}
-                    }
+                    try {
+                        val appIconUri = android.net.Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
+                        addImage(com.google.android.gms.common.images.WebImage(appIconUri))
+                    } catch (_: Exception) {}
                 }
                 val mediaInfo = com.google.android.gms.cast.MediaInfo.Builder(podcast.audioUrl)
                     .setStreamType(com.google.android.gms.cast.MediaInfo.STREAM_TYPE_BUFFERED)
@@ -284,11 +283,10 @@ class AudioRouteManager private constructor(private val context: Context) {
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_ARTIST, localAudio.artist)
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_SUBTITLE, localAudio.album)
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_ALBUM_TITLE, "MediaPod • Músicas")
-                    if (!localAudio.albumArtUrl.isNullOrBlank()) {
-                        try {
-                            addImage(com.google.android.gms.common.images.WebImage(android.net.Uri.parse(localAudio.albumArtUrl)))
-                        } catch (_: Exception) {}
-                    }
+                    try {
+                        val appIconUri = android.net.Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
+                        addImage(com.google.android.gms.common.images.WebImage(appIconUri))
+                    } catch (_: Exception) {}
                 }
                 val mediaInfo = com.google.android.gms.cast.MediaInfo.Builder(localAudio.contentUri.toString())
                     .setStreamType(com.google.android.gms.cast.MediaInfo.STREAM_TYPE_BUFFERED)

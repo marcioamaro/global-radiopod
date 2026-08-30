@@ -69,8 +69,7 @@ enum class IpodScreenDestination {
     AUDIO_OUTPUT_MENU,
     GAME_BRICK,
     SETTINGS_THEMES,
-    ABOUT,
-    ALARM_CONFIG
+    ABOUT
 }
 
 enum class DisplayMode {
@@ -214,6 +213,9 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     val sleepTimerMinutes: StateFlow<Int> = playerManager.sleepTimerMinutes
     val sleepTimerSecondsRemaining: StateFlow<Long> = playerManager.sleepTimerSecondsRemaining
     val errorMessage: StateFlow<String?> = playerManager.errorMessage
+
+    private val _brickGameCenterAction = MutableStateFlow(0L)
+    val brickGameCenterAction: StateFlow<Long> = _brickGameCenterAction.asStateFlow()
 
     // Audio Output Switcher & MediaRouter
     val audioRouteManager = com.example.player.AudioRouteManager.getInstance(application)
@@ -1150,14 +1152,11 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                 setEqualizerPreset(presets[nextIdx])
             }
             IpodScreenDestination.GAME_BRICK -> {
-                // Center button in game releases ball or restarts
+                _brickGameCenterAction.value = System.currentTimeMillis()
             }
             IpodScreenDestination.ABOUT -> {
                 // Return to main menu on center button press
                 navigateTo(IpodScreenDestination.MAIN_MENU)
-            }
-            IpodScreenDestination.ALARM_CONFIG -> {
-                // Handled in LCD screen
             }
         }
     }
@@ -1165,6 +1164,10 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     fun onPlayPausePress() {
         if (_uiState.value.isHoldLocked) return
         soundAndHaptics.performHeavyHaptic()
+        if (_uiState.value.currentScreen == IpodScreenDestination.GAME_BRICK) {
+            _brickGameCenterAction.value = System.currentTimeMillis()
+            return
+        }
         if (_uiState.value.currentScreen == IpodScreenDestination.VIDEO_PLAYER) {
             videoPlayerManager.togglePlayPause()
         } else {
@@ -1884,7 +1887,6 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
             IpodScreenDestination.GAME_BRICK,
             IpodScreenDestination.NOW_PLAYING_RDS,
             IpodScreenDestination.ABOUT -> 0
-            IpodScreenDestination.ALARM_CONFIG -> 0
         }
     }
 

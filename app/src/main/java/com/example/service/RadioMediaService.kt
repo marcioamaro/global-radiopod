@@ -12,6 +12,7 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
+import android.view.KeyEvent
 import androidx.annotation.OptIn
 import androidx.core.app.NotificationCompat
 import androidx.media3.common.ForwardingPlayer
@@ -44,6 +45,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(UnstableApi::class)
 class RadioMediaService : MediaLibraryService() {
@@ -52,6 +54,18 @@ class RadioMediaService : MediaLibraryService() {
     private var mediaLibrarySession: MediaLibrarySession? = null
     private lateinit var playerManager: RadioPlayerManager
     private lateinit var repository: RadioRepository
+
+    private val appLogoUri: Uri by lazy {
+        Uri.parse("android.resource://${applicationContext.packageName}/${R.mipmap.ic_launcher}")
+    }
+
+    private val radioDefaultIconUri: Uri by lazy {
+        Uri.parse("android.resource://${applicationContext.packageName}/${R.drawable.ic_radio_retro}")
+    }
+
+    private val podcastDefaultIconUri: Uri by lazy {
+        Uri.parse("android.resource://${applicationContext.packageName}/${R.drawable.ic_podcast_retro}")
+    }
 
     companion object {
         const val CHANNEL_ID = "radio_playback_channel"
@@ -64,35 +78,24 @@ class RadioMediaService : MediaLibraryService() {
         const val ACTION_NEXT = "com.example.ACTION_NEXT"
         const val ACTION_PREVIOUS = "com.example.ACTION_PREVIOUS"
 
-        // Custom Mute Action for Android Auto
+        // Custom Commands for Android Auto
         const val ACTION_TOGGLE_MUTE = "com.example.ACTION_TOGGLE_MUTE"
+        const val ACTION_TOGGLE_FAVORITE = "ACTION_TOGGLE_FAVORITE"
 
-        // Android Auto Media Tree Navigation Roots
-        const val ROOT_ID = "root"
-        const val ROOT_RADIO = "root_radio"
-        const val ROOT_PODCASTS = "root_podcasts"
-        const val ROOT_FAVORITES = "root_favorites"
-        const val ROOT_RECENT = "root_recent"
-        const val ROOT_ALL = "root_all"
-        const val SUB_BRAZIL = "sub_brazil"
-        const val SUB_WORLD = "sub_world"
-        const val SUB_GENRES = "sub_genres"
+        // Android Auto Media Tree Navigation Roots (Play Store Compliant)
+        const val ROOT_MEDIA_ID = "ROOT_MEDIA_ID"
+        const val ROOT_ID = "ROOT_MEDIA_ID" // Alias para compatibilidade total
+        const val FAVORITE_RADIOS = "FAVORITE_RADIOS"
+        const val FAVORITE_PODCASTS = "FAVORITE_PODCASTS"
 
-        // Symmetrical Sub-branches
-        const val RADIO_FAVORITES = "radio_favorites"
-        const val RADIO_RECENTS = "radio_recents"
-        const val RADIO_TOP_BRAZIL = "radio_top_brazil"
-        const val RADIO_STATES = "radio_states"
-        const val RADIO_TOP_WORLD = "radio_top_world"
-        const val RADIO_GENRES = "radio_genres"
-        const val RADIO_CUSTOM = "radio_custom"
-
-        const val PODCAST_FAVORITES = "podcast_favorites"
-        const val PODCAST_RECENTS = "podcast_recents"
-        const val PODCAST_TOP_BRAZIL = "podcast_top_brazil"
-        const val PODCAST_TOP_WORLD = "podcast_top_world"
-        const val PODCAST_CATEGORIES = "podcast_categories"
-        const val PODCAST_CUSTOM = "podcast_custom"
+        // Aliases simétricos para manter compatibilidade com intents ou caches
+        const val ROOT_RADIO = "FAVORITE_RADIOS"
+        const val ROOT_PODCASTS = "FAVORITE_PODCASTS"
+        const val ROOT_FAVORITES = "FAVORITE_RADIOS"
+        const val ROOT_RECENT = "FAVORITE_RADIOS"
+        const val ROOT_ALL = "FAVORITE_RADIOS"
+        const val RADIO_FAVORITES = "FAVORITE_RADIOS"
+        const val PODCAST_FAVORITES = "FAVORITE_PODCASTS"
     }
 
     private lateinit var podcastRepository: com.example.data.repository.PodcastRepository
@@ -118,7 +121,10 @@ class RadioMediaService : MediaLibraryService() {
 
             val forwardingPlayer = RadioForwardingPlayer(
                 playerManager.getPlayer(),
-                playerManager
+                playerManager,
+                repository,
+                podcastRepository,
+                serviceScope
             )
 
             val toggleFavCommand = SessionCommand("ACTION_TOGGLE_FAVORITE", Bundle.EMPTY)
@@ -146,10 +152,9 @@ class RadioMediaService : MediaLibraryService() {
                 .build()
 
             val initialNotification = buildMediaNotification()
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(NOTIFICATION_ID, initialNotification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
-            } else {
-                startForeground(NOTIFICATION_ID, initialNotification)
+            // Inicia Foreground Service de forma segura apenas se houver playback ativo (resiliente para Android 14)
+            if (playerManager.playbackStatus.value == RadioPlaybackStatus.PLAYING) {
+                startForegroundSafely(initialNotification)
             }
 
             // Sincronização em tempo real do estado de reprodução e do Android Auto
@@ -157,6 +162,18 @@ class RadioMediaService : MediaLibraryService() {
 
         } catch (e: Exception) {
             android.util.Log.e("RadioMediaService", "Error during service onCreate", e)
+        }
+    }
+
+    private fun startForegroundSafely(notification: Notification) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+            } else {
+                startForeground(NOTIFICATION_ID, notification)
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("RadioMediaService", "Could not startForeground safely: ${e.message}")
         }
     }
 
@@ -188,6 +205,7 @@ class RadioMediaService : MediaLibraryService() {
                 when (status) {
                     RadioPlaybackStatus.PLAYING -> {
                         acquireServiceLocks()
+                        startForegroundSafely(buildMediaNotification())
                     }
                     RadioPlaybackStatus.PAUSED,
                     RadioPlaybackStatus.IDLE,
@@ -225,7 +243,10 @@ class RadioMediaService : MediaLibraryService() {
 
     private class RadioForwardingPlayer(
         player: Player,
-        private val playerManager: RadioPlayerManager
+        private val playerManager: RadioPlayerManager,
+        private val repository: RadioRepository,
+        private val podcastRepository: com.example.data.repository.PodcastRepository,
+        private val serviceScope: CoroutineScope
     ) : ForwardingPlayer(player) {
 
         override fun getAvailableCommands(): Player.Commands {
@@ -238,6 +259,8 @@ class RadioMediaService : MediaLibraryService() {
                 .add(Player.COMMAND_SEEK_TO_PREVIOUS)
                 .add(Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
                 .add(Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
+                .add(Player.COMMAND_SEEK_BACK)
+                .add(Player.COMMAND_SEEK_FORWARD)
                 .build()
         }
 
@@ -249,7 +272,9 @@ class RadioMediaService : MediaLibraryService() {
                 Player.COMMAND_SEEK_TO_NEXT,
                 Player.COMMAND_SEEK_TO_PREVIOUS,
                 Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM,
-                Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM -> true
+                Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM,
+                Player.COMMAND_SEEK_BACK,
+                Player.COMMAND_SEEK_FORWARD -> true
                 else -> super.isCommandAvailable(command)
             }
         }
@@ -283,6 +308,77 @@ class RadioMediaService : MediaLibraryService() {
 
         override fun seekToPreviousMediaItem() {
             playerManager.playPrevious()
+        }
+
+        override fun seekBack() {
+            playerManager.seekRelative(-15000L)
+        }
+
+        override fun seekForward() {
+            playerManager.seekRelative(30000L)
+        }
+
+        override fun setMediaItem(mediaItem: MediaItem) {
+            super.setMediaItem(mediaItem)
+            handleItemPlayback(mediaItem)
+        }
+
+        override fun setMediaItem(mediaItem: MediaItem, startPositionMs: Long) {
+            super.setMediaItem(mediaItem, startPositionMs)
+            handleItemPlayback(mediaItem)
+        }
+
+        override fun setMediaItem(mediaItem: MediaItem, resetPosition: Boolean) {
+            super.setMediaItem(mediaItem, resetPosition)
+            handleItemPlayback(mediaItem)
+        }
+
+        override fun setMediaItems(mediaItems: MutableList<MediaItem>) {
+            super.setMediaItems(mediaItems)
+            mediaItems.firstOrNull()?.let { handleItemPlayback(it) }
+        }
+
+        override fun setMediaItems(mediaItems: MutableList<MediaItem>, resetPosition: Boolean) {
+            super.setMediaItems(mediaItems, resetPosition)
+            mediaItems.firstOrNull()?.let { handleItemPlayback(it) }
+        }
+
+        override fun setMediaItems(
+            mediaItems: MutableList<MediaItem>,
+            startIndex: Int,
+            startPositionMs: Long
+        ) {
+            super.setMediaItems(mediaItems, startIndex, startPositionMs)
+            mediaItems.getOrNull(startIndex)?.let { handleItemPlayback(it) }
+        }
+
+        private fun handleItemPlayback(mediaItem: MediaItem) {
+            val id = mediaItem.mediaId
+            if (id.startsWith("radio_")) {
+                val realId = id.removePrefix("radio_")
+                serviceScope.launch(Dispatchers.IO) {
+                    val station = repository.getFavoritesDirect().find { it.id == realId }
+                        ?: CuratedData.CURATED_GLOBAL_STATIONS.find { it.id == realId }
+                    if (station != null) {
+                        withContext(Dispatchers.Main) {
+                            playerManager.playStation(station)
+                        }
+                    }
+                }
+            } else if (id.startsWith("podelem_")) {
+                val epId = id.removePrefix("podelem_")
+                serviceScope.launch(Dispatchers.IO) {
+                    val show = podcastRepository.favoritesFlow.value.find { s ->
+                        podcastRepository.getEpisodesForShow(s).any { it.id == epId }
+                    }
+                    val ep = show?.let { podcastRepository.getEpisodesForShow(it).find { e -> e.id == epId } }
+                    if (ep != null) {
+                        withContext(Dispatchers.Main) {
+                            playerManager.playPodcastEpisode(ep, show, emptyList())
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -431,6 +527,10 @@ class RadioMediaService : MediaLibraryService() {
     private fun updateNotification() {
         try {
             val notification = buildMediaNotification()
+            val isPlaying = playerManager.playbackStatus.value == RadioPlaybackStatus.PLAYING
+            if (isPlaying) {
+                startForegroundSafely(notification)
+            }
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
             notificationManager?.notify(NOTIFICATION_ID, notification)
         } catch (e: Exception) {
@@ -552,10 +652,15 @@ class RadioMediaService : MediaLibraryService() {
                 .build()
 
             val playerCommands = defaultResult.availablePlayerCommands.buildUpon()
+                .add(Player.COMMAND_PLAY_PAUSE)
+                .add(Player.COMMAND_PREPARE)
+                .add(Player.COMMAND_STOP)
                 .add(Player.COMMAND_SEEK_BACK)
                 .add(Player.COMMAND_SEEK_FORWARD)
                 .add(Player.COMMAND_SEEK_TO_NEXT)
                 .add(Player.COMMAND_SEEK_TO_PREVIOUS)
+                .add(Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
+                .add(Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
                 .build()
 
             return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
@@ -579,16 +684,82 @@ class RadioMediaService : MediaLibraryService() {
                     playerManager.seekRelative(30000L)
                     return SessionResult.RESULT_SUCCESS
                 }
-                Player.COMMAND_SEEK_TO_NEXT -> {
+                Player.COMMAND_SEEK_TO_NEXT, Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM -> {
                     playerManager.playNext()
                     return SessionResult.RESULT_SUCCESS
                 }
-                Player.COMMAND_SEEK_TO_PREVIOUS -> {
+                Player.COMMAND_SEEK_TO_PREVIOUS, Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM -> {
                     playerManager.playPrevious()
+                    return SessionResult.RESULT_SUCCESS
+                }
+                Player.COMMAND_PLAY_PAUSE -> {
+                    if (playerManager.playbackStatus.value == RadioPlaybackStatus.PLAYING) {
+                        playerManager.pause()
+                    } else {
+                        playerManager.resume()
+                    }
+                    return SessionResult.RESULT_SUCCESS
+                }
+                Player.COMMAND_STOP -> {
+                    playerManager.stop()
                     return SessionResult.RESULT_SUCCESS
                 }
             }
             return super.onPlayerCommandRequest(session, controller, playerCommand)
+        }
+
+        override fun onMediaButtonEvent(
+            session: MediaSession,
+            controllerInfo: MediaSession.ControllerInfo,
+            intent: Intent
+        ): Boolean {
+            val keyEvent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT, KeyEvent::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT) as? KeyEvent
+            }
+            if (keyEvent != null && keyEvent.action == KeyEvent.ACTION_DOWN) {
+                when (keyEvent.keyCode) {
+                    KeyEvent.KEYCODE_MEDIA_PLAY -> {
+                        playerManager.resume()
+                        return true
+                    }
+                    KeyEvent.KEYCODE_MEDIA_PAUSE -> {
+                        playerManager.pause()
+                        return true
+                    }
+                    KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, KeyEvent.KEYCODE_HEADSETHOOK -> {
+                        if (playerManager.playbackStatus.value == RadioPlaybackStatus.PLAYING) {
+                            playerManager.pause()
+                        } else {
+                            playerManager.resume()
+                        }
+                        return true
+                    }
+                    KeyEvent.KEYCODE_MEDIA_NEXT -> {
+                        playerManager.playNext()
+                        return true
+                    }
+                    KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
+                        playerManager.playPrevious()
+                        return true
+                    }
+                    KeyEvent.KEYCODE_MEDIA_STOP -> {
+                        playerManager.stop()
+                        return true
+                    }
+                    KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> {
+                        playerManager.seekRelative(30000L)
+                        return true
+                    }
+                    KeyEvent.KEYCODE_MEDIA_REWIND -> {
+                        playerManager.seekRelative(-15000L)
+                        return true
+                    }
+                }
+            }
+            return super.onMediaButtonEvent(session, controllerInfo, intent)
         }
 
         override fun onCustomCommand(
@@ -598,11 +769,15 @@ class RadioMediaService : MediaLibraryService() {
             args: Bundle
         ): ListenableFuture<SessionResult> {
             when (customCommand.customAction) {
-                "ACTION_TOGGLE_FAVORITE" -> {
+                ACTION_TOGGLE_FAVORITE -> {
                     val current = playerManager.currentStation.value
                     if (current != null) {
                         serviceScope.launch(Dispatchers.IO) {
                             repository.toggleFavorite(current)
+                            withContext(Dispatchers.Main) {
+                                mediaLibrarySession?.notifyChildrenChanged(FAVORITE_RADIOS, 0, null)
+                                updateNotification()
+                            }
                         }
                     }
                 }
@@ -618,17 +793,14 @@ class RadioMediaService : MediaLibraryService() {
             browser: MediaSession.ControllerInfo,
             params: LibraryParams?
         ): ListenableFuture<LibraryResult<MediaItem>> {
-            val rootExtras = Bundle().apply {
-                putBoolean("android.media.browse.SEARCH_SUPPORTED", true)
-                putInt("android.media.browse.CONTENT_STYLE_BROWSABLE_HINT", 1) // LIST/TABS
-                putInt("android.media.browse.CONTENT_STYLE_PLAYABLE_HINT", 1)  // LIST
-                putInt("android.media.browse.CONTENT_STYLE_SUPPORTED", 1)
-            }
+            val rootExtras = createContentStyleExtras(isGrid = true)
             val rootItem = MediaItem.Builder()
-                .setMediaId(ROOT_ID)
+                .setMediaId(ROOT_MEDIA_ID)
                 .setMediaMetadata(
                     MediaMetadata.Builder()
-                        .setTitle("MediaPod + Radio / Podcast")
+                        .setTitle("Global RadioPod")
+                        .setSubtitle("Rádios & Podcasts")
+                        .setArtworkUri(appLogoUri)
                         .setIsBrowsable(true)
                         .setIsPlayable(false)
                         .setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_RADIO_STATIONS)
@@ -649,244 +821,115 @@ class RadioMediaService : MediaLibraryService() {
             pageSize: Int,
             params: LibraryParams?
         ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
+            val gridExtras = createContentStyleExtras(isGrid = true)
 
             when (parentId) {
-                ROOT_ID -> {
-                    val children = listOf(
-                        createFolderItem(ROOT_RADIO, "📻 Rádios", "Emissoras ao vivo e gêneros"),
-                        createFolderItem(ROOT_PODCASTS, "🎙️ Podcasts", "Programas, notícias e episódios"),
-                        createFolderItem(ROOT_FAVORITES, "⭐ Favoritos Rápidos", "Acesso direto"),
-                        createFolderItem(ROOT_RECENT, "🕒 Recentes Rápidos", "Últimas ouvidas")
+                ROOT_MEDIA_ID, ROOT_ID, "root", "" -> {
+                    val rootCategories = listOf(
+                        createCategoryFolderItem(
+                            id = FAVORITE_RADIOS,
+                            title = "📻 Rádios Favoritas",
+                            subtitle = "Estações salvas",
+                            iconUri = radioDefaultIconUri,
+                            extras = gridExtras
+                        ),
+                        createCategoryFolderItem(
+                            id = FAVORITE_PODCASTS,
+                            title = "🎙️ Podcasts Favoritos",
+                            subtitle = "Programas salvos",
+                            iconUri = podcastDefaultIconUri,
+                            extras = gridExtras
+                        )
                     )
                     return Futures.immediateFuture(
-                        LibraryResult.ofItemList(ImmutableList.copyOf(children), params)
+                        LibraryResult.ofItemList(ImmutableList.copyOf(rootCategories), params)
                     )
                 }
 
-                ROOT_RADIO, ROOT_ALL -> {
-                    val children = listOf(
-                        createFolderItem(RADIO_FAVORITES, "⭐ Rádios Favoritas", "Estações salvas"),
-                        createFolderItem(RADIO_RECENTS, "🕒 Recentes", "Últimas emissoras ouvidas"),
-                        createFolderItem(RADIO_TOP_BRAZIL, "🇧🇷 Top Brasil", "Emissoras mais ouvidas do Brasil"),
-                        createFolderItem(RADIO_STATES, "🏛️ Estados (UFs do Brasil)", "Navegação por estado brasileiro"),
-                        createFolderItem(RADIO_TOP_WORLD, "🌍 Top Mundial", "Emissoras mais ouvidas do mundo"),
-                        createFolderItem(RADIO_GENRES, "🎵 Gêneros Musicais", "39 estilos, notícias e ritmos"),
-                        createFolderItem(RADIO_CUSTOM, "📻 Minhas Rádios", "Emissoras personalizadas")
-                    )
-                    return Futures.immediateFuture(
-                        LibraryResult.ofItemList(ImmutableList.copyOf(children), params)
-                    )
-                }
-
-                RADIO_STATES -> {
-                    val items = mutableListOf<MediaItem>()
-                    items.add(createFolderItem("state_ALL", "🇧🇷 Todas as UFs", "1.321 emissoras de todo o Brasil"))
-                    CuratedData.BRAZILIAN_STATES.filter { it.first.isNotBlank() }.forEach { (uf, label) ->
-                        items.add(createFolderItem("state_$uf", "📍 $label", "Emissoras de $uf"))
-                    }
-                    return Futures.immediateFuture(
-                        LibraryResult.ofItemList(ImmutableList.copyOf(items), params)
-                    )
-                }
-
-                ROOT_PODCASTS -> {
-                    val children = listOf(
-                        createFolderItem(PODCAST_FAVORITES, "⭐ Podcasts Favoritos", "Seus programas salvos"),
-                        createFolderItem(PODCAST_RECENTS, "🕒 Episódios Recentes", "Últimos reproduzidos"),
-                        createFolderItem(PODCAST_TOP_BRAZIL, "🇧🇷 Top Podcasts Brasil", "Top 50 programas do Brasil"),
-                        createFolderItem(PODCAST_TOP_WORLD, "🌍 Top Podcasts Mundo", "Top 50 programas globais"),
-                        createFolderItem(PODCAST_CATEGORIES, "📂 Categorias", "Notícias, tecnologia, cultura"),
-                        createFolderItem(PODCAST_CUSTOM, "🎙️ Meus Podcasts", "Feeds e programas personalizados")
-                    )
-                    return Futures.immediateFuture(
-                        LibraryResult.ofItemList(ImmutableList.copyOf(children), params)
-                    )
-                }
-
-                RADIO_FAVORITES, ROOT_FAVORITES -> {
+                FAVORITE_RADIOS, "radio_favorites", "root_favorites", "root_radio" -> {
                     val future = SettableFuture.create<LibraryResult<ImmutableList<MediaItem>>>()
                     serviceScope.launch(Dispatchers.IO) {
                         try {
-                            val favs = repository.getFavoritesDirect()
-                            val items = favs.take(40).map { createStationItem(it) }
+                            val favorites = repository.getFavoritesDirect()
+                            val items = if (favorites.isNotEmpty()) {
+                                favorites.map { station ->
+                                    createStationCardItem(station, gridExtras)
+                                }
+                            } else {
+                                listOf(
+                                    createInfoCardItem(
+                                        id = "empty_radios",
+                                        title = "Nenhuma rádio favorita",
+                                        subtitle = "Favorite rádios no celular para vê-las aqui",
+                                        iconUri = radioDefaultIconUri
+                                    )
+                                )
+                            }
                             future.set(LibraryResult.ofItemList(ImmutableList.copyOf(items), params))
                         } catch (e: Exception) {
-                            android.util.Log.e("RadioMediaService", "Error loading favorites for AA", e)
+                            android.util.Log.e("RadioMediaService", "Erro ao carregar rádios favoritas", e)
                             future.set(LibraryResult.ofItemList(ImmutableList.of(), params))
                         }
                     }
                     return future
                 }
 
-                RADIO_RECENTS, ROOT_RECENT -> {
-                    val prefs = IpodPreferencesManager.getInstance(applicationContext)
-                    val recents = prefs.getRecentStations().take(25)
-                    val items = recents.map { createStationItem(it) }
-                    return Futures.immediateFuture(
-                        LibraryResult.ofItemList(ImmutableList.copyOf(items), params)
-                    )
-                }
-
-                RADIO_TOP_BRAZIL, SUB_BRAZIL -> {
-                    val list = CuratedData.CURATED_GLOBAL_STATIONS.filter {
-                        it.countryCode.equals("BR", ignoreCase = true) || it.country.contains("Brasil", ignoreCase = true)
-                    }.take(100)
-                    val items = list.map { createStationItem(it) }
-                    return Futures.immediateFuture(
-                        LibraryResult.ofItemList(ImmutableList.copyOf(items), params)
-                    )
-                }
-
-                RADIO_TOP_WORLD, SUB_WORLD -> {
-                    val list = CuratedData.CURATED_GLOBAL_STATIONS.take(35)
-                    val items = list.map { createStationItem(it) }
-                    return Futures.immediateFuture(
-                        LibraryResult.ofItemList(ImmutableList.copyOf(items), params)
-                    )
-                }
-
-                RADIO_GENRES, SUB_GENRES -> {
-                    val items = CuratedData.GENRES.map { genre ->
-                        createFolderItem("genre_${genre.tag}", "${genre.iconEmoji} ${genre.name}", genre.description)
-                    }
-                    return Futures.immediateFuture(
-                        LibraryResult.ofItemList(ImmutableList.copyOf(items), params)
-                    )
-                }
-
-                RADIO_CUSTOM -> {
-                    val prefs = IpodPreferencesManager.getInstance(applicationContext)
-                    val customStations = prefs.getCustomStations()
-                    val items = customStations.map { createStationItem(it) }
-                    return Futures.immediateFuture(
-                        LibraryResult.ofItemList(ImmutableList.copyOf(items), params)
-                    )
-                }
-
-                PODCAST_FAVORITES -> {
-                    val favs = podcastRepository.favoritesFlow.value
-                    val items = favs.map { createPodcastShowFolder(it) }
-                    return Futures.immediateFuture(
-                        LibraryResult.ofItemList(ImmutableList.copyOf(items), params)
-                    )
-                }
-
-                PODCAST_RECENTS -> {
-                    val recents = podcastRepository.recentEpisodesFlow.value
-                    val items = recents.map { createPodcastEpisodeItem(it) }
-                    return Futures.immediateFuture(
-                        LibraryResult.ofItemList(ImmutableList.copyOf(items), params)
-                    )
-                }
-
-                PODCAST_TOP_BRAZIL -> {
+                FAVORITE_PODCASTS, "podcast_favorites", "root_podcasts" -> {
                     val future = SettableFuture.create<LibraryResult<ImmutableList<MediaItem>>>()
                     serviceScope.launch(Dispatchers.IO) {
                         try {
-                            val list = podcastRepository.getTopPodcasts("BR", 100)
-                            val items = list.map { createPodcastShowFolder(it) }
+                            val favShows = podcastRepository.favoritesFlow.value
+                            val items = if (favShows.isNotEmpty()) {
+                                favShows.map { show ->
+                                    createPodcastShowCardItem(show, gridExtras)
+                                }
+                            } else {
+                                listOf(
+                                    createInfoCardItem(
+                                        id = "empty_podcasts",
+                                        title = "Nenhum podcast favorito",
+                                        subtitle = "Favorite podcasts no celular para vê-los aqui",
+                                        iconUri = podcastDefaultIconUri
+                                    )
+                                )
+                            }
                             future.set(LibraryResult.ofItemList(ImmutableList.copyOf(items), params))
                         } catch (e: Exception) {
+                            android.util.Log.e("RadioMediaService", "Erro ao carregar podcasts favoritos", e)
                             future.set(LibraryResult.ofItemList(ImmutableList.of(), params))
                         }
                     }
                     return future
-                }
-
-                PODCAST_TOP_WORLD -> {
-                    val future = SettableFuture.create<LibraryResult<ImmutableList<MediaItem>>>()
-                    serviceScope.launch(Dispatchers.IO) {
-                        try {
-                            val list = podcastRepository.getTopPodcasts("GLOBAL", 100)
-                            val items = list.map { createPodcastShowFolder(it) }
-                            future.set(LibraryResult.ofItemList(ImmutableList.copyOf(items), params))
-                        } catch (e: Exception) {
-                            future.set(LibraryResult.ofItemList(ImmutableList.of(), params))
-                        }
-                    }
-                    return future
-                }
-
-                PODCAST_CATEGORIES -> {
-                    val items = podcastRepository.categories.map { cat ->
-                        createFolderItem("podcat_${cat.id}", cat.name, cat.description)
-                    }
-                    return Futures.immediateFuture(
-                        LibraryResult.ofItemList(ImmutableList.copyOf(items), params)
-                    )
-                }
-
-                PODCAST_CUSTOM -> {
-                    val customShows = podcastRepository.customShowsFlow.value
-                    val items = customShows.map { createPodcastShowFolder(it) }
-                    return Futures.immediateFuture(
-                        LibraryResult.ofItemList(ImmutableList.copyOf(items), params)
-                    )
                 }
 
                 else -> {
-                    if (parentId.startsWith("state_")) {
-                        val uf = parentId.removePrefix("state_")
-                        val list = if (uf.equals("ALL", ignoreCase = true)) {
-                            CuratedData.CURATED_GLOBAL_STATIONS.filter {
-                                it.countryCode.equals("BR", ignoreCase = true) || it.country.contains("Brasil", ignoreCase = true)
-                            }.take(100)
-                        } else {
-                            CuratedData.CURATED_GLOBAL_STATIONS.filter {
-                                (it.countryCode.equals("BR", ignoreCase = true) || it.country.contains("Brasil", ignoreCase = true)) &&
-                                com.example.util.RadioSearchEngine.matchesUf(it, uf)
-                            }
-                        }
-                        val items = list.map { createStationItem(it) }
-                        return Futures.immediateFuture(
-                            LibraryResult.ofItemList(ImmutableList.copyOf(items), params)
-                        )
-                    }
-
-                    if (parentId.startsWith("genre_")) {
-                        val tag = parentId.removePrefix("genre_")
-                        val list = CuratedData.CURATED_GLOBAL_STATIONS.filter {
-                            com.example.util.RadioSearchEngine.matchesGenre(it, tag)
-                        }
-                        val items = list.map { createStationItem(it) }
-                        return Futures.immediateFuture(
-                            LibraryResult.ofItemList(ImmutableList.copyOf(items), params)
-                        )
-                    }
-
-                    if (parentId.startsWith("podcat_")) {
-                        val catId = parentId.removePrefix("podcat_")
-                        val future = SettableFuture.create<LibraryResult<ImmutableList<MediaItem>>>()
-                        serviceScope.launch(Dispatchers.IO) {
-                            try {
-                                val list = podcastRepository.getPodcastsByCategory(catId)
-                                val items = list.map { createPodcastShowFolder(it) }
-                                future.set(LibraryResult.ofItemList(ImmutableList.copyOf(items), params))
-                            } catch (e: Exception) {
-                                future.set(LibraryResult.ofItemList(ImmutableList.of(), params))
-                            }
-                        }
-                        return future
-                    }
-
                     if (parentId.startsWith("podshow_")) {
                         val showId = parentId.removePrefix("podshow_")
                         val future = SettableFuture.create<LibraryResult<ImmutableList<MediaItem>>>()
                         serviceScope.launch(Dispatchers.IO) {
                             try {
-                                val allShows = podcastRepository.getTopPodcasts("BR", 100) +
-                                        podcastRepository.getTopPodcasts("GLOBAL", 100) +
-                                        podcastRepository.customShowsFlow.value
-                                val targetShow = allShows.firstOrNull { it.id == showId }
-                                if (targetShow != null) {
-                                    val episodes = podcastRepository.getEpisodes(targetShow)
-                                    val items = episodes.take(30).map { createPodcastEpisodeItem(it) }
-                                    future.set(LibraryResult.ofItemList(ImmutableList.copyOf(items), params))
+                                val show = podcastRepository.favoritesFlow.value.find { it.id == showId }
+                                val episodes = if (show != null) {
+                                    podcastRepository.getEpisodesForShow(show).take(40)
+                                } else emptyList()
+
+                                val items = if (episodes.isNotEmpty()) {
+                                    episodes.map { ep ->
+                                        createPodcastEpisodeCardItem(ep, gridExtras)
+                                    }
                                 } else {
-                                    future.set(LibraryResult.ofItemList(ImmutableList.of(), params))
+                                    listOf(
+                                        createInfoCardItem(
+                                            id = "empty_episodes_$showId",
+                                            title = "Nenhum episódio encontrado",
+                                            subtitle = "Feed indisponível no momento",
+                                            iconUri = podcastDefaultIconUri
+                                        )
+                                    )
                                 }
+                                future.set(LibraryResult.ofItemList(ImmutableList.copyOf(items), params))
                             } catch (e: Exception) {
-                                android.util.Log.e("RadioMediaService", "Error loading episodes for AA: $showId", e)
+                                android.util.Log.e("RadioMediaService", "Erro ao carregar episódios", e)
                                 future.set(LibraryResult.ofItemList(ImmutableList.of(), params))
                             }
                         }
@@ -898,6 +941,55 @@ class RadioMediaService : MediaLibraryService() {
                     )
                 }
             }
+        }
+
+        override fun onGetItem(
+            session: MediaLibrarySession,
+            browser: MediaSession.ControllerInfo,
+            mediaId: String
+        ): ListenableFuture<LibraryResult<MediaItem>> {
+            val gridExtras = createContentStyleExtras(isGrid = true)
+            when {
+                mediaId == ROOT_MEDIA_ID || mediaId == ROOT_ID || mediaId == "root" -> {
+                    return onGetLibraryRoot(session, browser, null)
+                }
+                mediaId == FAVORITE_RADIOS -> {
+                    val item = createCategoryFolderItem(
+                        FAVORITE_RADIOS, "📻 Rádios Favoritas", "Estações salvas", appLogoUri, gridExtras
+                    )
+                    return Futures.immediateFuture(LibraryResult.ofItem(item, null))
+                }
+                mediaId == FAVORITE_PODCASTS -> {
+                    val item = createCategoryFolderItem(
+                        FAVORITE_PODCASTS, "🎙️ Podcasts Favoritos", "Programas salvos", appLogoUri, gridExtras
+                    )
+                    return Futures.immediateFuture(LibraryResult.ofItem(item, null))
+                }
+                mediaId.startsWith("radio_") -> {
+                    val realId = mediaId.removePrefix("radio_")
+                    val future = SettableFuture.create<LibraryResult<MediaItem>>()
+                    serviceScope.launch(Dispatchers.IO) {
+                        val station = repository.getFavoritesDirect().find { it.id == realId }
+                            ?: CuratedData.CURATED_GLOBAL_STATIONS.find { it.id == realId }
+                        if (station != null) {
+                            future.set(LibraryResult.ofItem(createStationCardItem(station, gridExtras), null))
+                        } else {
+                            future.set(LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE))
+                        }
+                    }
+                    return future
+                }
+                mediaId.startsWith("podshow_") -> {
+                    val showId = mediaId.removePrefix("podshow_")
+                    val show = podcastRepository.favoritesFlow.value.find { it.id == showId }
+                    if (show != null) {
+                        return Futures.immediateFuture(
+                            LibraryResult.ofItem(createPodcastShowCardItem(show, gridExtras), null)
+                        )
+                    }
+                }
+            }
+            return Futures.immediateFuture(LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE))
         }
 
         override fun onSetMediaItems(
@@ -912,10 +1004,9 @@ class RadioMediaService : MediaLibraryService() {
                 val mediaId = target.mediaId
                 val streamUrl = target.requestMetadata.mediaUri?.toString() ?: mediaId
 
-                // Verifica se é um episódio de Podcast
-                if (mediaId.startsWith("ep_")) {
+                if (mediaId.startsWith("podelem_")) {
                     val episode = com.example.data.model.PodcastEpisode(
-                        id = mediaId,
+                        id = mediaId.removePrefix("podelem_"),
                         showId = "",
                         showTitle = target.mediaMetadata.artist?.toString() ?: "Podcast",
                         title = target.mediaMetadata.title?.toString() ?: "Episódio",
@@ -925,27 +1016,17 @@ class RadioMediaService : MediaLibraryService() {
                         publishDate = target.mediaMetadata.albumTitle?.toString() ?: ""
                     )
                     playerManager.playPodcastEpisode(episode)
-                } else {
-                    // É uma estação de rádio
-                    val match = CuratedData.CURATED_GLOBAL_STATIONS.firstOrNull { it.id == mediaId }
-                        ?: IpodPreferencesManager.getInstance(applicationContext).getRecentStations().firstOrNull { it.id == mediaId }
-                        ?: IpodPreferencesManager.getInstance(applicationContext).getCustomStations().firstOrNull { it.id == mediaId }
-                        ?: RadioStation(
-                            id = mediaId,
-                            name = target.mediaMetadata.title?.toString() ?: "Rádio",
-                            streamUrl = streamUrl,
-                            alternativeStreamUrls = emptyList(),
-                            favicon = target.mediaMetadata.artworkUri?.toString() ?: "",
-                            country = target.mediaMetadata.albumTitle?.toString() ?: "Mundial",
-                            countryCode = "BR",
-                            state = "",
-                            city = target.mediaMetadata.artist?.toString() ?: "",
-                            tags = "radio",
-                            bitrate = 128,
-                            codec = "MP3",
-                            votes = 100
-                        )
-                    playerManager.playStation(match)
+                } else if (mediaId.startsWith("radio_")) {
+                    val stationId = mediaId.removePrefix("radio_")
+                    serviceScope.launch(Dispatchers.IO) {
+                        val match = repository.getFavoritesDirect().find { it.id == stationId }
+                            ?: CuratedData.CURATED_GLOBAL_STATIONS.firstOrNull { it.id == stationId }
+                        if (match != null) {
+                            withContext(Dispatchers.Main) {
+                                playerManager.playStation(match)
+                            }
+                        }
+                    }
                 }
             }
             return Futures.immediateFuture(
@@ -957,21 +1038,9 @@ class RadioMediaService : MediaLibraryService() {
             mediaSession: MediaSession,
             controller: MediaSession.ControllerInfo
         ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
-            val currentEpisode = playerManager.currentPodcastEpisode.value
-            if (currentEpisode != null) {
-                playerManager.playPodcastEpisode(currentEpisode)
-                val item = createPodcastEpisodeItem(currentEpisode)
-                return Futures.immediateFuture(
-                    MediaSession.MediaItemsWithStartPosition(listOf(item), 0, 0)
-                )
-            }
-
             val current = playerManager.currentStation.value
-                ?: IpodPreferencesManager.getInstance(applicationContext).getLastPlayedStation()
-
             if (current != null) {
-                playerManager.playStation(current)
-                val item = createStationItem(current)
+                val item = createStationCardItem(current, createContentStyleExtras(isGrid = true))
                 return Futures.immediateFuture(
                     MediaSession.MediaItemsWithStartPosition(listOf(item), 0, 0)
                 )
@@ -992,12 +1061,59 @@ class RadioMediaService : MediaLibraryService() {
                     com.example.util.RadioSearchEngine.matchesMultiToken(it, query)
                 }
                 session.notifySearchResultChanged(browser, query, results.size, params)
-                val topMatch = results.firstOrNull()
-                if (topMatch != null) {
-                    playerManager.playStation(topMatch)
-                }
             }
             return Futures.immediateFuture(LibraryResult.ofVoid(params))
+        }
+
+        override fun onAddMediaItems(
+            mediaSession: MediaSession,
+            controller: MediaSession.ControllerInfo,
+            mediaItems: MutableList<MediaItem>
+        ): ListenableFuture<MutableList<MediaItem>> {
+            val gridExtras = createContentStyleExtras(isGrid = true)
+            val future = SettableFuture.create<MutableList<MediaItem>>()
+            serviceScope.launch(Dispatchers.IO) {
+                val resolvedList = mediaItems.map { item ->
+                    val id = item.mediaId
+                    val query = item.requestMetadata.searchQuery
+                    if (!query.isNullOrBlank()) {
+                        val match = repository.getFavoritesDirect().find {
+                            com.example.util.RadioSearchEngine.matchesMultiToken(it, query)
+                        } ?: CuratedData.CURATED_GLOBAL_STATIONS.find {
+                            com.example.util.RadioSearchEngine.matchesMultiToken(it, query)
+                        }
+                        if (match != null) {
+                            withContext(Dispatchers.Main) {
+                                playerManager.playStation(match)
+                            }
+                            createStationCardItem(match, gridExtras)
+                        } else {
+                            item
+                        }
+                    } else if (id.startsWith("radio_")) {
+                        val realId = id.removePrefix("radio_")
+                        val station = repository.getFavoritesDirect().find { it.id == realId }
+                            ?: CuratedData.CURATED_GLOBAL_STATIONS.find { it.id == realId }
+                        if (station != null) {
+                            withContext(Dispatchers.Main) {
+                                playerManager.playStation(station)
+                            }
+                            createStationCardItem(station, gridExtras)
+                        } else {
+                            item
+                        }
+                    } else if (id.startsWith("podelem_")) {
+                        withContext(Dispatchers.Main) {
+                            playerManager.resume()
+                        }
+                        item
+                    } else {
+                        item
+                    }
+                }.toMutableList()
+                future.set(resolvedList)
+            }
+            return future
         }
 
         override fun onGetSearchResult(
@@ -1008,98 +1124,70 @@ class RadioMediaService : MediaLibraryService() {
             pageSize: Int,
             params: LibraryParams?
         ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
+            val gridExtras = createContentStyleExtras(isGrid = true)
             val list = CuratedData.CURATED_GLOBAL_STATIONS.filter {
                 com.example.util.RadioSearchEngine.matchesMultiToken(it, query)
-            }.take(50)
-            val items = list.map { createStationItem(it) }
+            }.take(30)
+            val items = list.map { createStationCardItem(it, gridExtras) }
             return Futures.immediateFuture(
                 LibraryResult.ofItemList(ImmutableList.copyOf(items), params)
             )
         }
 
-        private fun createFolderItem(id: String, title: String, subtitle: String): MediaItem {
-            val extras = Bundle().apply {
-                putInt("android.media.browse.CONTENT_STYLE_BROWSABLE_HINT", 1)
-                putInt("android.media.browse.CONTENT_STYLE_PLAYABLE_HINT", 1)
-            }
+        private fun createCategoryFolderItem(
+            id: String,
+            title: String,
+            subtitle: String,
+            iconUri: Uri,
+            extras: Bundle
+        ): MediaItem {
             return MediaItem.Builder()
                 .setMediaId(id)
                 .setMediaMetadata(
                     MediaMetadata.Builder()
                         .setTitle(title)
                         .setSubtitle(subtitle)
+                        .setArtworkUri(iconUri)
                         .setIsBrowsable(true)
                         .setIsPlayable(false)
-                        .setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_RADIO_STATIONS)
+                        .setMediaType(
+                            if (id == FAVORITE_PODCASTS) MediaMetadata.MEDIA_TYPE_FOLDER_PODCASTS
+                            else MediaMetadata.MEDIA_TYPE_FOLDER_RADIO_STATIONS
+                        )
                         .setExtras(extras)
                         .build()
                 )
                 .build()
         }
 
-        private fun createPodcastShowFolder(show: com.example.data.model.PodcastShow): MediaItem {
-            val podcastIconUri = Uri.parse("android.resource://${applicationContext.packageName}/${R.drawable.ic_podcast_retro}")
-            val extras = Bundle().apply {
-                putInt("android.media.browse.CONTENT_STYLE_BROWSABLE_HINT", 1)
-                putInt("android.media.browse.CONTENT_STYLE_PLAYABLE_HINT", 1)
-            }
+        private fun createInfoCardItem(
+            id: String,
+            title: String,
+            subtitle: String,
+            iconUri: Uri
+        ): MediaItem {
             return MediaItem.Builder()
-                .setMediaId("podshow_${show.id}")
+                .setMediaId(id)
                 .setMediaMetadata(
                     MediaMetadata.Builder()
-                        .setTitle(show.title)
-                        .setSubtitle("${show.author} • ${show.displayCountry}")
-                        .setArtworkUri(podcastIconUri)
-                        .setIsBrowsable(true)
-                        .setIsPlayable(false)
-                        .setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_PODCASTS)
-                        .setExtras(extras)
-                        .build()
-                )
-                .build()
-        }
-
-        private fun createPodcastEpisodeItem(episode: com.example.data.model.PodcastEpisode): MediaItem {
-            val podcastIconUri = Uri.parse("android.resource://${applicationContext.packageName}/${R.drawable.ic_podcast_retro}")
-            return MediaItem.Builder()
-                .setMediaId(episode.id)
-                .setUri(episode.audioUrl)
-                .setRequestMetadata(
-                    MediaItem.RequestMetadata.Builder()
-                        .setMediaUri(Uri.parse(episode.audioUrl))
-                        .build()
-                )
-                .setMediaMetadata(
-                    MediaMetadata.Builder()
-                        .setTitle(episode.title)
-                        .setArtist(episode.showTitle)
-                        .setAlbumTitle(episode.publishDate)
-                        .setArtworkUri(podcastIconUri)
+                        .setTitle(title)
+                        .setSubtitle(subtitle)
+                        .setArtworkUri(iconUri)
                         .setIsBrowsable(false)
-                        .setIsPlayable(true)
-                        .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST_EPISODE)
+                        .setIsPlayable(false)
                         .build()
                 )
                 .build()
         }
 
-        private fun createStationItem(station: RadioStation): MediaItem {
+        private fun createStationCardItem(station: RadioStation, extras: Bundle): MediaItem {
             val subtitle = buildString {
-                if (station.primaryGenre.isNotBlank()) append(station.primaryGenre)
-                if (station.country.isNotBlank()) {
-                    if (isNotEmpty()) append(" • ")
-                    append(station.country)
-                }
-                if (station.city.isNotBlank()) {
-                    if (isNotEmpty()) append(" • ")
-                    append(station.city)
-                }
+                append("Ao Vivo")
+                if (station.primaryGenre.isNotBlank()) append(" • ").append(station.primaryGenre)
+                else if (station.country.isNotBlank()) append(" • ").append(station.country)
             }
-
-            val radioIconUri = Uri.parse("android.resource://${applicationContext.packageName}/${R.drawable.ic_radio_retro}")
-
             return MediaItem.Builder()
-                .setMediaId(station.id)
+                .setMediaId("radio_${station.id}")
                 .setUri(station.streamUrl)
                 .setRequestMetadata(
                     MediaItem.RequestMetadata.Builder()
@@ -1110,14 +1198,80 @@ class RadioMediaService : MediaLibraryService() {
                     MediaMetadata.Builder()
                         .setTitle(station.name)
                         .setArtist(subtitle)
-                        .setAlbumTitle(station.country)
-                        .setArtworkUri(radioIconUri)
+                        .setSubtitle(subtitle)
+                        .setAlbumTitle(station.country.ifBlank { "Rádio Ao Vivo" })
+                        .setArtworkUri(radioDefaultIconUri)
                         .setIsBrowsable(false)
                         .setIsPlayable(true)
                         .setMediaType(MediaMetadata.MEDIA_TYPE_RADIO_STATION)
+                        .setExtras(extras)
                         .build()
                 )
                 .build()
+        }
+
+        private fun createPodcastShowCardItem(
+            show: com.example.data.model.PodcastShow,
+            extras: Bundle
+        ): MediaItem {
+            return MediaItem.Builder()
+                .setMediaId("podshow_${show.id}")
+                .setMediaMetadata(
+                    MediaMetadata.Builder()
+                        .setTitle(show.title)
+                        .setSubtitle(show.author.ifBlank { "Podcast" })
+                        .setArtworkUri(podcastDefaultIconUri)
+                        .setIsBrowsable(true)
+                        .setIsPlayable(false)
+                        .setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_PODCASTS)
+                        .setExtras(extras)
+                        .build()
+                )
+                .build()
+        }
+
+        private fun createPodcastEpisodeCardItem(
+            episode: com.example.data.model.PodcastEpisode,
+            extras: Bundle
+        ): MediaItem {
+            return MediaItem.Builder()
+                .setMediaId("podelem_${episode.id}")
+                .setUri(episode.audioUrl)
+                .setRequestMetadata(
+                    MediaItem.RequestMetadata.Builder()
+                        .setMediaUri(Uri.parse(episode.audioUrl))
+                        .build()
+                )
+                .setMediaMetadata(
+                    MediaMetadata.Builder()
+                        .setTitle(episode.title)
+                        .setArtist(episode.showTitle)
+                        .setSubtitle(episode.showTitle)
+                        .setAlbumTitle(episode.publishDate)
+                        .setArtworkUri(podcastDefaultIconUri)
+                        .setIsBrowsable(false)
+                        .setIsPlayable(true)
+                        .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST_EPISODE)
+                        .setExtras(extras)
+                        .build()
+                )
+                .build()
+        }
+
+        private fun createContentStyleExtras(isGrid: Boolean = true): Bundle {
+            return Bundle().apply {
+                putBoolean("android.media.browse.SEARCH_SUPPORTED", true)
+                putBoolean("android.media.browse.CONTENT_STYLE_SUPPORTED", true)
+                putInt(
+                    "android.media.browse.CONTENT_STYLE_BROWSABLE_HINT",
+                    if (isGrid) 2 else 1
+                )
+                putInt(
+                    "android.media.browse.CONTENT_STYLE_PLAYABLE_HINT",
+                    if (isGrid) 2 else 1
+                )
+                putBoolean("android.media.browse.CLIP_CHILDREN", true)
+            }
         }
     }
 }
