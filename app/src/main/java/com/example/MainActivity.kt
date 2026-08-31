@@ -344,9 +344,14 @@ fun MainScreen(viewModel: RadioViewModel) {
                                 onSelectAudioDevice = { dev -> viewModel.selectAudioDevice(dev) },
                                 onOpenNativeAudioChooser = { viewModel.showNativeAudioChooserDialog(context) },
                                 viewModel = viewModel,
-                                onShowChassisBack = { isChassisBackShowing = true }
+                                onShowChassisBack = {
+                                    if (viewModel.isChassisBackAnimationEnabled.value) {
+                                        isChassisBackShowing = true
+                                    }
+                                }
                             )
                         } else {
+                            val isChassisAnimEnabled by viewModel.isChassisBackAnimationEnabled.collectAsState()
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -355,7 +360,11 @@ fun MainScreen(viewModel: RadioViewModel) {
                                     }
                             ) {
                                 IpodChassisBackScreen(
-                                    onFlipBack = { isChassisBackShowing = false }
+                                    onFlipBack = { isChassisBackShowing = false },
+                                    isAnimationEnabled = isChassisAnimEnabled,
+                                    onToggleAnimationEnabled = { enabled ->
+                                        viewModel.setChassisBackAnimationEnabled(enabled)
+                                    }
                                 )
                             }
                         }

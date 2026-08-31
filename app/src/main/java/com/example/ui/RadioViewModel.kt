@@ -201,6 +201,20 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         playerManager.setEqualizerBandLevel(bandIndex, levelDb)
     }
 
+    private val _isChassisBackAnimationEnabled = MutableStateFlow(
+        prefs.isChassisBackAnimationEnabled()
+    )
+    val isChassisBackAnimationEnabled: StateFlow<Boolean> = _isChassisBackAnimationEnabled.asStateFlow()
+
+    fun setChassisBackAnimationEnabled(enabled: Boolean) {
+        _isChassisBackAnimationEnabled.value = enabled
+        prefs.setChassisBackAnimationEnabled(enabled)
+    }
+
+    fun toggleChassisBackAnimationEnabled() {
+        setChassisBackAnimationEnabled(!_isChassisBackAnimationEnabled.value)
+    }
+
     val favorites: StateFlow<List<RadioStation>> = repository.favoritesFlow
         .map { list -> list.sortedBy { it.name.trim().lowercase() } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -1845,7 +1859,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     private fun getItemCountForCurrentScreen(): Int {
         return when (_uiState.value.currentScreen) {
             IpodScreenDestination.MAIN_MENU -> 12
-            IpodScreenDestination.AUDIO_OUTPUT_MENU -> audioRouteManager.availableDevices.value.size + 1
+            IpodScreenDestination.AUDIO_OUTPUT_MENU -> audioRouteManager.availableDevices.value.size
             IpodScreenDestination.RADIO_MENU -> 9
             IpodScreenDestination.PODCASTS_MENU -> 9
             IpodScreenDestination.RADIO_CUSTOM_LIST -> _uiState.value.customStations.size + 1

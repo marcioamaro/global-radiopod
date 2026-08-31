@@ -37,6 +37,8 @@ import com.example.R
 @Composable
 fun IpodChassisBackScreen(
     onFlipBack: () -> Unit,
+    isAnimationEnabled: Boolean = true,
+    onToggleAnimationEnabled: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "metal_sheen")
@@ -322,6 +324,41 @@ fun IpodChassisBackScreen(
                     DockConnectorPortSimulation()
                 }
             }
+        }
+
+        // Toggle discreto no rodapé: "Não mostrar mais essa tela"
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 6.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xCC0F1318))
+                .border(0.8.dp, Color.White.copy(alpha = 0.25f), RoundedCornerShape(12.dp))
+                .clickable {
+                    onToggleAnimationEnabled(!isAnimationEnabled)
+                }
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            androidx.compose.material3.Checkbox(
+                checked = !isAnimationEnabled,
+                onCheckedChange = { checked -> onToggleAnimationEnabled(!checked) },
+                modifier = Modifier.size(20.dp),
+                colors = androidx.compose.material3.CheckboxDefaults.colors(
+                    checkedColor = Color(0xFF64748B),
+                    uncheckedColor = Color(0xFFCBD5E1),
+                    checkmarkColor = Color.White
+                )
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = "Não mostrar mais essa tela",
+                color = Color(0xFFE2E8F0),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = FontFamily.SansSerif
+            )
         }
     }
 }

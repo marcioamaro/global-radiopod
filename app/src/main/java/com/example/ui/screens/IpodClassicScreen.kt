@@ -2583,6 +2583,44 @@ private fun IpodSettingsScreen(
             }
         }
 
+        // Animação da Traseira do MediaPod (Easter Egg)
+        item {
+            val isChassisAnimEnabled = viewModel?.isChassisBackAnimationEnabled?.collectAsState()?.value ?: true
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0x33000000))
+                    .clickable { viewModel?.toggleChassisBackAnimationEnabled() }
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Animação da Traseira do MediaPod",
+                        color = backlightTextPrimary,
+                        fontSize = (10.5f * fontScale).sp,
+                        fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+                        fontFamily = fontFamily
+                    )
+                    Text(
+                        text = "Exibir chassi metálico 3D ao tocar no logotipo Sobre",
+                        color = backlightTextSecondary,
+                        fontSize = 9.sp,
+                        fontFamily = fontFamily
+                    )
+                }
+                Text(
+                    text = if (isChassisAnimEnabled) "✓ ATIVO" else "DESATIVADO",
+                    color = if (isChassisAnimEnabled) backlightHighlight else backlightTextSecondary,
+                    fontSize = 9.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = fontFamily
+                )
+            }
+        }
+
         // --- 6. SEGUNDO PLANO E BATERIA ---
         item {
             Spacer(modifier = Modifier.height(4.dp))

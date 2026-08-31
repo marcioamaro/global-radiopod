@@ -27,6 +27,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
@@ -45,6 +46,7 @@ import com.example.util.IpodSoundAndHaptics
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlin.random.Random
 
 data class Brick(
@@ -85,16 +87,27 @@ fun IpodBrickGameScreen(
     val lcdPixelDark = Color(0xFF142010)   // Pixel escuro LCD
     val lcdPixelMid = Color(0xFF384A2C)    // Pixel médio LCD
 
+    // *** FIX: rememberUpdatedState garante que o loop de física SEMPRE leia
+    // a posição atual do paddle, não a posição capturada pela closure ***
+    val currentPaddlePos by rememberUpdatedState(paddlePositionRatio)
+
     var score by remember { mutableIntStateOf(0) }
     var level by remember { mutableIntStateOf(1) }
     var lives by remember { mutableIntStateOf(3) }
     var gameState by remember { mutableStateOf(GameState.READY) }
 
     // Dimensões normalizadas unificadas (física e renderização idênticas 1:1)
-    val paddleWidthRatio = 0.24f       // 24% da largura da área de jogo
+    val initialPaddleWidth = 0.24f     // 24% da largura da área de jogo (nível 1)
+    val minPaddleWidth = 0.12f         // Mínimo de 12% (níveis altos)
     val paddleHeightRatio = 0.038f     // Altura da raquete
     val paddleY = 0.86f                // Posição vertical do topo da raquete
     val ballRadius = 0.018f            // Raio normalizado da bola
+    val maxBallSpeed = 0.90f           // Trava de segurança anti-tunneling
+
+    // Progressão dinâmica por nível
+    val paddleWidthRatio = (initialPaddleWidth * (1f - (level - 1) * 0.07f)).coerceAtLeast(minPaddleWidth)
+    val rows = (4 + (level - 1)).coerceAtMost(8)
+    val cols = 8
 
     val brickTopMargin = 0.04f
     val brickTotalHeight = 0.28f
@@ -107,62 +120,60 @@ fun IpodBrickGameScreen(
     var ballVx by remember { mutableFloatStateOf(0.35f) }
     var ballVy by remember { mutableFloatStateOf(-0.55f) }
 
-    val rows = 4
-    val cols = 8
     val bricks = remember {
         mutableStateListOf<Brick>().apply {
             var idCounter = 0
-            for (r in 0 until rows) {
+            for (r in 0 until 4) {
                 for (c in 0 until cols) {
-                    add(Brick(idCounter++, r, c, isAlive = true, points = (rows - r) * 10))
+                    add(Brick(idCounter++, r, c, isAlive = true, points = (4 - r) * 10))
                 }
             }
         }
     }
 
-    fun resetBricks() {
+    fun resetBricks(numRows: Int = rows) {
         bricks.clear()
         var idCounter = 0
-        for (r in 0 until rows) {
+        for (r in 0 until numRows) {
             for (c in 0 until cols) {
-                bricks.add(Brick(idCounter++, r, c, isAlive = true, points = (rows - r) * 10))
+                bricks.add(Brick(idCounter++, r, c, isAlive = true, points = (numRows - r) * 10))
             }
         }
+    }
+
+    // Lança a bola a partir da posição atual do paddle
+    fun launchBall() {
+        val pos = currentPaddlePos.coerceIn(0.12f, 0.88f)
+        ballX = pos
+        ballY = paddleY - ballRadius - 0.002f
+        val baseSpeed = (0.58f + (level - 1) * 0.05f).coerceAtMost(maxBallSpeed)
+        val angle = (Random.nextFloat() - 0.5f) * 0.6f
+        ballVx = baseSpeed * sin(angle)
+        ballVy = -abs(baseSpeed * cos(angle))
+        gameState = GameState.PLAYING
+        soundAndHaptics.performHeavyHaptic()
     }
 
     fun startNewGame() {
         score = 0
         level = 1
         lives = 3
-        resetBricks()
-        ballX = paddlePositionRatio.coerceIn(0.12f, 0.88f)
-        ballY = paddleY - ballRadius
-        val angle = (Random.nextFloat() - 0.5f) * 0.6f
-        val baseSpeed = 0.58f
-        ballVx = baseSpeed * sin(angle)
-        ballVy = -abs(baseSpeed * cos(angle))
-        gameState = GameState.PLAYING
-        soundAndHaptics.performHeavyHaptic()
+        resetBricks(4)
+        launchBall()
     }
 
     fun nextLevel() {
         level++
-        resetBricks()
-        ballX = paddlePositionRatio.coerceIn(0.12f, 0.88f)
-        ballY = paddleY - ballRadius
-        val baseSpeed = (0.58f + level * 0.05f).coerceAtMost(0.90f)
-        val angle = (Random.nextFloat() - 0.5f) * 0.6f
-        ballVx = baseSpeed * sin(angle)
-        ballVy = -abs(baseSpeed * cos(angle))
-        gameState = GameState.PLAYING
-        soundAndHaptics.performHeavyHaptic()
+        val newRows = (4 + (level - 1)).coerceAtMost(8)
+        resetBricks(newRows)
+        launchBall()
     }
 
     // Acionamento síncrono pelo Botão Central do Click Wheel
     LaunchedEffect(centerActionTrigger) {
         if (centerActionTrigger > 0L) {
             when (gameState) {
-                GameState.READY -> startNewGame()
+                GameState.READY -> launchBall()
                 GameState.PLAYING -> {
                     gameState = GameState.PAUSED
                     soundAndHaptics.performClickHaptic()
@@ -178,9 +189,9 @@ fun IpodBrickGameScreen(
     }
 
     // Sincroniza a bola sobre a raquete enquanto em modo de espera (READY)
-    LaunchedEffect(paddlePositionRatio, gameState) {
+    LaunchedEffect(currentPaddlePos, gameState) {
         if (gameState == GameState.READY) {
-            ballX = paddlePositionRatio.coerceIn(0.12f, 0.88f)
+            ballX = currentPaddlePos.coerceIn(0.12f, 0.88f)
             ballY = paddleY - ballRadius
         }
     }
@@ -223,9 +234,13 @@ fun IpodBrickGameScreen(
                     soundAndHaptics.performClickHaptic()
                 }
 
-                // Colisão com a Raquete (Continuous Detection / Anti-Tunneling)
-                val paddleLeft = (paddlePositionRatio - paddleWidthRatio / 2f).coerceAtLeast(0.01f)
-                val paddleRight = (paddlePositionRatio + paddleWidthRatio / 2f).coerceAtMost(0.99f)
+                // Colisão com a Raquete (AABB Contínuo + Anti-Tunneling + Ângulo Dinâmico)
+                // *** FIX: Usa currentPaddlePos (rememberUpdatedState) em vez do
+                // paddlePositionRatio capturado pela closure do LaunchedEffect ***
+                val livePaddlePos = currentPaddlePos
+                val livePaddleW = paddleWidthRatio
+                val paddleLeft = (livePaddlePos - livePaddleW / 2f).coerceAtLeast(0.01f)
+                val paddleRight = (livePaddlePos + livePaddleW / 2f).coerceAtMost(0.99f)
 
                 if (ballVy > 0f) {
                     val ballBottomPrev = ballY + ballRadius
@@ -233,19 +248,24 @@ fun IpodBrickGameScreen(
                     val paddleTop = paddleY
                     val paddleBottom = paddleY + paddleHeightRatio
 
-                    // Verifica se a bola tocou ou cruzou a borda superior da raquete neste frame
+                    // Detecção AABB contínua: a bola cruzou ou tocou a borda superior da raquete?
                     if (ballBottomNext >= paddleTop && ballBottomPrev <= paddleBottom) {
-                        val minX = paddleLeft - ballRadius * 0.8f
-                        val maxX = paddleRight + ballRadius * 0.8f
+                        // Tolerância de hitbox generosa para evitar misses
+                        val minX = paddleLeft - ballRadius
+                        val maxX = paddleRight + ballRadius
                         if (nextX in minX..maxX || ballX in minX..maxX) {
-                            nextY = paddleTop - ballRadius
-                            val hitOffset = ((nextX - paddlePositionRatio) / (paddleWidthRatio / 2f)).coerceIn(-1.0f, 1.0f)
+                            // SNAP TO TOP: Reposiciona exatamente no topo da barra
+                            nextY = paddleTop - ballRadius - 0.001f
+
+                            // Cálculo do ângulo dinâmico (estilo Breakout clássico)
+                            val hitOffset = ((nextX - livePaddlePos) / (livePaddleW / 2f)).coerceIn(-1.0f, 1.0f)
                             val maxAngle = 1.15f // ~65 graus de desvio
                             val bounceAngle = hitOffset * maxAngle
-                            val speed = (0.58f + level * 0.05f).coerceAtMost(0.90f)
+                            val speed = (0.58f + (level - 1) * 0.05f).coerceAtMost(maxBallSpeed)
 
                             ballVx = speed * sin(bounceAngle)
-                            ballVy = -abs(speed * cos(bounceAngle))
+                            // Garante direção SEMPRE para cima após o rebote
+                            ballVy = -abs(speed * cos(bounceAngle)).coerceAtLeast(0.15f)
                             soundAndHaptics.performClickHaptic()
                         }
                     }
@@ -258,13 +278,11 @@ fun IpodBrickGameScreen(
                     if (lives <= 0) {
                         gameState = GameState.GAME_OVER
                     } else {
-                        // Reposiciona bola sobre a raquete
-                        ballX = paddlePositionRatio.coerceIn(0.12f, 0.88f)
+                        // Reposiciona bola sobre a raquete e aguarda relançamento
+                        ballX = currentPaddlePos.coerceIn(0.12f, 0.88f)
                         ballY = paddleY - ballRadius
-                        val baseSpeed = 0.58f + level * 0.05f
-                        val angle = (Random.nextFloat() - 0.5f) * 0.6f
-                        ballVx = baseSpeed * sin(angle)
-                        ballVy = -abs(baseSpeed * cos(angle))
+                        ballVx = 0f
+                        ballVy = 0f
                         gameState = GameState.READY
                     }
                     return@withFrameNanos
@@ -297,6 +315,15 @@ fun IpodBrickGameScreen(
                             ballVx = -ballVx
                         } else {
                             ballVy = -ballVy
+                        }
+
+                        // Microaceleração a cada bloco destruído (+2% velocidade, com speed cap)
+                        val curSpeed = sqrt(ballVx * ballVx + ballVy * ballVy)
+                        val newSpeed = (curSpeed * 1.02f).coerceAtMost(maxBallSpeed)
+                        if (curSpeed > 0.01f) {
+                            val factor = newSpeed / curSpeed
+                            ballVx *= factor
+                            ballVy *= factor
                         }
                         break
                     }

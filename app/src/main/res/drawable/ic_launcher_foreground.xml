@@ -59,48 +59,27 @@
             android:strokeLineCap="round"
             android:strokeLineJoin="round" />
 
-        <!-- iPod Click Wheel Outer Ring (Sleek Matte Grey) -->
+        <!-- iPod Lower Disc (Smooth Brushed Disc) -->
         <path
-            android:pathData="M54,71m-15.5,0a15.5,15.5 0 1,0 31,0a15.5,15.5 0 1,0 -31,0"
-            android:fillColor="#E2E8F0"
+            android:pathData="M54,71m-16,0a16,16 0 1,0 32,0a16,16 0 1,0 -32,0"
+            android:fillColor="#F1F5F9"
+            android:strokeWidth="1.0"
+            android:strokeColor="#CBD5E1" />
+
+        <!-- Center Button Circle -->
+        <path
+            android:pathData="M54,71m-7.5,0a7.5,7.5 0 1,0 15,0a7.5,7.5 0 1,0 -15,0"
+            android:fillColor="#FFFFFF"
             android:strokeWidth="0.8"
             android:strokeColor="#CBD5E1" />
 
-        <!-- Media Controls on Click Wheel (MENU, Play/Pause, Rewind, FastForward) -->
-        <!-- Top MENU text indicator -->
+        <!-- Prominent Bitten Pear Logo (Centered inside the button) -->
         <path
-            android:pathData="M51,58 L57,58 L57,59.8 L51,59.8 Z"
-            android:fillColor="#64748B" />
-        <!-- Bottom Play/Pause icon -->
+            android:pathData="M53.5,67.2 C51.4,67.2 50.1,68.8 50.1,70.5 C50.1,71.6 49.2,72.7 49.2,73.9 C49.2,75.8 51.0,77.2 54.0,77.2 C57.0,77.2 58.8,75.8 58.8,73.9 C58.8,72.6 57.6,71.6 57.6,70.5 C57.6,69.5 58.6,69.1 58.6,67.9 C56.4,67.7 55.7,69.1 54.6,69.1 C54.1,69.1 53.6,68.2 53.5,67.2 Z"
+            android:fillColor="#334155" />
         <path
-            android:pathData="M51.5,82.5 L54.5,84 L51.5,85.5 Z M55.5,82.5 L57,82.5 L57,85.5 L55.5,85.5 Z"
-            android:fillColor="#64748B" />
-        <!-- Left Rewind triangle -->
-        <path
-            android:pathData="M41,71 L44,69 L44,73 Z"
-            android:fillColor="#64748B" />
-        <!-- Right FastForward triangle -->
-        <path
-            android:pathData="M67,71 L64,69 L64,73 Z"
-            android:fillColor="#64748B" />
-
-        <!-- iPod Click Wheel Center Button (White Disc) -->
-        <path
-            android:pathData="M54,71m-6.5,0a6.5,6.5 0 1,0 13,0a6.5,6.5 0 1,0 -13,0"
-            android:fillColor="#FFFFFF"
-            android:strokeWidth="0.6"
-            android:strokeColor="#CBD5E1" />
-
-        <!-- BITTEN PEAR SILHOUETTE (Estilo Pêra Mordida Apple) -->
-        <!-- Pear Body with bite on upper-right -->
-        <path
-            android:pathData="M53.5,67.8 C51.8,67.8 50.8,69.2 50.8,70.6 C50.8,71.5 50.0,72.4 50.0,73.4 C50.0,75.0 51.5,76.2 54.0,76.2 C56.5,76.2 58.0,75.0 58.0,73.4 C58.0,72.3 57.0,71.5 57.0,70.6 C57.0,69.8 57.8,69.4 57.8,68.4 C56.0,68.2 55.4,69.4 54.5,69.4 C54.0,69.4 53.6,68.7 53.5,67.8 Z"
-            android:fillColor="#475569" />
-        <!-- Pear Leaf / Stem -->
-        <path
-            android:pathData="M54.2,66.2 C54.8,66.8 55.8,67.1 55.8,67.1 C55.8,67.1 55.5,66.2 54.8,65.8 C54.2,65.5 53.6,65.7 53.6,65.7 C53.6,65.7 53.8,65.8 54.2,66.2 Z"
-            android:fillColor="#475569" />
-
+            android:pathData="M54.3,65.3 C55.0,66.0 56.2,66.4 56.2,66.4 C56.2,66.4 55.8,65.3 55.0,64.8 C54.3,64.4 53.6,64.6 53.6,64.6 C53.6,64.6 53.8,64.8 54.3,65.3 Z"
+            android:fillColor="#334155" />
     </group>
 
 </vector>

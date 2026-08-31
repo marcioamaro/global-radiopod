@@ -151,47 +151,6 @@ fun IpodAudioOutputScreen(
                     }
                 }
             }
-
-            // Item de Ação especial: Abrir Seletor do Sistema (MediaRouteChooserDialog)
-            item {
-                val isFocused = selectedIndex == devices.size
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            if (isFocused) backlightHighlight.copy(alpha = 0.88f)
-                            else Color.Transparent
-                        )
-                        .clickable { onOpenNativeChooser() }
-                        .padding(horizontal = 8.dp, vertical = 7.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_audio_output_classic),
-                        contentDescription = null,
-                        tint = if (isFocused) Color.White else backlightTextPrimary,
-                        modifier = Modifier.size(14.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(7.dp))
-
-                    Text(
-                        text = "[ Abrir Seletor do Sistema ]",
-                        color = if (isFocused) Color.White else backlightTextPrimary,
-                        fontSize = (11f * fontScale).sp,
-                        fontWeight = FontWeight.Black,
-                        fontFamily = fontFamily,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-                        contentDescription = null,
-                        tint = if (isFocused) Color.White else backlightTextSecondary,
-                        modifier = Modifier.size(13.dp)
-                    )
-                }
-            }
         }
 
         // Divisor vertical retrô do LCD
@@ -215,19 +174,28 @@ fun IpodAudioOutputScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
+                val focusedType = currentFocusedDevice?.deviceType ?: selectedDevice?.deviceType ?: AudioDeviceType.THIS_DEVICE
+                val previewIcon = when (focusedType) {
+                    AudioDeviceType.THIS_DEVICE -> Icons.Default.PhoneAndroid
+                    AudioDeviceType.BLUETOOTH -> Icons.Default.BluetoothAudio
+                    AudioDeviceType.CAST_REMOTE -> Icons.Default.Cast
+                    else -> Icons.Default.VolumeUp
+                }
+
+                // Moldura LCD plana com fundo suave e ícone em tinta escura de alto contraste
                 Box(
                     modifier = Modifier
-                        .size(56.dp)
+                        .size(60.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFF0F172A))
-                        .border(1.2.dp, backlightHighlight, RoundedCornerShape(8.dp)),
+                        .background(Color(0x1F000000))
+                        .border(1.5.dp, backlightTextPrimary, RoundedCornerShape(8.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_audio_output_classic),
+                        imageVector = previewIcon,
                         contentDescription = null,
                         tint = backlightTextPrimary,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(34.dp)
                     )
                 }
 

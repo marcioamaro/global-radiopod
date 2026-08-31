@@ -13,6 +13,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 enum class AudioDeviceType {
@@ -89,6 +90,7 @@ class AudioRouteManager private constructor(private val context: Context) {
         override fun onSessionStarted(session: com.google.android.gms.cast.framework.CastSession, sessionId: String) {
             castSession = session
             isCastingActive = true
+            startLocalIconServer()
             session.remoteMediaClient?.registerCallback(remoteClientCallback)
             transferPlaybackToCast(session)
             updateRoutes()
@@ -97,6 +99,7 @@ class AudioRouteManager private constructor(private val context: Context) {
             session.remoteMediaClient?.unregisterCallback(remoteClientCallback)
             castSession = null
             isCastingActive = false
+            stopLocalIconServer()
             updateRoutes()
         }
         override fun onSessionEnding(session: com.google.android.gms.cast.framework.CastSession) {
@@ -105,6 +108,7 @@ class AudioRouteManager private constructor(private val context: Context) {
         override fun onSessionEnded(session: com.google.android.gms.cast.framework.CastSession, error: Int) {
             session.remoteMediaClient?.unregisterCallback(remoteClientCallback)
             castSession = null
+            stopLocalIconServer()
             if (isCastingActive) {
                 isCastingActive = false
                 transferPlaybackToLocal()
@@ -115,6 +119,7 @@ class AudioRouteManager private constructor(private val context: Context) {
         override fun onSessionResumed(session: com.google.android.gms.cast.framework.CastSession, wasSuspended: Boolean) {
             castSession = session
             isCastingActive = true
+            startLocalIconServer()
             session.remoteMediaClient?.registerCallback(remoteClientCallback)
             updateRoutes()
         }
@@ -122,6 +127,7 @@ class AudioRouteManager private constructor(private val context: Context) {
             session.remoteMediaClient?.unregisterCallback(remoteClientCallback)
             castSession = null
             isCastingActive = false
+            stopLocalIconServer()
             updateRoutes()
         }
         override fun onSessionSuspended(session: com.google.android.gms.cast.framework.CastSession, reason: Int) {}
@@ -240,15 +246,13 @@ class AudioRouteManager private constructor(private val context: Context) {
         try {
             if (station != null) {
                 val streamUrl = station.streamUrl
+                val streamTitle = playerManager.rdsInfo.value.radioText.ifBlank { "Ao Vivo" }
                 val castMeta = com.google.android.gms.cast.MediaMetadata(com.google.android.gms.cast.MediaMetadata.MEDIA_TYPE_MUSIC_TRACK).apply {
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_TITLE, station.name)
-                    putString(com.google.android.gms.cast.MediaMetadata.KEY_ARTIST, station.country.ifBlank { "Brasil" })
-                    putString(com.google.android.gms.cast.MediaMetadata.KEY_SUBTITLE, "${station.city} • ${station.primaryGenre}".trim())
+                    putString(com.google.android.gms.cast.MediaMetadata.KEY_ARTIST, streamTitle)
+                    putString(com.google.android.gms.cast.MediaMetadata.KEY_SUBTITLE, streamTitle)
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_ALBUM_TITLE, "MediaPod • Rádio")
-                    try {
-                        val appIconUri = android.net.Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
-                        addImage(com.google.android.gms.common.images.WebImage(appIconUri))
-                    } catch (_: Exception) {}
+                    applyAppIconToCast(this)
                 }
                 val mediaInfo = com.google.android.gms.cast.MediaInfo.Builder(streamUrl)
                     .setStreamType(com.google.android.gms.cast.MediaInfo.STREAM_TYPE_LIVE)
@@ -264,10 +268,7 @@ class AudioRouteManager private constructor(private val context: Context) {
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_ARTIST, podcast.showTitle)
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_SUBTITLE, podcast.publishDate.ifBlank { "Podcast" })
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_ALBUM_TITLE, "MediaPod • Podcast")
-                    try {
-                        val appIconUri = android.net.Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
-                        addImage(com.google.android.gms.common.images.WebImage(appIconUri))
-                    } catch (_: Exception) {}
+                    applyAppIconToCast(this)
                 }
                 val mediaInfo = com.google.android.gms.cast.MediaInfo.Builder(podcast.audioUrl)
                     .setStreamType(com.google.android.gms.cast.MediaInfo.STREAM_TYPE_BUFFERED)
@@ -283,10 +284,7 @@ class AudioRouteManager private constructor(private val context: Context) {
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_ARTIST, localAudio.artist)
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_SUBTITLE, localAudio.album)
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_ALBUM_TITLE, "MediaPod • Músicas")
-                    try {
-                        val appIconUri = android.net.Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
-                        addImage(com.google.android.gms.common.images.WebImage(appIconUri))
-                    } catch (_: Exception) {}
+                    applyAppIconToCast(this)
                 }
                 val mediaInfo = com.google.android.gms.cast.MediaInfo.Builder(localAudio.contentUri.toString())
                     .setStreamType(com.google.android.gms.cast.MediaInfo.STREAM_TYPE_BUFFERED)
@@ -300,6 +298,104 @@ class AudioRouteManager private constructor(private val context: Context) {
         } catch (e: Exception) {
             android.util.Log.e("AudioRouteManager", "Error transferring media to Cast session", e)
         }
+    }
+
+    private var localIconServer: java.net.ServerSocket? = null
+    private var localIconServerPort: Int = 8992
+    private var localIconJob: kotlinx.coroutines.Job? = null
+    private var appIconPngCached: ByteArray? = null
+
+    private fun getAppIconPngBytes(): ByteArray {
+        appIconPngCached?.let { return it }
+        try {
+            val drawable = androidx.core.content.ContextCompat.getDrawable(context, R.drawable.playstore_icon)
+                ?: androidx.core.content.ContextCompat.getDrawable(context, R.mipmap.ic_launcher)
+            if (drawable != null) {
+                val bitmap = if (drawable is android.graphics.drawable.BitmapDrawable) {
+                    drawable.bitmap
+                } else {
+                    val b = android.graphics.Bitmap.createBitmap(512, 512, android.graphics.Bitmap.Config.ARGB_8888)
+                    val canvas = android.graphics.Canvas(b)
+                    drawable.setBounds(0, 0, canvas.width, canvas.height)
+                    drawable.draw(canvas)
+                    b
+                }
+                val stream = java.io.ByteArrayOutputStream()
+                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
+                val bytes = stream.toByteArray()
+                appIconPngCached = bytes
+                return bytes
+            }
+        } catch (_: Exception) {}
+        return ByteArray(0)
+    }
+
+    private fun getLocalWifiIp(): String? {
+        try {
+            val interfaces = java.net.NetworkInterface.getNetworkInterfaces()
+            while (interfaces.hasMoreElements()) {
+                val iface = interfaces.nextElement()
+                if (iface.isLoopback || !iface.isUp) continue
+                val addresses = iface.inetAddresses
+                while (addresses.hasMoreElements()) {
+                    val addr = addresses.nextElement()
+                    if (!addr.isLoopbackAddress && addr is java.net.Inet4Address) {
+                        return addr.hostAddress
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+        return null
+    }
+
+    private fun startLocalIconServer() {
+        if (localIconServer != null && !localIconServer!!.isClosed) return
+        localIconJob = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            try {
+                localIconServer = java.net.ServerSocket(0)
+                localIconServerPort = localIconServer!!.localPort
+                while (isActive && !localIconServer!!.isClosed) {
+                    val socket = localIconServer!!.accept()
+                    launch {
+                        try {
+                            val inStream = socket.getInputStream()
+                            val reader = java.io.BufferedReader(java.io.InputStreamReader(inStream))
+                            val line = reader.readLine()
+                            if (line != null && line.startsWith("GET /app_icon.png")) {
+                                val bytes = getAppIconPngBytes()
+                                val out = socket.getOutputStream()
+                                val header = "HTTP/1.1 200 OK\r\nContent-Type: image/png\r\nContent-Length: ${bytes.size}\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\n\r\n"
+                                out.write(header.toByteArray())
+                                out.write(bytes)
+                                out.flush()
+                            }
+                            socket.close()
+                        } catch (_: Exception) {}
+                    }
+                }
+            } catch (_: Exception) {}
+        }
+    }
+
+    private fun stopLocalIconServer() {
+        try {
+            localIconJob?.cancel()
+            localIconServer?.close()
+        } catch (_: Exception) {}
+        localIconServer = null
+    }
+
+    private fun applyAppIconToCast(castMeta: com.google.android.gms.cast.MediaMetadata) {
+        try {
+            startLocalIconServer()
+            val wifiIp = getLocalWifiIp()
+            if (wifiIp != null && localIconServer != null && !localIconServer!!.isClosed) {
+                val httpIconUri = android.net.Uri.parse("http://$wifiIp:$localIconServerPort/app_icon.png")
+                castMeta.addImage(com.google.android.gms.common.images.WebImage(httpIconUri, 512, 512))
+            }
+            val appIconUri = android.net.Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
+            castMeta.addImage(com.google.android.gms.common.images.WebImage(appIconUri, 512, 512))
+        } catch (_: Exception) {}
     }
 
     private fun transferPlaybackToLocal() {

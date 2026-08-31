@@ -185,18 +185,18 @@ fun StationLargeCard(
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                // Linha de baixo padronizada: os 3 itens com o mesmo formato, cor e borda
+                // Linha de baixo padronizada: os 3 retângulos com a cor clara conforme exemplo 94.3 MHz da imagem
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     val chipShape = RoundedCornerShape(4.dp)
-                    val chipBg = Color(0xFF0F172A)
+                    val chipBg = backlightHighlight.copy(alpha = 0.32f)
                     val chipBorder = 0.8.dp
-                    val chipBorderColor = backlightHighlight.copy(alpha = 0.4f)
+                    val chipBorderColor = backlightHighlight.copy(alpha = 0.55f)
                     val chipPadding = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
 
-                    // 1. Frequency Chip (Mesmo padrão dos dois itens à direita)
+                    // 1. Frequency Chip
                     val freqText = station.displayFrequency.ifBlank { "FM STEREO" }
                     Box(
                         modifier = Modifier
@@ -207,7 +207,7 @@ fun StationLargeCard(
                     ) {
                         Text(
                             text = freqText,
-                            color = backlightTextSecondary,
+                            color = backlightTextPrimary,
                             fontSize = (10 * fontScale).sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = fontFamily
@@ -224,7 +224,7 @@ fun StationLargeCard(
                     ) {
                         Text(
                             text = "${station.bitrate}k ${station.codec}".trim().ifEmpty { "128k MP3" },
-                            color = backlightTextSecondary,
+                            color = backlightTextPrimary,
                             fontSize = (10 * fontScale).sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = fontFamily
@@ -235,13 +235,13 @@ fun StationLargeCard(
                     Box(
                         modifier = Modifier
                             .clip(chipShape)
-                            .background(chipBg)
+                            .background(if (isPlaying) backlightHighlight.copy(alpha = 0.5f) else chipBg)
                             .border(chipBorder, if (isPlaying) backlightTextPrimary else chipBorderColor, chipShape)
                             .then(chipPadding)
                     ) {
                         Text(
                             text = if (isPlaying) stringResource(R.string.status_live) else "AO VIVO",
-                            color = if (isPlaying) backlightTextPrimary else backlightTextSecondary,
+                            color = backlightTextPrimary,
                             fontSize = (9.5f * fontScale).sp,
                             fontWeight = FontWeight.Black,
                             fontFamily = fontFamily

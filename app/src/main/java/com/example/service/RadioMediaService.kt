@@ -357,10 +357,14 @@ class RadioMediaService : MediaLibraryService() {
             if (id.startsWith("radio_")) {
                 val realId = id.removePrefix("radio_")
                 serviceScope.launch(Dispatchers.IO) {
-                    val station = repository.getFavoritesDirect().find { it.id == realId }
+                    val favs = repository.getFavoritesDirect()
+                    val station = favs.find { it.id == realId }
                         ?: CuratedData.CURATED_GLOBAL_STATIONS.find { it.id == realId }
                     if (station != null) {
                         withContext(Dispatchers.Main) {
+                            if (favs.isNotEmpty() && favs.any { it.id == station.id }) {
+                                playerManager.updatePlaylist(favs)
+                            }
                             playerManager.playStation(station)
                         }
                     }
@@ -371,10 +375,11 @@ class RadioMediaService : MediaLibraryService() {
                     val show = podcastRepository.favoritesFlow.value.find { s ->
                         podcastRepository.getEpisodesForShow(s).any { it.id == epId }
                     }
-                    val ep = show?.let { podcastRepository.getEpisodesForShow(it).find { e -> e.id == epId } }
+                    val episodes = show?.let { podcastRepository.getEpisodesForShow(it) } ?: emptyList()
+                    val ep = episodes.find { e -> e.id == epId }
                     if (ep != null) {
                         withContext(Dispatchers.Main) {
-                            playerManager.playPodcastEpisode(ep, show, emptyList())
+                            playerManager.playPodcastEpisode(ep, show, episodes)
                         }
                     }
                 }
@@ -1005,24 +1010,37 @@ class RadioMediaService : MediaLibraryService() {
                 val streamUrl = target.requestMetadata.mediaUri?.toString() ?: mediaId
 
                 if (mediaId.startsWith("podelem_")) {
-                    val episode = com.example.data.model.PodcastEpisode(
-                        id = mediaId.removePrefix("podelem_"),
-                        showId = "",
-                        showTitle = target.mediaMetadata.artist?.toString() ?: "Podcast",
-                        title = target.mediaMetadata.title?.toString() ?: "Episódio",
-                        description = target.mediaMetadata.subtitle?.toString() ?: "",
-                        audioUrl = streamUrl,
-                        artworkUrl = target.mediaMetadata.artworkUri?.toString() ?: "",
-                        publishDate = target.mediaMetadata.albumTitle?.toString() ?: ""
-                    )
-                    playerManager.playPodcastEpisode(episode)
+                    val epId = mediaId.removePrefix("podelem_")
+                    serviceScope.launch(Dispatchers.IO) {
+                        val show = podcastRepository.favoritesFlow.value.find { s ->
+                            podcastRepository.getEpisodesForShow(s).any { it.id == epId }
+                        }
+                        val episodes = show?.let { podcastRepository.getEpisodesForShow(it) } ?: emptyList()
+                        val episode = episodes.find { it.id == epId } ?: com.example.data.model.PodcastEpisode(
+                            id = epId,
+                            showId = "",
+                            showTitle = target.mediaMetadata.artist?.toString() ?: "Podcast",
+                            title = target.mediaMetadata.title?.toString() ?: "Episódio",
+                            description = target.mediaMetadata.subtitle?.toString() ?: "",
+                            audioUrl = streamUrl,
+                            artworkUrl = target.mediaMetadata.artworkUri?.toString() ?: "",
+                            publishDate = target.mediaMetadata.albumTitle?.toString() ?: ""
+                        )
+                        withContext(Dispatchers.Main) {
+                            playerManager.playPodcastEpisode(episode, show, episodes)
+                        }
+                    }
                 } else if (mediaId.startsWith("radio_")) {
                     val stationId = mediaId.removePrefix("radio_")
                     serviceScope.launch(Dispatchers.IO) {
-                        val match = repository.getFavoritesDirect().find { it.id == stationId }
+                        val favs = repository.getFavoritesDirect()
+                        val match = favs.find { it.id == stationId }
                             ?: CuratedData.CURATED_GLOBAL_STATIONS.firstOrNull { it.id == stationId }
                         if (match != null) {
                             withContext(Dispatchers.Main) {
+                                if (favs.isNotEmpty() && favs.any { it.id == match.id }) {
+                                    playerManager.updatePlaylist(favs)
+                                }
                                 playerManager.playStation(match)
                             }
                         }
@@ -1181,11 +1199,7 @@ class RadioMediaService : MediaLibraryService() {
         }
 
         private fun createStationCardItem(station: RadioStation, extras: Bundle): MediaItem {
-            val subtitle = buildString {
-                append("Ao Vivo")
-                if (station.primaryGenre.isNotBlank()) append(" • ").append(station.primaryGenre)
-                else if (station.country.isNotBlank()) append(" • ").append(station.country)
-            }
+            val subtitle = "Ao Vivo"
             return MediaItem.Builder()
                 .setMediaId("radio_${station.id}")
                 .setUri(station.streamUrl)

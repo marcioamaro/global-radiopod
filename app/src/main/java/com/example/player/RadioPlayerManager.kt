@@ -965,12 +965,15 @@ class RadioPlayerManager private constructor(private val context: Context) {
     }
 
     private fun playStreamUrl(station: RadioStation, streamUrl: String) {
-        val subtitle = "${station.city} ${station.country} • ${station.primaryGenre}".trim().ifEmpty { station.name }
+        val streamTitle = _rdsInfo.value.radioText.ifBlank {
+            lastRealSongTitle?.ifBlank { null } ?: lastRawStreamTitle?.ifBlank { null } ?: "Ao Vivo"
+        }
         val appLogoUri = Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
         val mediaMetadata = MediaMetadata.Builder()
             .setTitle(station.name)
-            .setArtist(subtitle)
-            .setAlbumTitle(station.country)
+            .setArtist(streamTitle)
+            .setSubtitle(streamTitle)
+            .setAlbumTitle("Ao Vivo")
             .setArtworkUri(appLogoUri)
             .setIsPlayable(true)
             .build()
@@ -1210,18 +1213,16 @@ class RadioPlayerManager private constructor(private val context: Context) {
         if (podcastQueue.isEmpty()) return
         val current = _currentPodcastEpisode.value ?: return
         val idx = podcastQueue.indexOfFirst { it.id == current.id }
-        if (idx in 0 until podcastQueue.size - 1) {
-            playPodcastEpisode(podcastQueue[idx + 1], _currentPodcastShow.value, podcastQueue)
-        }
+        val nextIdx = if (idx in 0 until podcastQueue.size - 1) idx + 1 else 0
+        playPodcastEpisode(podcastQueue[nextIdx], _currentPodcastShow.value, podcastQueue)
     }
 
     fun prevPodcastEpisode() {
         if (podcastQueue.isEmpty()) return
         val current = _currentPodcastEpisode.value ?: return
         val idx = podcastQueue.indexOfFirst { it.id == current.id }
-        if (idx > 0) {
-            playPodcastEpisode(podcastQueue[idx - 1], _currentPodcastShow.value, podcastQueue)
-        }
+        val prevIdx = if (idx > 0) idx - 1 else podcastQueue.size - 1
+        playPodcastEpisode(podcastQueue[prevIdx], _currentPodcastShow.value, podcastQueue)
     }
 
     private fun startAudioProgressTracker() {
@@ -1604,11 +1605,14 @@ class RadioPlayerManager private constructor(private val context: Context) {
                     hasRealRds = true
                 )
                 updateNotificationAndSessionMetadata(
-                    title = clean,
-                    artist = station.name,
-                    album = "${station.country} • ${station.displayFrequency}",
+                    title = station.name,
+                    artist = clean,
+                    album = clean,
                     artworkUri = Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
                 )
+                if (AudioRouteManager.getInstance(context).isCastingActive()) {
+                    AudioRouteManager.getInstance(context).updateCastMedia()
+                }
             }
         }
     }

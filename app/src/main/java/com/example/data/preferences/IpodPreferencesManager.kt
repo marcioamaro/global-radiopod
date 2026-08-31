@@ -78,6 +78,7 @@ class IpodPreferencesManager private constructor(context: Context) {
         private const val KEY_VOLUME = "key_volume"
         private const val KEY_DOCK_CLOCK_SCALE = "key_dock_clock_scale"
         private const val KEY_DOCK_SHOW_SECONDS = "key_dock_show_seconds"
+        private const val KEY_CHASSIS_BACK_ANIMATION_ENABLED = "key_chassis_back_animation_enabled"
         private const val MAX_RECENTS = 20
 
         @Volatile
@@ -88,6 +89,14 @@ class IpodPreferencesManager private constructor(context: Context) {
                 instance ?: IpodPreferencesManager(context.applicationContext).also { instance = it }
             }
         }
+    }
+
+    fun isChassisBackAnimationEnabled(): Boolean {
+        return prefs.getBoolean(KEY_CHASSIS_BACK_ANIMATION_ENABLED, true)
+    }
+
+    fun setChassisBackAnimationEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_CHASSIS_BACK_ANIMATION_ENABLED, enabled).apply()
     }
 
     // Last station persistence
