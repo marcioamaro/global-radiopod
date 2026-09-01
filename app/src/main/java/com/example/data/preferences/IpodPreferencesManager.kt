@@ -79,6 +79,7 @@ class IpodPreferencesManager private constructor(context: Context) {
         private const val KEY_DOCK_CLOCK_SCALE = "key_dock_clock_scale"
         private const val KEY_DOCK_SHOW_SECONDS = "key_dock_show_seconds"
         private const val KEY_CHASSIS_BACK_ANIMATION_ENABLED = "key_chassis_back_animation_enabled"
+        private const val KEY_BRICK_HIGH_SCORES_JSON = "key_brick_high_scores_json"
         private const val MAX_RECENTS = 20
 
         @Volatile
@@ -489,4 +490,74 @@ class IpodPreferencesManager private constructor(context: Context) {
             prefs.edit().putString("custom_youtube_videos_json", array.toString()).apply()
         } catch (_: Exception) {}
     }
+
+    // ==========================================
+    // Jogo Brick - Memória Top 10 High Scores (Arcade)
+    // ==========================================
+
+    fun getBrickHighScores(): List<BrickHighScore> {
+        val jsonStr = prefs.getString(KEY_BRICK_HIGH_SCORES_JSON, null)
+        if (jsonStr.isNullOrBlank()) {
+            return getDefaultBrickHighScores()
+        }
+        return try {
+            val array = org.json.JSONArray(jsonStr)
+            val list = mutableListOf<BrickHighScore>()
+            for (i in 0 until array.length()) {
+                val obj = array.getJSONObject(i)
+                list.add(
+                    BrickHighScore(
+                        initials = obj.optString("initials", "AAA"),
+                        score = obj.optInt("score", 0),
+                        timestamp = obj.optLong("timestamp", 0L)
+                    )
+                )
+            }
+            if (list.isEmpty()) getDefaultBrickHighScores() else list.sortedByDescending { it.score }.take(10)
+        } catch (_: Exception) {
+            getDefaultBrickHighScores()
+        }
+    }
+
+    fun getDefaultBrickHighScores(): List<BrickHighScore> {
+        return listOf(
+            BrickHighScore("IPD", 1500),
+            BrickHighScore("MAC", 1200),
+            BrickHighScore("RET", 1000),
+            BrickHighScore("BRK", 850),
+            BrickHighScore("APL", 700),
+            BrickHighScore("GEO", 600),
+            BrickHighScore("CLW", 500),
+            BrickHighScore("RAD", 400),
+            BrickHighScore("LCD", 300),
+            BrickHighScore("MIN", 200)
+        )
+    }
+
+    fun saveBrickHighScore(initials: String, score: Int): List<BrickHighScore> {
+        val cleanInitials = initials.trim().uppercase().take(3).ifBlank { "AAA" }
+        val current = getBrickHighScores().toMutableList()
+        current.add(BrickHighScore(cleanInitials, score, System.currentTimeMillis()))
+        val updated = current.sortedByDescending { it.score }.take(10)
+        try {
+            val array = org.json.JSONArray()
+            for (item in updated) {
+                val obj = org.json.JSONObject().apply {
+                    put("initials", item.initials)
+                    put("score", item.score)
+                    put("timestamp", item.timestamp)
+                }
+                array.put(obj)
+            }
+            prefs.edit().putString(KEY_BRICK_HIGH_SCORES_JSON, array.toString()).apply()
+        } catch (_: Exception) {}
+        return updated
+    }
 }
+
+data class BrickHighScore(
+    val initials: String,
+    val score: Int,
+    val timestamp: Long = System.currentTimeMillis()
+)
+

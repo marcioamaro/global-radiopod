@@ -43,6 +43,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.util.IpodSoundAndHaptics
+import androidx.compose.ui.platform.LocalContext
+import com.example.data.preferences.BrickHighScore
+import com.example.data.preferences.IpodPreferencesManager
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
@@ -61,6 +64,8 @@ enum class GameState {
     READY,
     PLAYING,
     PAUSED,
+    ENTER_INITIALS,
+    LEADERBOARD,
     GAME_OVER,
     VICTORY
 }
@@ -90,6 +95,17 @@ fun IpodBrickGameScreen(
     // *** FIX: rememberUpdatedState garante que o loop de física SEMPRE leia
     // a posição atual do paddle, não a posição capturada pela closure ***
     val currentPaddlePos by rememberUpdatedState(paddlePositionRatio)
+
+    val context = LocalContext.current
+    val prefs = remember { IpodPreferencesManager.getInstance(context) }
+    var highScores by remember { mutableStateOf(prefs.getBrickHighScores()) }
+    var highlightedScoreRank by remember { mutableIntStateOf(-1) }
+
+    // Iniciais retro para ranking arcade (3 letras)
+    val alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?"
+    val initials = remember { mutableStateListOf('A', 'A', 'A') }
+    var currentInitialIndex by remember { mutableIntStateOf(0) }
+    var lastWheelPosForInitials by remember { mutableFloatStateOf(paddlePositionRatio) }
 
     var score by remember { mutableIntStateOf(0) }
     var level by remember { mutableIntStateOf(1) }
@@ -141,7 +157,7 @@ fun IpodBrickGameScreen(
         }
     }
 
-    // Lança a bola a partir da posição atual do paddle
+    // Lança a bola a partir da posição atual do paddle mantendo vidas e pontuação
     fun launchBall() {
         val pos = currentPaddlePos.coerceIn(0.12f, 0.88f)
         ballX = pos
@@ -169,6 +185,24 @@ fun IpodBrickGameScreen(
         launchBall()
     }
 
+    // Navegação pelas letras via Click Wheel (giro rotativo) na tela de iniciais
+    LaunchedEffect(paddlePositionRatio, gameState) {
+        if (gameState == GameState.ENTER_INITIALS) {
+            val delta = paddlePositionRatio - lastWheelPosForInitials
+            if (abs(delta) >= 0.02f) {
+                val step = if (delta > 0f) 1 else -1
+                val curChar = initials[currentInitialIndex]
+                val curIdx = alphabet.indexOf(curChar).coerceAtLeast(0)
+                val nextIdx = (curIdx + step).mod(alphabet.length)
+                initials[currentInitialIndex] = alphabet[nextIdx]
+                lastWheelPosForInitials = paddlePositionRatio
+                soundAndHaptics.performClickHaptic()
+            }
+        } else {
+            lastWheelPosForInitials = paddlePositionRatio
+        }
+    }
+
     // Acionamento síncrono pelo Botão Central do Click Wheel
     LaunchedEffect(centerActionTrigger) {
         if (centerActionTrigger > 0L) {
@@ -182,8 +216,33 @@ fun IpodBrickGameScreen(
                     gameState = GameState.PLAYING
                     soundAndHaptics.performClickHaptic()
                 }
-                GameState.GAME_OVER -> startNewGame()
-                GameState.VICTORY -> nextLevel()
+                GameState.ENTER_INITIALS -> {
+                    if (currentInitialIndex < 2) {
+                        currentInitialIndex++
+                        soundAndHaptics.performClickHaptic()
+                    } else {
+                        // Salva score nas preferências e exibe o ranking arcade Top 10
+                        val name = "${initials[0]}${initials[1]}${initials[2]}"
+                        val updated = prefs.saveBrickHighScore(name, score)
+                        highScores = updated
+                        highlightedScoreRank = updated.indexOfFirst { it.initials == name && it.score == score }
+                        gameState = GameState.LEADERBOARD
+                        soundAndHaptics.performHeavyHaptic()
+                    }
+                }
+                GameState.LEADERBOARD -> {
+                    startNewGame()
+                }
+                GameState.GAME_OVER -> {
+                    currentInitialIndex = 0
+                    initials[0] = 'A'; initials[1] = 'A'; initials[2] = 'A'
+                    gameState = GameState.ENTER_INITIALS
+                }
+                GameState.VICTORY -> {
+                    currentInitialIndex = 0
+                    initials[0] = 'A'; initials[1] = 'A'; initials[2] = 'A'
+                    gameState = GameState.ENTER_INITIALS
+                }
             }
         }
     }
@@ -276,9 +335,12 @@ fun IpodBrickGameScreen(
                     lives--
                     soundAndHaptics.performHeavyHaptic()
                     if (lives <= 0) {
-                        gameState = GameState.GAME_OVER
+                        currentInitialIndex = 0
+                        initials[0] = 'A'; initials[1] = 'A'; initials[2] = 'A'
+                        highlightedScoreRank = -1
+                        gameState = GameState.ENTER_INITIALS
                     } else {
-                        // Reposiciona bola sobre a raquete e aguarda relançamento
+                        // Reposiciona bola sobre a raquete e aguarda relançamento mantendo pontuação e blocos
                         ballX = currentPaddlePos.coerceIn(0.12f, 0.88f)
                         ballY = paddleY - ballRadius
                         ballVx = 0f
@@ -332,7 +394,10 @@ fun IpodBrickGameScreen(
                 // Vitória: todos os blocos destruídos
                 if (hitBrick && bricks.none { it.isAlive }) {
                     if (level >= 10) {
-                        gameState = GameState.VICTORY
+                        currentInitialIndex = 0
+                        initials[0] = 'A'; initials[1] = 'A'; initials[2] = 'A'
+                        highlightedScoreRank = -1
+                        gameState = GameState.ENTER_INITIALS
                     } else {
                         nextLevel()
                     }
@@ -361,12 +426,14 @@ fun IpodBrickGameScreen(
             .pointerInput(Unit) {
                 detectTapGestures { offset ->
                     when (gameState) {
-                        GameState.READY -> startNewGame()
+                        GameState.READY -> launchBall()
                         GameState.PLAYING -> {
                             val touchRatio = offset.x / size.width
                             onPaddleMove(touchRatio.coerceIn(0.12f, 0.88f))
                         }
                         GameState.PAUSED -> gameState = GameState.PLAYING
+                        GameState.ENTER_INITIALS -> { /* Controles interativos na tela */ }
+                        GameState.LEADERBOARD -> startNewGame()
                         GameState.GAME_OVER -> startNewGame()
                         GameState.VICTORY -> nextLevel()
                     }
@@ -516,7 +583,7 @@ fun IpodBrickGameScreen(
                     )
                 }
 
-                // TELAS DE OVERLAY RETRÔ (Pronto / Pausado / Fim de Jogo / Vitória)
+                // TELAS DE OVERLAY RETRÔ (Pronto / Pausado / Registro Iniciais / Ranking Top 10)
                 if (gameState == GameState.READY) {
                     Column(
                         modifier = Modifier
@@ -524,7 +591,7 @@ fun IpodBrickGameScreen(
                             .clip(RoundedCornerShape(6.dp))
                             .background(lcdBackground.copy(alpha = 0.95f))
                             .border(1.5.dp, lcdPixelDark, RoundedCornerShape(6.dp))
-                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
@@ -535,28 +602,54 @@ fun IpodBrickGameScreen(
                             fontFamily = FontFamily.Monospace,
                             letterSpacing = 2.sp
                         )
+                        val statusSubtext = if (lives < 3 && score > 0) {
+                            "VIDAS: " + "●".repeat(lives) + " • PTS: $score"
+                        } else {
+                            "Gire o Click Wheel para mover"
+                        }
                         Text(
-                            text = "Gire o Click Wheel para mover",
+                            text = statusSubtext,
                             color = lcdPixelMid,
-                            fontSize = 9.5.sp,
+                            fontSize = 9.sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = FontFamily.Monospace
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(lcdPixelDark)
-                                .clickable { startNewGame() }
-                                .padding(horizontal = 12.dp, vertical = 5.dp)
-                        ) {
-                            Text(
-                                text = "▶ PRESSIONE CENTRO",
-                                color = lcdBackground,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Black,
-                                fontFamily = FontFamily.Monospace
-                            )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(lcdPixelDark)
+                                    .clickable { launchBall() }
+                                    .padding(horizontal = 10.dp, vertical = 5.dp)
+                            ) {
+                                Text(
+                                    text = if (lives < 3) "▶ CONTINUAR" else "▶ JOGAR [CENTRO]",
+                                    color = lcdBackground,
+                                    fontSize = 9.5.sp,
+                                    fontWeight = FontWeight.Black,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .border(1.2.dp, lcdPixelDark, RoundedCornerShape(4.dp))
+                                    .clickable {
+                                        highScores = prefs.getBrickHighScores()
+                                        highlightedScoreRank = -1
+                                        gameState = GameState.LEADERBOARD
+                                    }
+                                    .padding(horizontal = 8.dp, vertical = 5.dp)
+                            ) {
+                                Text(
+                                    text = "🏆 TOP 10",
+                                    color = lcdPixelDark,
+                                    fontSize = 9.5.sp,
+                                    fontWeight = FontWeight.Black,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                            }
                         }
                     }
                 } else if (gameState == GameState.PAUSED) {
@@ -593,86 +686,327 @@ fun IpodBrickGameScreen(
                             )
                         }
                     }
-                } else if (gameState == GameState.GAME_OVER) {
+                } else if (gameState == GameState.ENTER_INITIALS) {
+                    // TELA DE DIGITAÇÃO DE 3 INICIAIS (RETRO ARCADE)
                     Column(
                         modifier = Modifier
                             .align(Alignment.Center)
+                            .fillMaxWidth(0.92f)
                             .clip(RoundedCornerShape(6.dp))
-                            .background(lcdBackground.copy(alpha = 0.95f))
+                            .background(lcdBackground.copy(alpha = 0.98f))
                             .border(1.5.dp, lcdPixelDark, RoundedCornerShape(6.dp))
-                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                            .padding(horizontal = 10.dp, vertical = 8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "FIM DE JOGO",
+                            text = "★ FIM DE JOGO ★",
                             color = lcdPixelDark,
-                            fontSize = 16.sp,
+                            fontSize = 13.sp,
                             fontWeight = FontWeight.Black,
-                            fontFamily = FontFamily.Monospace
+                            fontFamily = FontFamily.Monospace,
+                            letterSpacing = 1.sp
                         )
                         Text(
-                            text = "PONTUAÇÃO: $score",
+                            text = "PONTUAÇÃO: $score  •  LVL $level",
                             color = lcdPixelMid,
-                            fontSize = 11.sp,
+                            fontSize = 9.5.sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = FontFamily.Monospace
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Box(
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "DIGITE SUAS 3 INICIAIS",
+                            color = lcdPixelDark,
+                            fontSize = 8.5.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontFamily = FontFamily.Monospace
+                        )
+                        Spacer(modifier = Modifier.height(5.dp))
+
+                        // Seletores das 3 letras
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            for (i in 0 until 3) {
+                                val isSelected = (i == currentInitialIndex)
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = "▲",
+                                        color = if (isSelected) lcdPixelDark else lcdPixelDark.copy(alpha = 0.25f),
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Black,
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(3.dp))
+                                            .clickable {
+                                                currentInitialIndex = i
+                                                val curChar = initials[i]
+                                                val curIdx = alphabet.indexOf(curChar).coerceAtLeast(0)
+                                                val nextIdx = (curIdx + 1).mod(alphabet.length)
+                                                initials[i] = alphabet[nextIdx]
+                                                soundAndHaptics.performClickHaptic()
+                                            }
+                                            .padding(horizontal = 6.dp, vertical = 1.dp)
+                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .size(34.dp, 38.dp)
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(if (isSelected) lcdPixelDark else lcdBackground)
+                                            .border(1.5.dp, lcdPixelDark, RoundedCornerShape(4.dp))
+                                            .clickable {
+                                                currentInitialIndex = i
+                                                soundAndHaptics.performClickHaptic()
+                                            },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = initials[i].toString(),
+                                            color = if (isSelected) lcdBackground else lcdPixelDark,
+                                            fontSize = 20.sp,
+                                            fontWeight = FontWeight.Black,
+                                            fontFamily = FontFamily.Monospace
+                                        )
+                                    }
+                                    Text(
+                                        text = "▼",
+                                        color = if (isSelected) lcdPixelDark else lcdPixelDark.copy(alpha = 0.25f),
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Black,
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(3.dp))
+                                            .clickable {
+                                                currentInitialIndex = i
+                                                val curChar = initials[i]
+                                                val curIdx = alphabet.indexOf(curChar).coerceAtLeast(0)
+                                                val nextIdx = (curIdx - 1 + alphabet.length).mod(alphabet.length)
+                                                initials[i] = alphabet[nextIdx]
+                                                soundAndHaptics.performClickHaptic()
+                                            }
+                                            .padding(horizontal = 6.dp, vertical = 1.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        Text(
+                            text = "Gire o Click Wheel ou toque ▲/▼",
+                            color = lcdPixelMid,
+                            fontSize = 7.5.sp,
+                            fontFamily = FontFamily.Monospace
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (currentInitialIndex > 0) {
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .border(1.dp, lcdPixelDark, RoundedCornerShape(4.dp))
+                                        .clickable {
+                                            currentInitialIndex--
+                                            soundAndHaptics.performClickHaptic()
+                                        }
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        text = "◄ VOLTAR",
+                                        fontSize = 8.5.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = lcdPixelDark,
+                                        fontFamily = FontFamily.Monospace
+                                    )
+                                }
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(lcdPixelDark)
+                                    .clickable {
+                                        if (currentInitialIndex < 2) {
+                                            currentInitialIndex++
+                                            soundAndHaptics.performClickHaptic()
+                                        } else {
+                                            val name = "${initials[0]}${initials[1]}${initials[2]}"
+                                            val updated = prefs.saveBrickHighScore(name, score)
+                                            highScores = updated
+                                            highlightedScoreRank = updated.indexOfFirst { it.initials == name && it.score == score }
+                                            gameState = GameState.LEADERBOARD
+                                            soundAndHaptics.performHeavyHaptic()
+                                        }
+                                    }
+                                    .padding(horizontal = 10.dp, vertical = 5.dp)
+                            ) {
+                                Text(
+                                    text = if (currentInitialIndex < 2) "PRÓXIMO [CENTRO] ►" else "✓ SALVAR RECORDE [CENTRO]",
+                                    color = lcdBackground,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Black,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                            }
+                        }
+                    }
+                } else if (gameState == GameState.LEADERBOARD) {
+                    // TABELA DE RANKING TOP 10 (RETRO ARCADE)
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .fillMaxWidth(0.94f)
+                            .fillMaxHeight(0.94f)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(lcdBackground.copy(alpha = 0.98f))
+                            .border(1.5.dp, lcdPixelDark, RoundedCornerShape(6.dp))
+                            .padding(horizontal = 8.dp, vertical = 5.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "★ TOP 10 RANKING ARCADE ★",
+                            color = lcdPixelDark,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Black,
+                            fontFamily = FontFamily.Monospace,
+                            letterSpacing = 0.5.sp
+                        )
+
+                        // Cabeçalho da tabela
+                        Row(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(lcdPixelDark)
-                                .clickable { startNewGame() }
-                                .padding(horizontal = 10.dp, vertical = 5.dp)
+                                .fillMaxWidth()
+                                .padding(horizontal = 4.dp, vertical = 2.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = "▶ JOGAR NOVAMENTE",
-                                color = lcdBackground,
-                                fontSize = 10.sp,
+                                text = "POS  INICIAIS",
+                                color = lcdPixelMid,
+                                fontSize = 8.sp,
+                                fontWeight = FontWeight.Black,
+                                fontFamily = FontFamily.Monospace
+                            )
+                            Text(
+                                text = "PONTUAÇÃO",
+                                color = lcdPixelMid,
+                                fontSize = 8.sp,
                                 fontWeight = FontWeight.Black,
                                 fontFamily = FontFamily.Monospace
                             )
                         }
-                    }
-                } else if (gameState == GameState.VICTORY) {
-                    Column(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(lcdBackground.copy(alpha = 0.95f))
-                            .border(1.5.dp, lcdPixelDark, RoundedCornerShape(6.dp))
-                            .padding(horizontal = 16.dp, vertical = 10.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "VITÓRIA!",
-                            color = lcdPixelDark,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Black,
-                            fontFamily = FontFamily.Monospace
-                        )
-                        Text(
-                            text = "PARABÉNS! PONTOS: $score",
-                            color = lcdPixelMid,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily.Monospace
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
+
                         Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
+                                .fillMaxWidth()
+                                .height(1.dp)
                                 .background(lcdPixelDark)
-                                .clickable { startNewGame() }
-                                .padding(horizontal = 10.dp, vertical = 5.dp)
+                        )
+
+                        // Linhas do Top 10
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                                .padding(vertical = 1.dp),
+                            verticalArrangement = Arrangement.SpaceEvenly
                         ) {
-                            Text(
-                                text = "▶ REINICIAR JOGO",
-                                color = lcdBackground,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Black,
-                                fontFamily = FontFamily.Monospace
-                            )
+                            val displayList = highScores.take(10)
+                            for (idx in displayList.indices) {
+                                val item = displayList[idx]
+                                val isHighlighted = (idx == highlightedScoreRank)
+                                val rankStr = when (idx) {
+                                    0 -> "1ST"
+                                    1 -> "2ND"
+                                    2 -> "3RD"
+                                    else -> String.format(java.util.Locale.US, "%02d.", idx + 1)
+                                }
+                                val scoreStr = String.format(java.util.Locale.US, "%05d", item.score)
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(2.dp))
+                                        .background(if (isHighlighted) lcdPixelDark else Color.Transparent)
+                                        .padding(horizontal = 4.dp, vertical = 0.5.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = if (isHighlighted) "▶$rankStr" else " $rankStr",
+                                            color = if (isHighlighted) lcdBackground else lcdPixelDark,
+                                            fontSize = 8.5.sp,
+                                            fontWeight = if (isHighlighted) FontWeight.Black else FontWeight.Bold,
+                                            fontFamily = FontFamily.Monospace
+                                        )
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Text(
+                                            text = item.initials,
+                                            color = if (isHighlighted) lcdBackground else lcdPixelDark,
+                                            fontSize = 9.sp,
+                                            fontWeight = FontWeight.Black,
+                                            fontFamily = FontFamily.Monospace
+                                        )
+                                    }
+                                    Text(
+                                        text = scoreStr,
+                                        color = if (isHighlighted) lcdBackground else lcdPixelDark,
+                                        fontSize = 9.sp,
+                                        fontWeight = if (isHighlighted) FontWeight.Black else FontWeight.Bold,
+                                        fontFamily = FontFamily.Monospace
+                                    )
+                                }
+                            }
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(1.dp)
+                                .background(lcdPixelDark)
+                        )
+
+                        Spacer(modifier = Modifier.height(3.dp))
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .border(1.dp, lcdPixelDark, RoundedCornerShape(4.dp))
+                                    .clickable { gameState = GameState.READY }
+                                    .padding(horizontal = 8.dp, vertical = 3.dp)
+                            ) {
+                                Text(
+                                    text = "VOLTAR",
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = lcdPixelDark,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(lcdPixelDark)
+                                    .clickable { startNewGame() }
+                                    .padding(horizontal = 8.dp, vertical = 3.dp)
+                            ) {
+                                Text(
+                                    text = "▶ JOGAR NOVAMENTE [CENTRO]",
+                                    color = lcdBackground,
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Black,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                            }
                         }
                     }
                 }

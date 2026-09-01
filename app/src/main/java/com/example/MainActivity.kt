@@ -3,6 +3,7 @@ package com.example
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import android.widget.Toast
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -113,23 +114,36 @@ fun MainScreen(viewModel: RadioViewModel) {
 
     // Easter Egg: Virar o celular com a tela para baixo mostra a traseira de aço inox do iPod
     var isChassisBackShowing by remember { mutableStateOf(false) }
+    val isChassisAnimEnabled by viewModel.isChassisBackAnimationEnabled.collectAsState()
 
+    // Sensor de Gravidade (flip para mostrar traseira) + Shake Detector (reset do easter egg)
     DisposableEffect(uiState.displayMode) {
         if (uiState.displayMode != DisplayMode.IPOD_CLASSIC) {
             isChassisBackShowing = false
             return@DisposableEffect onDispose {}
         }
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
-        val sensor = sensorManager?.getDefaultSensor(Sensor.TYPE_GRAVITY)
+        val gravitySensor = sensorManager?.getDefaultSensor(Sensor.TYPE_GRAVITY)
             ?: sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        val accelSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
-        val listener = object : SensorEventListener {
+        // Variáveis para detecção de shake
+        var lastShakeTime = 0L
+        var lastAccelX = 0f
+        var lastAccelY = 0f
+        var lastAccelZ = 0f
+        var isFirstAccelReading = true
+        val shakeThreshold = 28f // m/s² — sacudida forte
+        val shakeCooldownMs = 3000L // 3s entre shakes
+
+        val gravityListener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent?) {
                 if (event == null) return
                 // Eixo Z: quando virado com a tela para baixo z se torna negativo (ex: -9.8 m/s²)
                 val z = event.values[2]
                 if (z < -3.5f) {
-                    if (!isChassisBackShowing) {
+                    // Só ativa o flip se a animação estiver habilitada
+                    if (!isChassisBackShowing && isChassisAnimEnabled) {
                         isChassisBackShowing = true
                     }
                 } else if (z > -1.0f) {
@@ -142,10 +156,54 @@ fun MainScreen(viewModel: RadioViewModel) {
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
         }
 
-        sensorManager?.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_UI)
+        val shakeListener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                if (event == null) return
+                val x = event.values[0]
+                val y = event.values[1]
+                val z = event.values[2]
+
+                if (isFirstAccelReading) {
+                    lastAccelX = x; lastAccelY = y; lastAccelZ = z
+                    isFirstAccelReading = false
+                    return
+                }
+
+                val deltaX = x - lastAccelX
+                val deltaY = y - lastAccelY
+                val deltaZ = z - lastAccelZ
+                lastAccelX = x; lastAccelY = y; lastAccelZ = z
+
+                val acceleration = kotlin.math.sqrt(
+                    (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ).toDouble()
+                ).toFloat()
+
+                val now = System.currentTimeMillis()
+                if (acceleration > shakeThreshold && (now - lastShakeTime) > shakeCooldownMs) {
+                    lastShakeTime = now
+                    // Shake detectado! Reabilita o easter egg
+                    if (!isChassisAnimEnabled) {
+                        viewModel.setChassisBackAnimationEnabled(true)
+                        Toast.makeText(
+                            context,
+                            "Easter Egg reativado! 🎉",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+        }
+
+        sensorManager?.registerListener(gravityListener, gravitySensor, SensorManager.SENSOR_DELAY_UI)
+        if (accelSensor != null) {
+            sensorManager?.registerListener(shakeListener, accelSensor, SensorManager.SENSOR_DELAY_GAME)
+        }
 
         onDispose {
-            sensorManager?.unregisterListener(listener)
+            sensorManager?.unregisterListener(gravityListener)
+            sensorManager?.unregisterListener(shakeListener)
         }
     }
 
@@ -351,7 +409,6 @@ fun MainScreen(viewModel: RadioViewModel) {
                                 }
                             )
                         } else {
-                            val isChassisAnimEnabled by viewModel.isChassisBackAnimationEnabled.collectAsState()
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()

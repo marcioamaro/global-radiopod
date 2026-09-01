@@ -434,6 +434,11 @@ class AudioRouteManager private constructor(private val context: Context) {
                 val routes = mediaRouter.routes
                 val deviceList = mutableListOf<AudioRouteDevice>()
 
+                // Determina o nome do dispositivo Cast ativo (se houver)
+                val activeCastDeviceName = if (isCastingActive) {
+                    castSession?.castDevice?.friendlyName
+                } else null
+
                 for (route in routes) {
                     // Ignora rotas não utilizáveis
                     if (!route.matchesSelector(routeSelector) && !route.isDefault && route.playbackType != MediaRouter.RouteInfo.PLAYBACK_TYPE_LOCAL) {
@@ -441,7 +446,6 @@ class AudioRouteManager private constructor(private val context: Context) {
                     }
 
                     val isDefault = route.isDefault
-                    val isSelected = route.isSelected
 
                     val type = when {
                         isDefault -> AudioDeviceType.THIS_DEVICE
@@ -453,6 +457,22 @@ class AudioRouteManager private constructor(private val context: Context) {
                         else -> if (route.playbackType == MediaRouter.RouteInfo.PLAYBACK_TYPE_LOCAL) AudioDeviceType.THIS_DEVICE else AudioDeviceType.OTHER
                     }
 
+                    // Determina isSelected com base no estado REAL de reprodução:
+                    // - Se Cast ativo: apenas o dispositivo Cast correspondente é "selected"
+                    // - Caso contrário: usa o estado reportado pelo MediaRouter
+                    val isSelected = if (isCastingActive) {
+                        when {
+                            type == AudioDeviceType.CAST_REMOTE &&
+                                    activeCastDeviceName != null &&
+                                    route.name.equals(activeCastDeviceName, ignoreCase = true) -> true
+                            type == AudioDeviceType.CAST_REMOTE && route.isSelected -> true
+                            isDefault -> false // Dispositivo local NÃO está ativo durante Cast
+                            else -> false
+                        }
+                    } else {
+                        route.isSelected
+                    }
+
                     val displayName = when {
                         isDefault || type == AudioDeviceType.THIS_DEVICE -> {
                             "Este Dispositivo (Alto-falante)"
@@ -460,11 +480,21 @@ class AudioRouteManager private constructor(private val context: Context) {
                         else -> route.name
                     }
 
-                    val desc = route.description ?: when (type) {
-                        AudioDeviceType.THIS_DEVICE -> "Alto-falante embutido"
-                        AudioDeviceType.BLUETOOTH -> "Dispositivo Bluetooth"
-                        AudioDeviceType.CAST_REMOTE -> "Rede Local / Google Cast"
-                        AudioDeviceType.OTHER -> "Dispositivo de áudio"
+                    val desc = when {
+                        // Se este Cast está ativo, mostra info de streaming
+                        isCastingActive && isSelected && type == AudioDeviceType.CAST_REMOTE -> {
+                            val mediaInfo = castSession?.remoteMediaClient?.mediaInfo
+                            val title = mediaInfo?.metadata?.getString(
+                                com.google.android.gms.cast.MediaMetadata.KEY_TITLE
+                            )
+                            if (!title.isNullOrBlank()) "Casting: $title" else route.description ?: "Rede Local / Google Cast"
+                        }
+                        else -> route.description ?: when (type) {
+                            AudioDeviceType.THIS_DEVICE -> "Alto-falante embutido"
+                            AudioDeviceType.BLUETOOTH -> "Dispositivo Bluetooth"
+                            AudioDeviceType.CAST_REMOTE -> "Rede Local / Google Cast"
+                            AudioDeviceType.OTHER -> "Dispositivo de áudio"
+                        }
                     }
 
                     val dev = AudioRouteDevice(
@@ -496,7 +526,7 @@ class AudioRouteManager private constructor(private val context: Context) {
                         name = "Este Dispositivo (Alto-falante)",
                         description = "Alto-falante embutido",
                         deviceType = AudioDeviceType.THIS_DEVICE,
-                        isSelected = _selectedDevice.value == null,
+                        isSelected = !isCastingActive && _selectedDevice.value == null,
                         isDefault = true,
                         routeInfo = mediaRouter.defaultRoute
                     )
