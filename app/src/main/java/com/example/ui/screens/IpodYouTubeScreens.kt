@@ -98,7 +98,19 @@ fun IpodYouTubeListScreen(
     fontScale: Float = 1.5f,
     isBold: Boolean = true
 ) {
+    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+    androidx.compose.runtime.LaunchedEffect(selectedIndex) {
+        if (selectedIndex in 0..videos.size) {
+            try {
+                listState.animateScrollToItem(selectedIndex)
+            } catch (_: Exception) {
+                listState.scrollToItem(selectedIndex)
+            }
+        }
+    }
+
     LazyColumn(
+        state = listState,
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 6.dp, vertical = 4.dp),

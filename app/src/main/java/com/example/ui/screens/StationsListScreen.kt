@@ -28,6 +28,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -233,7 +234,19 @@ fun StationsListScreen(
                 }
             }
         } else {
+            val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+            LaunchedEffect(selectedIndex) {
+                if (selectedIndex in displayedStations.indices) {
+                    try {
+                        listState.animateScrollToItem(selectedIndex)
+                    } catch (_: Exception) {
+                        listState.scrollToItem(selectedIndex)
+                    }
+                }
+            }
+
             LazyColumn(
+                state = listState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)

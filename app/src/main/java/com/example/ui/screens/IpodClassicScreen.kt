@@ -489,23 +489,7 @@ fun IpodClassicScreen(
                                 IpodRootHomeScreen(
                                     selectedIndex = uiState.selectedIndex,
                                     onSelectItem = { destIdx ->
-                                        when (destIdx) {
-                                            0 -> onSelectDestination(IpodScreenDestination.RADIO_MENU)
-                                            1 -> onSelectDestination(IpodScreenDestination.MP3_FOLDERS)
-                                            2 -> onSelectDestination(IpodScreenDestination.VIDEO_FOLDERS)
-                                            3 -> onSelectDestination(IpodScreenDestination.EQUALIZER)
-                                            4 -> onSelectDestination(IpodScreenDestination.AUDIO_OUTPUT_MENU)
-                                            5 -> onSelectDestination(IpodScreenDestination.GAME_BRICK)
-                                            6 -> onToggleDisplayMode()
-                                            7 -> onSelectDestination(IpodScreenDestination.SETTINGS_THEMES)
-                                            9 -> onSelectDestination(IpodScreenDestination.PODCASTS_MENU)
-                                            10 -> {
-                                                viewModel?.loadYouTubeVideos()
-                                                onSelectDestination(IpodScreenDestination.YOUTUBE_VIDEOS_LIST)
-                                            }
-                                            11 -> viewModel?.enterDockMode()
-                                            12 -> viewModel?.exitApplication()
-                                        }
+                                        viewModel?.selectMenuItemDirect(destIdx)
                                     },
                                     isLocalAudio = currentLocalAudio != null,
                                     currentArtUrl = currentLocalAudio?.albumArtUrl,
@@ -3172,7 +3156,7 @@ private fun IpodAboutScreen(
 
             // Data da versão aaaa.mm.dd e número da versão
             Text(
-                text = "2026.09.03 - v72.0",
+                text = "2026.09.03 - v73.0",
                 color = backlightTextSecondary,
                 fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Bold,

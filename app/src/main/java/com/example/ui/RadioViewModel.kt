@@ -872,6 +872,12 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.value = _uiState.value.copy(gamePaddlePosition = position.coerceIn(0.12f, 0.88f))
     }
 
+    fun selectMenuItemDirect(index: Int) {
+        if (_uiState.value.isHoldLocked) return
+        _uiState.value = _uiState.value.copy(selectedIndex = index)
+        onCenterButtonPress()
+    }
+
     fun onCenterButtonPress() {
         if (_uiState.value.isHoldLocked) return
         val currentScreen = _uiState.value.currentScreen

@@ -28,6 +28,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -237,7 +238,19 @@ fun FavoritesScreen(
                 }
             }
         } else {
+            val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+            LaunchedEffect(selectedIndex) {
+                if (selectedIndex in displayedFavorites.indices) {
+                    try {
+                        listState.animateScrollToItem(selectedIndex)
+                    } catch (_: Exception) {
+                        listState.scrollToItem(selectedIndex)
+                    }
+                }
+            }
+
             LazyColumn(
+                state = listState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
