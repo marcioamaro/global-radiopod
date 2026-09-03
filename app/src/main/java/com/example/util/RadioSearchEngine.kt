@@ -151,21 +151,6 @@ object RadioSearchEngine {
 
         val targetCorpus = normalize("${station.name} ${station.tags} ${station.primaryGenre}")
 
-        val directMatch = kws.any { kw -> targetCorpus.contains(kw) }
-        if (directMatch) return true
-
-        // Se for MPB, Pop ou Variedades e a estação for brasileira sem outro gênero definido
-        if (cleanTag == "mpb" || cleanTag == "pop" || cleanTag == "variedades_musicais") {
-            val isBrazil = station.countryCode.equals("BR", ignoreCase = true) || station.country.contains("Brasil", ignoreCase = true)
-            if (isBrazil) {
-                // Checar se não caiu em outro gênero exclusivo
-                val hasSpecificGenre = listOf("gospel", "metal", "anime_games", "comedia").any { g ->
-                    TAXONOMY_KEYWORDS[g]?.any { kw -> targetCorpus.contains(kw) } == true
-                }
-                if (!hasSpecificGenre) return true
-            }
-        }
-
-        return false
+        return kws.any { kw -> targetCorpus.contains(kw) }
     }
 }

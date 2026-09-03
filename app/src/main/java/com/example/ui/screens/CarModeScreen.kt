@@ -621,14 +621,13 @@ fun CarModeScreen(
                                         }
                                     }
 
-                                    val liveRdsDefault = stringResource(R.string.status_digital_rds)
                                     val noInternetMsg = stringResource(R.string.msg_connection_error).uppercase()
                                     val rdsDisplay = if (playbackStatus == RadioPlaybackStatus.NO_INTERNET) {
                                         noInternetMsg
-                                    } else if (rdsInfo.radioText.isNotBlank()) {
+                                    } else if (rdsInfo.hasRealRds && rdsInfo.radioText.isNotBlank() && !rdsInfo.radioText.equals("[sem informações]", ignoreCase = true)) {
                                         rdsInfo.radioText
                                     } else {
-                                        liveRdsDefault
+                                        "[sem informações]"
                                     }
 
                                     Text(

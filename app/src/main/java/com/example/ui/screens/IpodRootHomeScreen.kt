@@ -55,16 +55,17 @@ fun IpodRootHomeScreen(
 ) {
     val menuItems = listOf(
         RootMenuItem(stringResource(R.string.menu_radio), Icons.Default.Radio, 0),
-        RootMenuItem(stringResource(R.string.menu_podcasts), Icons.Default.Podcasts, 9),
-        RootMenuItem(stringResource(R.string.menu_mp3), Icons.Default.LibraryMusic, 1),
-        RootMenuItem(stringResource(R.string.menu_video), Icons.Default.VideoLibrary, 2),
-        RootMenuItem(stringResource(R.string.menu_youtube), Icons.Default.SmartDisplay, 10),
-        RootMenuItem(stringResource(R.string.menu_equalizer), Icons.Default.GraphicEq, 3),
-        RootMenuItem(stringResource(R.string.menu_audio_output), Icons.Default.SpeakerGroup, 4),
-        RootMenuItem(stringResource(R.string.menu_game), Icons.Default.SportsEsports, 5),
-        RootMenuItem(stringResource(R.string.menu_car_mode), Icons.Default.DirectionsCar, 6),
-        RootMenuItem(stringResource(R.string.menu_dock_mode), Icons.Default.Schedule, 11),
-        RootMenuItem(stringResource(R.string.menu_settings), Icons.Default.Settings, 7),
+        RootMenuItem(stringResource(R.string.menu_podcasts), Icons.Default.Podcasts, 1),
+        RootMenuItem(stringResource(R.string.menu_mp3), Icons.Default.LibraryMusic, 2),
+        RootMenuItem(stringResource(R.string.menu_video), Icons.Default.VideoLibrary, 3),
+        RootMenuItem(stringResource(R.string.menu_youtube), Icons.Default.SmartDisplay, 4),
+        RootMenuItem(stringResource(R.string.menu_equalizer), Icons.Default.GraphicEq, 5),
+        RootMenuItem(stringResource(R.string.menu_audio_output), Icons.Default.SpeakerGroup, 6),
+        RootMenuItem(stringResource(R.string.menu_game), Icons.Default.SportsEsports, 7),
+        RootMenuItem(stringResource(R.string.menu_car_mode), Icons.Default.DirectionsCar, 8),
+        RootMenuItem(stringResource(R.string.menu_dock_mode), Icons.Default.Schedule, 9),
+        RootMenuItem(stringResource(R.string.menu_settings), Icons.Default.Settings, 10),
+        RootMenuItem(stringResource(R.string.menu_about), Icons.Default.Info, 11),
         RootMenuItem(stringResource(R.string.menu_close_app), Icons.Default.PowerSettingsNew, 12)
     )
 

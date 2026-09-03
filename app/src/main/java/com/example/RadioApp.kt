@@ -9,6 +9,7 @@ import com.example.data.db.RadioDatabase
 import com.example.data.repository.RadioRepository
 import com.example.player.RadioPlayerManager
 import com.example.util.IpodSoundAndHaptics
+import com.example.util.ServiceWatchdogWorker
 
 class RadioApp : Application() {
 
@@ -18,8 +19,8 @@ class RadioApp : Application() {
     lateinit var repository: RadioRepository
         private set
 
-    lateinit var playerManager: RadioPlayerManager
-        private set
+    val playerManager: RadioPlayerManager
+        get() = RadioPlayerManager.getInstance(this)
 
     lateinit var soundAndHaptics: IpodSoundAndHaptics
         private set
@@ -40,7 +41,6 @@ class RadioApp : Application() {
         repository = RadioRepository(database.favoriteStationDao(), database.radioStationDao())
         localMediaRepository = com.example.data.repository.LocalMediaRepository(this)
         podcastRepository = com.example.data.repository.PodcastRepository.getInstance(this)
-        playerManager = RadioPlayerManager.getInstance(this)
         soundAndHaptics = IpodSoundAndHaptics.getInstance(this)
 
         // Strict lightweight memory and disk limits for image loading to prevent phone heating & GC pauses
@@ -60,5 +60,9 @@ class RadioApp : Application() {
             .respectCacheHeaders(false)
             .build()
         Coil.setImageLoader(imageLoader)
+
+        // WorkManager Watchdog: reinicia RadioMediaService se morto por OEM agressivo (Samsung/Xiaomi/Huawei)
+        // Agenda apenas uma vez (KEEP policy garante que não duplica em restarts da app)
+        ServiceWatchdogWorker.schedule(this)
     }
 }

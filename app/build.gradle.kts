@@ -17,8 +17,8 @@ android {
     applicationId = "com.aistudio.worldradio.ipodapp"
     minSdk = 24
     targetSdk = 36
-    versionCode = 57
-    versionName = "57.0"
+    versionCode = 72
+    versionName = "72.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -96,7 +96,7 @@ dependencies {
   implementation(libs.androidx.compose.ui.graphics)
   implementation(libs.androidx.compose.ui.tooling.preview)
   implementation(libs.androidx.core.ktx)
-  // implementation(libs.androidx.datastore.preferences)
+  implementation(libs.androidx.datastore.preferences)
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -107,10 +107,13 @@ dependencies {
   implementation(libs.androidx.media3.exoplayer)
   implementation(libs.androidx.media3.session)
   implementation(libs.androidx.media3.ui)
+  implementation(libs.androidx.media3.datasource.okhttp)
+  implementation(libs.androidx.media3.exoplayer.hls)
   implementation("androidx.media:media:1.7.0")
   implementation(libs.androidx.mediarouter)
   implementation(libs.play.services.cast.framework)
-  implementation("androidx.appcompat:appcompat:1.7.0")
+  implementation(libs.androidx.appcompat)
+  implementation(libs.androidx.work.runtime.ktx)
   implementation(libs.converter.moshi)
   implementation(libs.firebase.ai)
   // Uncomment to use Firestore:

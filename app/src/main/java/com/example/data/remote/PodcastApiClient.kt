@@ -17,12 +17,17 @@ object PodcastApiClient {
     suspend fun searchPodcasts(query: String): List<PodcastShow> = withContext(Dispatchers.IO) {
         if (query.isBlank()) return@withContext emptyList()
         val encoded = URLEncoder.encode(query.trim(), "UTF-8")
-        val targetUrl = "https://itunes.apple.com/search?media=podcast&entity=podcast&term=$encoded&limit=100"
-        val shows = fetchShowsFromItunesUrl(targetUrl)
+        // iTunes permite até 200 itens por chamada. Buscamos na loja BR e Global/US para abranger o máximo de resultados.
+        val targetUrlBR = "https://itunes.apple.com/search?media=podcast&entity=podcast&term=$encoded&country=BR&limit=200"
+        val targetUrlGlobal = "https://itunes.apple.com/search?media=podcast&entity=podcast&term=$encoded&limit=200"
+        val showsBR = fetchShowsFromItunesUrl(targetUrlBR)
+        val showsGlobal = fetchShowsFromItunesUrl(targetUrlGlobal)
+
+        val combinedShows = (showsBR + showsGlobal).distinctBy { it.feedUrl.lowercase() }
 
         // Ordenação inteligente: correspondência de título primeiro, depois contagem de episódios
         val qLower = query.trim().lowercase(Locale.ROOT)
-        shows.sortedWith(
+        combinedShows.sortedWith(
             compareByDescending<PodcastShow> { it.title.lowercase(Locale.ROOT).startsWith(qLower) }
                 .thenByDescending { it.title.lowercase(Locale.ROOT).contains(qLower) }
                 .thenByDescending { it.episodeCount }
@@ -30,14 +35,15 @@ object PodcastApiClient {
     }
 
     suspend fun fetchPodcastsByGenre(genreId: String, categoryName: String): List<PodcastShow> = withContext(Dispatchers.IO) {
-        val targetUrl = "https://itunes.apple.com/search?media=podcast&entity=podcast&genreId=$genreId&limit=100"
-        val shows = fetchShowsFromItunesUrl(targetUrl)
+        val targetUrlBR = "https://itunes.apple.com/search?media=podcast&entity=podcast&genreId=$genreId&country=BR&limit=200"
+        val targetUrlGlobal = "https://itunes.apple.com/search?media=podcast&entity=podcast&genreId=$genreId&limit=200"
+        val shows = (fetchShowsFromItunesUrl(targetUrlBR) + fetchShowsFromItunesUrl(targetUrlGlobal)).distinctBy { it.feedUrl.lowercase() }
         shows.map { it.copy(category = categoryName) }
     }
 
     suspend fun fetchTopShowsByCountry(countryCode: String): List<PodcastShow> = withContext(Dispatchers.IO) {
         val country = countryCode.uppercase(Locale.ROOT)
-        val targetUrl = "https://itunes.apple.com/search?media=podcast&entity=podcast&term=podcast&country=$country&limit=100"
+        val targetUrl = "https://itunes.apple.com/search?media=podcast&entity=podcast&term=podcast&country=$country&limit=200"
         fetchShowsFromItunesUrl(targetUrl)
     }
 

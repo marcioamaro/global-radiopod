@@ -144,12 +144,6 @@ class AudioRouteManager private constructor(private val context: Context) {
             } else if (rmc.isBuffering) {
                 playerManager.setPlaybackStatusDirect(RadioPlaybackStatus.BUFFERING)
             }
-            try {
-                val castVol = castSession?.volume?.toFloat()
-                if (castVol != null && castVol in 0f..1f) {
-                    playerManager.setVolumeLevel(castVol)
-                }
-            } catch (_: Exception) {}
         }
     }
 
@@ -236,6 +230,79 @@ class AudioRouteManager private constructor(private val context: Context) {
         }
     }
 
+    /**
+     * Atualiza apenas os metadados exibidos no Google Cast (Chromecast/Google Home)
+     * SEM reiniciar o stream de áudio. Chamada quando ICY/RDS detecta nova faixa.
+     *
+     * Usa MediaQueue.setQueueItemMetadata quando disponível, ou força um
+     * load leve apenas se não houver forma de atualizar in-place.
+     */
+    fun updateCastMetadataOnly() {
+        val session = castSession ?: return
+        if (!session.isConnected) return
+        val remoteMediaClient = session.remoteMediaClient ?: return
+        val playerManager = RadioPlayerManager.getInstance(context)
+        val station = playerManager.currentStation.value ?: return
+        val nowPlaying = playerManager.nowPlaying.value
+        val streamTitle = if (nowPlaying.hasTrackInfo && !nowPlaying.artist.equals("[sem informações]", ignoreCase = true)) nowPlaying.artist else "[sem informações]"
+
+        try {
+            // Construir metadata atualizada do Cast
+            val castMeta = com.google.android.gms.cast.MediaMetadata(
+                com.google.android.gms.cast.MediaMetadata.MEDIA_TYPE_MUSIC_TRACK
+            ).apply {
+                putString(com.google.android.gms.cast.MediaMetadata.KEY_TITLE, station.name)
+                putString(com.google.android.gms.cast.MediaMetadata.KEY_ARTIST, streamTitle)
+                putString(com.google.android.gms.cast.MediaMetadata.KEY_SUBTITLE, streamTitle)
+                putString(com.google.android.gms.cast.MediaMetadata.KEY_ALBUM_TITLE, "MediaPod • Rádio")
+                applyAppIconToCast(this)
+            }
+
+            // Verificar se há um item na fila do Cast e atualizar seus metadados
+            val mediaStatus = remoteMediaClient.mediaStatus
+            val currentItem = mediaStatus?.getQueueItemById(mediaStatus.currentItemId)
+
+            if (currentItem != null) {
+                // Atualiza metadata do item na fila sem reload do stream
+                val updatedMediaInfo = com.google.android.gms.cast.MediaInfo.Builder(
+                    currentItem.media?.contentId ?: station.streamUrl
+                )
+                    .setStreamType(com.google.android.gms.cast.MediaInfo.STREAM_TYPE_LIVE)
+                    .setContentType(currentItem.media?.contentType ?: "audio/mpeg")
+                    .setMetadata(castMeta)
+                    .build()
+
+                val updatedItem = com.google.android.gms.cast.MediaQueueItem.Builder(updatedMediaInfo)
+                    .setItemId(currentItem.itemId)
+                    .build()
+
+                remoteMediaClient.queueUpdateItems(
+                    arrayOf(updatedItem),
+                    null // sem callback customizado
+                )
+
+                android.util.Log.d("AudioRouteManager", "Cast metadata atualizada in-place: $streamTitle")
+            } else {
+                // Fallback: se não conseguir atualizar in-place, faz load completo
+                android.util.Log.d("AudioRouteManager", "Cast: sem item ativo na fila, fazendo load completo")
+                transferPlaybackToCast(session)
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("AudioRouteManager", "Falha ao atualizar Cast metadata in-place", e)
+        }
+    }
+
+    private fun detectContentType(url: String): String {
+        val u = url.lowercase(java.util.Locale.ROOT)
+        return when {
+            u.contains(".m3u8") || u.contains("/hls") || u.contains("m3u8") -> "application/vnd.apple.mpegurl"
+            u.contains(".aac") || u.contains("aac") -> "audio/aac"
+            u.contains(".ogg") || u.contains(".opus") -> "audio/ogg"
+            u.contains(".m4a") || u.contains(".mp4") -> "audio/mp4"
+            else -> "audio/mpeg"
+        }
+    }
+
     private fun transferPlaybackToCast(session: com.google.android.gms.cast.framework.CastSession) {
         val remoteMediaClient = session.remoteMediaClient ?: return
         val playerManager = RadioPlayerManager.getInstance(context)
@@ -246,7 +313,8 @@ class AudioRouteManager private constructor(private val context: Context) {
         try {
             if (station != null) {
                 val streamUrl = station.streamUrl
-                val streamTitle = playerManager.rdsInfo.value.radioText.ifBlank { "Ao Vivo" }
+                val nowPlaying = playerManager.nowPlaying.value
+                val streamTitle = if (nowPlaying.hasTrackInfo && !nowPlaying.artist.equals("[sem informações]", ignoreCase = true)) nowPlaying.artist else "[sem informações]"
                 val castMeta = com.google.android.gms.cast.MediaMetadata(com.google.android.gms.cast.MediaMetadata.MEDIA_TYPE_MUSIC_TRACK).apply {
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_TITLE, station.name)
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_ARTIST, streamTitle)
@@ -256,11 +324,16 @@ class AudioRouteManager private constructor(private val context: Context) {
                 }
                 val mediaInfo = com.google.android.gms.cast.MediaInfo.Builder(streamUrl)
                     .setStreamType(com.google.android.gms.cast.MediaInfo.STREAM_TYPE_LIVE)
-                    .setContentType("audio/mpeg")
+                    .setContentType(detectContentType(streamUrl))
                     .setMetadata(castMeta)
                     .build()
 
-                remoteMediaClient.load(mediaInfo, true)
+                val request = com.google.android.gms.cast.MediaLoadRequestData.Builder()
+                    .setMediaInfo(mediaInfo)
+                    .setAutoplay(true)
+                    .build()
+
+                remoteMediaClient.load(request)
                 playerManager.pauseLocalOnly()
             } else if (podcast != null) {
                 val castMeta = com.google.android.gms.cast.MediaMetadata(com.google.android.gms.cast.MediaMetadata.MEDIA_TYPE_MUSIC_TRACK).apply {
@@ -272,27 +345,17 @@ class AudioRouteManager private constructor(private val context: Context) {
                 }
                 val mediaInfo = com.google.android.gms.cast.MediaInfo.Builder(podcast.audioUrl)
                     .setStreamType(com.google.android.gms.cast.MediaInfo.STREAM_TYPE_BUFFERED)
-                    .setContentType("audio/mpeg")
+                    .setContentType(detectContentType(podcast.audioUrl))
                     .setMetadata(castMeta)
                     .build()
 
-                remoteMediaClient.load(mediaInfo, true, playerManager.audioPositionMs.value)
-                playerManager.pauseLocalOnly()
-            } else if (localAudio != null) {
-                val castMeta = com.google.android.gms.cast.MediaMetadata(com.google.android.gms.cast.MediaMetadata.MEDIA_TYPE_MUSIC_TRACK).apply {
-                    putString(com.google.android.gms.cast.MediaMetadata.KEY_TITLE, localAudio.title)
-                    putString(com.google.android.gms.cast.MediaMetadata.KEY_ARTIST, localAudio.artist)
-                    putString(com.google.android.gms.cast.MediaMetadata.KEY_SUBTITLE, localAudio.album)
-                    putString(com.google.android.gms.cast.MediaMetadata.KEY_ALBUM_TITLE, "MediaPod • Músicas")
-                    applyAppIconToCast(this)
-                }
-                val mediaInfo = com.google.android.gms.cast.MediaInfo.Builder(localAudio.contentUri.toString())
-                    .setStreamType(com.google.android.gms.cast.MediaInfo.STREAM_TYPE_BUFFERED)
-                    .setContentType("audio/mpeg")
-                    .setMetadata(castMeta)
+                val request = com.google.android.gms.cast.MediaLoadRequestData.Builder()
+                    .setMediaInfo(mediaInfo)
+                    .setAutoplay(true)
+                    .setCurrentTime(playerManager.audioPositionMs.value)
                     .build()
 
-                remoteMediaClient.load(mediaInfo, true, playerManager.audioPositionMs.value)
+                remoteMediaClient.load(request)
                 playerManager.pauseLocalOnly()
             }
         } catch (e: Exception) {
@@ -393,8 +456,6 @@ class AudioRouteManager private constructor(private val context: Context) {
                 val httpIconUri = android.net.Uri.parse("http://$wifiIp:$localIconServerPort/app_icon.png")
                 castMeta.addImage(com.google.android.gms.common.images.WebImage(httpIconUri, 512, 512))
             }
-            val appIconUri = android.net.Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
-            castMeta.addImage(com.google.android.gms.common.images.WebImage(appIconUri, 512, 512))
         } catch (_: Exception) {}
     }
 

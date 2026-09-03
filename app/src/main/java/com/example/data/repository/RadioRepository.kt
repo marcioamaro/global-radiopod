@@ -168,31 +168,64 @@ class RadioRepository(
     private suspend fun enrichStationsFromOnlineApis(query: String) {
         if (stationDao == null) return
         try {
-            // Consulta DialTuner API para rádios brasileiras
-            val dialResults = DialTunerApiClient.api.search(query)
             val newEntities = mutableListOf<com.example.data.db.RadioStationEntity>()
-            for (item in dialResults) {
-                val streamUrl = item.stream ?: item.backup
-                if (!streamUrl.isNullOrBlank() && item.name.isNotBlank()) {
-                    val id = "dialtuner_${item.id ?: java.util.UUID.randomUUID().toString().take(8)}"
-                    val entity = com.example.data.db.RadioStationEntity(
-                        id = id,
-                        name = item.name.trim(),
-                        streamUrl = streamUrl,
-                        favicon = item.cover ?: "",
-                        homepage = item.url ?: "",
-                        tags = (item.genres ?: listOf(item.genre ?: "")).filterNotNull().joinToString(", "),
-                        country = item.country ?: "Brasil",
-                        countryCode = item.cc ?: "BR",
-                        state = item.region ?: "",
-                        city = item.city ?: "",
-                        codec = item.format ?: "AAC",
-                        bitrate = item.bitrate ?: 128,
-                        votes = item.id?.toInt() ?: 1000
-                    )
-                    newEntities.add(entity)
+
+            // 1. Consulta Radio Browser API (base colaborativa aberta e confiável)
+            try {
+                val radioBrowserResults = RadioApiClient.getService().searchStations(name = query, limit = 100)
+                for (item in radioBrowserResults) {
+                    val streamUrl = item.urlResolved?.ifBlank { null } ?: item.url
+                    if (!streamUrl.isNullOrBlank() && !item.name.isNullOrBlank()) {
+                        val id = item.stationUuid ?: "rb_${java.util.UUID.randomUUID().toString().take(8)}"
+                        newEntities.add(
+                            com.example.data.db.RadioStationEntity(
+                                id = id,
+                                name = item.name.trim(),
+                                streamUrl = streamUrl,
+                                favicon = item.favicon ?: "",
+                                homepage = item.homepage ?: "",
+                                tags = item.tags ?: "",
+                                country = item.country ?: "Brasil",
+                                countryCode = item.countryCode ?: "BR",
+                                state = item.state ?: "",
+                                city = "",
+                                codec = item.codec ?: "MP3",
+                                bitrate = item.bitrate ?: 128,
+                                votes = item.votes ?: 100
+                            )
+                        )
+                    }
                 }
-            }
+            } catch (_: Exception) {}
+
+            // 2. Consulta DialTuner API para rádios brasileiras
+            try {
+                val dialResults = DialTunerApiClient.api.search(query)
+                for (item in dialResults) {
+                    val streamUrl = item.stream ?: item.backup
+                    if (!streamUrl.isNullOrBlank() && item.name.isNotBlank()) {
+                        val id = "dialtuner_${item.id ?: java.util.UUID.randomUUID().toString().take(8)}"
+                        newEntities.add(
+                            com.example.data.db.RadioStationEntity(
+                                id = id,
+                                name = item.name.trim(),
+                                streamUrl = streamUrl,
+                                favicon = item.cover ?: "",
+                                homepage = item.url ?: "",
+                                tags = (item.genres ?: listOf(item.genre ?: "")).filterNotNull().joinToString(", "),
+                                country = item.country ?: "Brasil",
+                                countryCode = item.cc ?: "BR",
+                                state = item.region ?: "",
+                                city = item.city ?: "",
+                                codec = item.format ?: "AAC",
+                                bitrate = item.bitrate ?: 128,
+                                votes = item.id?.toInt() ?: 1000
+                            )
+                        )
+                    }
+                }
+            } catch (_: Exception) {}
+
             if (newEntities.isNotEmpty()) {
                 stationDao.insertStations(newEntities)
             }

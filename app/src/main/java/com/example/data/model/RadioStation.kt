@@ -47,17 +47,95 @@ data class RadioStation(
                 list.add(alt)
             }
         }
-        val base = streamUrl.trimEnd('/')
+
+        val baseRaw = streamUrl.trim()
+        if (baseRaw.isBlank()) return list
+
+        // 1. STREAMTHEWORLD OFFICIAL CANDIDATES GENERATOR
+        if (baseRaw.contains("streamtheworld.com", ignoreCase = true)) {
+            val mountPattern = Regex("(?:livestream-redirect/|/)([A-Za-z0-9_-]+)(?:\\.aac|\\.mp3|_SC|_ADP|\\.m3u8)?(?:\\?.*)?$", RegexOption.IGNORE_CASE)
+            val match = mountPattern.find(baseRaw)
+            val rawMount = match?.groupValues?.getOrNull(1)
+            if (!rawMount.isNullOrBlank()) {
+                val cleanMount = rawMount
+                    .removeSuffix("_ADP")
+                    .removeSuffix("_SC")
+                    .removeSuffix("AAC")
+                    .removeSuffix("_AAC")
+                    .removeSuffix("AAC1")
+
+                val stwVariations = listOf(
+                    "https://playerservices.streamtheworld.com/api/livestream-redirect/${rawMount}.aac",
+                    "https://playerservices.streamtheworld.com/api/livestream-redirect/${rawMount}.mp3",
+                    "https://playerservices.streamtheworld.com/api/livestream-redirect/${cleanMount}.mp3",
+                    "https://playerservices.streamtheworld.com/api/livestream-redirect/${cleanMount}.aac",
+                    "https://playerservices.streamtheworld.com/api/livestream-redirect/${cleanMount}_ADP.aac",
+                    "https://playerservices.streamtheworld.com/api/livestream-redirect/${cleanMount}AAC.aac",
+                    "https://playerservices.streamtheworld.com/api/livestream-redirect/${cleanMount}_SC",
+                    "http://playerservices.streamtheworld.com/api/livestream-redirect/${cleanMount}.mp3",
+                    "http://playerservices.streamtheworld.com/api/livestream-redirect/${rawMount}.aac"
+                )
+                for (v in stwVariations) {
+                    if (!list.contains(v)) {
+                        list.add(v)
+                    }
+                }
+            }
+        }
+
+        // 2. ZENO.FM OFFICIAL CANDIDATES GENERATOR
+        if (baseRaw.contains("zeno.fm", ignoreCase = true)) {
+            val zenoPattern = Regex("zeno\\.fm/([A-Za-z0-9_-]+)", RegexOption.IGNORE_CASE)
+            val match = zenoPattern.find(baseRaw)
+            val mount = match?.groupValues?.getOrNull(1)
+            if (!mount.isNullOrBlank()) {
+                val cleanMount = mount.removeSuffix(".aac").removeSuffix(".mp3")
+                val zenoVariations = listOf(
+                    "https://stream.zeno.fm/$cleanMount",
+                    "https://stream-relay-geo.zeno.fm/$cleanMount",
+                    "http://stream.zeno.fm/$cleanMount",
+                    "https://stream.zeno.fm/$cleanMount.aac",
+                    "https://stream.zeno.fm/$cleanMount.mp3"
+                )
+                for (v in zenoVariations) {
+                    if (!list.contains(v)) {
+                        list.add(v)
+                    }
+                }
+            }
+        }
+
+        // 3. HTTP / HTTPS CROSS-PROTOCOL & STANDARD ICECAST/SHOUTCAST CANDIDATES
+        val cleanUrlNoQuery = baseRaw.substringBefore('?')
+        val altProtocol = if (cleanUrlNoQuery.startsWith("http://", ignoreCase = true)) {
+            "https://" + cleanUrlNoQuery.substring(7)
+        } else if (cleanUrlNoQuery.startsWith("https://", ignoreCase = true)) {
+            "http://" + cleanUrlNoQuery.substring(8)
+        } else null
+
+        if (altProtocol != null && !list.contains(altProtocol)) {
+            list.add(altProtocol)
+        }
+
+        val base = cleanUrlNoQuery.trimEnd('/')
         if (base.isNotBlank() && !base.endsWith(".m3u8", ignoreCase = true)) {
             val cleanBase = base
                 .removeSuffix("/1")
+                .removeSuffix("/;")
+                .removeSuffix("/stream")
+                .removeSuffix("/live")
+                .removeSuffix("/audio")
                 .removeSuffix(".aac")
                 .removeSuffix(".mp3")
+
             val variations = listOf(
+                "$cleanBase/stream",
                 "$cleanBase/1",
                 "$cleanBase.aac",
                 "$cleanBase.mp3",
-                "$cleanBase/stream",
+                "$cleanBase/live",
+                "$cleanBase/;",
+                "$cleanBase/;stream.mp3",
                 "$cleanBase/stream/1",
                 "$cleanBase/stream.aac",
                 "$cleanBase/stream.mp3",

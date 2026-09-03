@@ -68,6 +68,7 @@ fun IpodHeader(
     isBold: Boolean = true,
     showAudioOutputIcon: Boolean = false,
     onAudioOutputClick: (() -> Unit)? = null,
+    onNowPlayingClick: (() -> Unit)? = null,
     playbackSpeed: Float = 1.0f,
     nowPlayingTicker: String? = null,
     modifier: Modifier = Modifier
@@ -183,6 +184,10 @@ fun IpodHeader(
                     modifier = Modifier
                         .weight(1f, fill = false)
                         .padding(horizontal = 6.dp)
+                        .then(
+                            if (onNowPlayingClick != null) Modifier.clickable { onNowPlayingClick() }
+                            else Modifier
+                        )
                         .basicMarquee(
                             iterations = Int.MAX_VALUE,
                             initialDelayMillis = 1200,

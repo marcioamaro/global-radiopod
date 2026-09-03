@@ -17,6 +17,7 @@ import com.example.player.ActiveMediaType
 import com.example.player.RadioPlaybackStatus
 import com.example.player.RadioPlayerManager
 import com.example.player.RdsInfo
+import com.example.player.NowPlayingMetadata
 import com.example.util.IpodSoundAndHaptics
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -215,6 +216,22 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         setChassisBackAnimationEnabled(!_isChassisBackAnimationEnabled.value)
     }
 
+    private val _isPureAudioModeEnabled = MutableStateFlow(
+        prefs.isPureAudioModeEnabled()
+    )
+    val isPureAudioModeEnabled: StateFlow<Boolean> = _isPureAudioModeEnabled.asStateFlow()
+
+    fun setPureAudioModeEnabled(enabled: Boolean) {
+        _isPureAudioModeEnabled.value = enabled
+        prefs.setPureAudioModeEnabled(enabled)
+        playerManager.setPureAudioUserPreference(enabled)
+        soundAndHaptics.performClickHaptic()
+    }
+
+    fun togglePureAudioMode() {
+        setPureAudioModeEnabled(!_isPureAudioModeEnabled.value)
+    }
+
     val favorites: StateFlow<List<RadioStation>> = repository.favoritesFlow
         .map { list -> list.sortedBy { it.name.trim().lowercase() } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -222,6 +239,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     val playbackStatus: StateFlow<RadioPlaybackStatus> = playerManager.playbackStatus
     val currentStation: StateFlow<RadioStation?> = playerManager.currentStation
     val rdsInfo: StateFlow<RdsInfo> = playerManager.rdsInfo
+    val nowPlaying: StateFlow<NowPlayingMetadata> = playerManager.nowPlaying
     val visualizerAmplitudes: StateFlow<List<Float>> = playerManager.visualizerAmplitudes
     val volume: StateFlow<Float> = playerManager.volume
     val sleepTimerMinutes: StateFlow<Int> = playerManager.sleepTimerMinutes
@@ -386,10 +404,10 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     fun loadPodcastTopBrazil() {
         _uiState.value = _uiState.value.copy(isPodcastLoading = true)
         viewModelScope.launch {
-            val shows = podcastRepo.getTopPodcasts("BR", 100)
+            val shows = podcastRepo.getTopPodcasts("BR", 500)
             _uiState.value = _uiState.value.copy(
                 podcastShows = shows,
-                activeCategoryName = "Top Brasil (100 Melhores)",
+                activeCategoryName = "Top Podcasts Brasil",
                 isPodcastLoading = false
             )
         }
@@ -398,10 +416,10 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     fun loadPodcastTopWorld() {
         _uiState.value = _uiState.value.copy(isPodcastLoading = true)
         viewModelScope.launch {
-            val shows = podcastRepo.getTopPodcasts("GLOBAL", 100)
+            val shows = podcastRepo.getTopPodcasts("GLOBAL", 500)
             _uiState.value = _uiState.value.copy(
                 podcastShows = shows,
-                activeCategoryName = "Top Mundial (100 Melhores)",
+                activeCategoryName = "Top Podcasts Mundial",
                 isPodcastLoading = false
             )
         }
@@ -432,7 +450,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     fun loadPodcastsByCountry(countryCode: String, countryName: String) {
         _uiState.value = _uiState.value.copy(isPodcastLoading = true)
         viewModelScope.launch {
-            val shows = podcastRepo.getTopPodcasts(countryCode, 100)
+            val shows = podcastRepo.getTopPodcasts(countryCode, 500)
             _uiState.value = _uiState.value.copy(
                 podcastShows = shows,
                 activeCategoryName = countryName,
@@ -476,8 +494,11 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun playPodcastEpisode(episode: com.example.data.model.PodcastEpisode) {
-        val show = _uiState.value.currentPodcastShow
+    fun playPodcastEpisode(
+        episode: com.example.data.model.PodcastEpisode,
+        explicitShow: com.example.data.model.PodcastShow? = null
+    ) {
+        val show = explicitShow ?: _uiState.value.currentPodcastShow
         playerManager.playPodcastEpisode(episode, show)
         if (show != null) {
             viewModelScope.launch {
@@ -486,6 +507,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         }
         _uiState.value = _uiState.value.copy(
             currentPodcastEpisode = episode,
+            currentPodcastShow = show ?: _uiState.value.currentPodcastShow,
             currentYouTubeVideo = null
         )
         soundAndHaptics.performHeavyHaptic()
@@ -568,7 +590,20 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         // Restore sound and haptics preferences
         soundAndHaptics.isSoundEnabled = prefs.isSoundEnabled
         soundAndHaptics.isHapticsEnabled = prefs.isHapticsEnabled
-        playerManager.setVolumeLevel(prefs.volumeLevel)
+
+        // Volume nativo Android: sincroniza sem forçar nem aumentar o volume do STREAM_MUSIC no boot
+        playerManager.syncVolumeFromNativeStream()
+
+        // Restaura modo de exibição persistido (iPod, Car Mode RDS, Dock Standby)
+        val savedModeStr = prefs.getDisplayMode()
+        val initialDisplayMode = try {
+            DisplayMode.valueOf(savedModeStr)
+        } catch (_: Exception) {
+            DisplayMode.IPOD_CLASSIC
+        }
+        if (initialDisplayMode != _uiState.value.displayMode) {
+            _uiState.value = _uiState.value.copy(displayMode = initialDisplayMode)
+        }
 
         // Wire folder-spanning navigation callbacks
         playerManager.onFolderWrapNext = { nextLocalTrackWithFolderWrap() }
@@ -588,18 +623,26 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
-        // Auto-play on launch ONLY if user previously played a station; on first launch do not start any media!
+        // Auto-play on launch: Retoma última rádio ou podcast executado após carregamento na memória
+        val lastMediaType = prefs.getLastMediaType()
         val lastStation = prefs.getLastPlayedStation()
-        if (lastStation != null) {
-            viewModelScope.launch {
-                kotlinx.coroutines.delay(400) // slight buffer for service initialization
+        val lastPodcast = prefs.getLastPlayedPodcast()
+
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(400) // tempo para inicialização de serviços e memória
+            if (lastMediaType == "PODCAST" && lastPodcast != null) {
+                playPodcastEpisode(lastPodcast.first, lastPodcast.second)
+            } else if (lastStation != null) {
                 playStation(lastStation)
+            } else if (lastPodcast != null) {
+                playPodcastEpisode(lastPodcast.first, lastPodcast.second)
             }
         }
     }
 
     fun setDisplayMode(mode: DisplayMode) {
         _uiState.value = _uiState.value.copy(displayMode = mode)
+        prefs.saveDisplayMode(mode.name)
         soundAndHaptics.performHeavyHaptic()
     }
 
@@ -859,7 +902,8 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                     8 -> toggleDisplayMode()
                     9 -> enterDockMode()
                     10 -> navigateTo(IpodScreenDestination.SETTINGS_THEMES)
-                    11 -> exitApplication()
+                    11 -> navigateTo(IpodScreenDestination.ABOUT)
+                    12 -> exitApplication()
                 }
             }
             IpodScreenDestination.AUDIO_OUTPUT_MENU -> {
@@ -1858,7 +1902,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun getItemCountForCurrentScreen(): Int {
         return when (_uiState.value.currentScreen) {
-            IpodScreenDestination.MAIN_MENU -> 12
+            IpodScreenDestination.MAIN_MENU -> 13
             IpodScreenDestination.AUDIO_OUTPUT_MENU -> audioRouteManager.availableDevices.value.size
             IpodScreenDestination.RADIO_MENU -> 9
             IpodScreenDestination.PODCASTS_MENU -> 9

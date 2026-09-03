@@ -458,9 +458,9 @@ fun DockModeScreen(
                             val subtitleText: String = when {
                                 !currentLocalAudio?.artist.isNullOrBlank() -> currentLocalAudio!!.artist
                                 !currentPodcastEpisode?.showTitle.isNullOrBlank() -> currentPodcastEpisode!!.showTitle
-                                rdsInfo.radioText.isNotBlank() -> rdsInfo.radioText
-                                currentStation != null && currentStation.country.isNotBlank() -> currentStation.country
-                                else -> "Rádio Online"
+                                rdsInfo.hasRealRds && rdsInfo.radioText.isNotBlank() && !rdsInfo.radioText.equals("[sem informações]", ignoreCase = true) -> rdsInfo.radioText
+                                currentStation != null -> "[sem informações]"
+                                else -> "MediaPod Standby"
                             }
 
                             Text(

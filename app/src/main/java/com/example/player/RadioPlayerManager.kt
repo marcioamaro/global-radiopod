@@ -100,6 +100,25 @@ class RadioPlayerManager private constructor(private val context: Context) {
     private val _rdsInfo = MutableStateFlow(RdsInfo())
     val rdsInfo: StateFlow<RdsInfo> = _rdsInfo.asStateFlow()
 
+    private val _playbackMode = MutableStateFlow(PlaybackMode.FULL)
+    val playbackMode: StateFlow<PlaybackMode> = _playbackMode.asStateFlow()
+
+    private val _nowPlaying = MutableStateFlow(
+        NowPlayingMetadata(
+            title = "Rádio Pod",
+            artist = "[sem informações]",
+            album = "Ao Vivo",
+            artworkUri = null,
+            isLiveStream = true,
+            hasTrackInfo = false
+        )
+    )
+    val nowPlaying: StateFlow<NowPlayingMetadata> = _nowPlaying.asStateFlow()
+
+    fun setPureAudioUserPreference(enabled: Boolean) {
+        _playbackMode.value = if (enabled) PlaybackMode.AUDIO_ONLY else PlaybackMode.FULL
+    }
+
     private val _visualizerAmplitudes = MutableStateFlow(List(16) { 0.1f })
     val visualizerAmplitudes: StateFlow<List<Float>> = _visualizerAmplitudes.asStateFlow()
 
@@ -366,6 +385,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .setLoadControl(loadControl)
             .build().apply {
+                repeatMode = Player.REPEAT_MODE_ALL
                 volume = 1.0f // Ganho unitário: delega o volume estritamente ao AudioManager.STREAM_MUSIC
                 addListener(object : Player.Listener {
                     override fun onPlaybackStateChanged(state: Int) {
@@ -486,6 +506,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
                         }
                     }
 
+                    @androidx.media3.common.util.UnstableApi
                     override fun onMetadata(metadata: Metadata) {
                         for (i in 0 until metadata.length()) {
                             val entry = metadata.get(i)
@@ -514,6 +535,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
                         }
                     }
 
+                    @androidx.media3.common.util.UnstableApi
                     override fun onAudioSessionIdChanged(audioSessionId: Int) {
                         if (audioSessionId != C.AUDIO_SESSION_ID_UNSET) {
                             initEqualizer(audioSessionId)
@@ -591,6 +613,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
     }
 
     fun playStation(station: RadioStation) {
+        clearPlayerMetadata()
         try {
             LocalVideoPlayerManager.getInstance(context).pause()
         } catch (_: Exception) {}
@@ -611,6 +634,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
             startLiveSessionTimer(resume = false)
         }
         ipodPrefs.addRecentStation(station)
+        ipodPrefs.saveLastPlayedStation(station)
         if (playlist.none { it.id == station.id }) {
             playlist = listOf(station) + playlist
         }
@@ -623,6 +647,21 @@ class RadioPlayerManager private constructor(private val context: Context) {
         rdsSimulationJob?.cancel()
         userInitiatedPause = false
         reconnectJob?.cancel()
+
+        _nowPlaying.value = NowPlayingMetadata(
+            title = station.name,
+            artist = "Conectando...",
+            album = "Ao Vivo",
+            artworkUri = null,
+            isLiveStream = true,
+            hasTrackInfo = false
+        )
+        updateNotificationAndSessionMetadata(
+            title = station.name,
+            artist = "Conectando...",
+            album = "Ao Vivo",
+            artworkUri = null
+        )
 
         // Set initial RDS info with Station Name as default when RDS is absent
         _rdsInfo.value = RdsInfo(
@@ -1031,6 +1070,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
     }
 
     fun playLocalAudio(track: com.example.data.model.LocalAudioTrack, queue: List<com.example.data.model.LocalAudioTrack> = emptyList()) {
+        clearPlayerMetadata()
         try {
             LocalVideoPlayerManager.getInstance(context).pause()
         } catch (_: Exception) {}
@@ -1065,6 +1105,15 @@ class RadioPlayerManager private constructor(private val context: Context) {
             .setUri(track.contentUri)
             .setMediaMetadata(mediaMetadata)
             .build()
+
+        _nowPlaying.value = NowPlayingMetadata(
+            title = track.title,
+            artist = track.artist,
+            album = track.album,
+            artworkUri = track.albumArtUrl?.let { Uri.parse(it) },
+            isLiveStream = false,
+            hasTrackInfo = true
+        )
 
         _rdsInfo.value = RdsInfo(
             programService = track.title.take(12).uppercase(),
@@ -1108,6 +1157,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
         show: com.example.data.model.PodcastShow? = null,
         queue: List<com.example.data.model.PodcastEpisode> = emptyList()
     ) {
+        clearPlayerMetadata()
         try {
             LocalVideoPlayerManager.getInstance(context).pause()
         } catch (_: Exception) {}
@@ -1125,6 +1175,15 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
         val repo = com.example.data.repository.PodcastRepository.getInstance(context)
         repo.addRecentEpisode(episode)
+        val effectiveShow = show ?: _currentPodcastShow.value ?: com.example.data.model.PodcastShow(
+            id = episode.showId,
+            title = episode.showTitle,
+            author = "",
+            description = "",
+            artworkUrl = episode.artworkUrl,
+            feedUrl = ""
+        )
+        ipodPrefs.saveLastPlayedPodcast(episode, effectiveShow)
         val savedPos = repo.getSavedPlaybackPosition(episode.id)
 
         _audioDurationMs.value = episode.durationMs
@@ -1158,6 +1217,15 @@ class RadioPlayerManager private constructor(private val context: Context) {
             .setUri(episode.audioUrl)
             .setMediaMetadata(mediaMetadata)
             .build()
+
+        _nowPlaying.value = NowPlayingMetadata(
+            title = episode.title,
+            artist = episode.showTitle,
+            album = episode.publishDate,
+            artworkUri = null,
+            isLiveStream = false,
+            hasTrackInfo = true
+        )
 
         _rdsInfo.value = RdsInfo(
             programService = episode.showTitle.take(12).uppercase(),
@@ -1213,7 +1281,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
         if (podcastQueue.isEmpty()) return
         val current = _currentPodcastEpisode.value ?: return
         val idx = podcastQueue.indexOfFirst { it.id == current.id }
-        val nextIdx = if (idx in 0 until podcastQueue.size - 1) idx + 1 else 0
+        val nextIdx = if (idx >= 0) (idx + 1) % podcastQueue.size else 0
         playPodcastEpisode(podcastQueue[nextIdx], _currentPodcastShow.value, podcastQueue)
     }
 
@@ -1555,6 +1623,34 @@ class RadioPlayerManager private constructor(private val context: Context) {
         return false
     }
 
+    fun clearPlayerMetadata() {
+        lastRealSongTitle = null
+        lastRawStreamTitle = null
+        _nowPlaying.value = NowPlayingMetadata(
+            title = "Preparando reprodução",
+            artist = "Conectando...",
+            album = "Ao Vivo",
+            artworkUri = null,
+            isLiveStream = true,
+            hasTrackInfo = false
+        )
+        scope.launch(Dispatchers.Main) {
+            try {
+                val appLogoUri = Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
+                val emptyMetadata = MediaMetadata.Builder()
+                    .setTitle("Preparando reprodução")
+                    .setDisplayTitle("Preparando reprodução")
+                    .setArtist("Conectando...")
+                    .setSubtitle("Conectando...")
+                    .setAlbumTitle("Ao Vivo")
+                    .setArtworkUri(appLogoUri)
+                    .setIsPlayable(true)
+                    .build()
+                exoPlayer?.playlistMetadata = emptyMetadata
+            } catch (_: Exception) {}
+        }
+    }
+
     fun updateNotificationAndSessionMetadata(title: String, artist: String, album: String, artworkUri: Uri?) {
         scope.launch(Dispatchers.Main) {
             try {
@@ -1586,6 +1682,14 @@ class RadioPlayerManager private constructor(private val context: Context) {
         val station = _currentStation.value ?: return
 
         scope.launch(Dispatchers.Main) {
+            val (metadata, newValidTitle) = MetadataParser.parseIcyForRadio(
+                rawStreamTitle = clean,
+                stationName = station.name,
+                stationUrl = station.streamUrl,
+                lastValidTitle = lastRealSongTitle
+            )
+            _nowPlaying.value = metadata
+
             if (isCommercialOrStationPromo(clean, station.name)) {
                 // It's a commercial or slogan: do NOT erase last detected song!
                 val displayText = if (!lastRealSongTitle.isNullOrBlank()) {
@@ -1599,7 +1703,11 @@ class RadioPlayerManager private constructor(private val context: Context) {
                 )
             } else {
                 // Real song identified!
-                lastRealSongTitle = clean
+                if (newValidTitle != null) {
+                    lastRealSongTitle = newValidTitle
+                } else {
+                    lastRealSongTitle = clean
+                }
                 _rdsInfo.value = _rdsInfo.value.copy(
                     radioText = clean,
                     hasRealRds = true

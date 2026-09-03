@@ -465,7 +465,21 @@ fun IpodClassicScreen(
                         ),
                         onAudioOutputClick = {
                             onSelectDestination(IpodScreenDestination.AUDIO_OUTPUT_MENU)
-                        }
+                        },
+                        onNowPlayingClick = if (computedTicker != null) {
+                            {
+                                // Navega para o player "Tocando Agora" correto conforme o tipo de mídia ativa
+                                val destination = when {
+                                    isVideoPlaying && currentVideoTrack != null -> IpodScreenDestination.VIDEO_PLAYER
+                                    currentLocalAudio != null -> IpodScreenDestination.MP3_NOW_PLAYING
+                                    currentEp != null -> IpodScreenDestination.PODCAST_NOW_PLAYING
+                                    currentStation != null -> IpodScreenDestination.NOW_PLAYING_RDS
+                                    uiState.currentScreen == IpodScreenDestination.YOUTUBE_PLAYER -> IpodScreenDestination.YOUTUBE_PLAYER
+                                    else -> IpodScreenDestination.NOW_PLAYING_RDS
+                                }
+                                onSelectDestination(destination)
+                            }
+                        } else null
                     )
 
                     // Active Screen Content
@@ -496,7 +510,12 @@ fun IpodClassicScreen(
                                     isLocalAudio = currentLocalAudio != null,
                                     currentArtUrl = currentLocalAudio?.albumArtUrl,
                                     nowPlayingTitle = currentLocalAudio?.title ?: currentStation?.name,
-                                    nowPlayingSubtitle = currentLocalAudio?.artist ?: rdsInfo.radioText,
+                                    nowPlayingSubtitle = currentLocalAudio?.artist
+                                        ?: if (rdsInfo.hasRealRds && rdsInfo.radioText.isNotBlank() && !rdsInfo.radioText.equals("[sem informações]", ignoreCase = true)) {
+                                            rdsInfo.radioText
+                                        } else {
+                                            "[sem informações]"
+                                        },
                                     isPlaying = playbackStatus == RadioPlaybackStatus.PLAYING,
                                     backlightBg = backlightBg,
                                     backlightTextPrimary = backlightTextPrimary,
@@ -613,7 +632,7 @@ fun IpodClassicScreen(
                                 IpodVideoListScreen(
                                     title = uiState.currentVideoFolder?.name ?: "Vídeos",
                                     videos = uiState.localVideoTracks,
-                                    currentVideoId = videoPlayerManager?.currentVideo?.value?.id,
+                                    currentVideoId = videoPlayerManager?.currentVideo?.collectAsState()?.value?.id,
                                     selectedIndex = uiState.selectedIndex,
                                     onSelectVideo = onSelectVideoTrack,
                                     backlightBg = backlightBg,
@@ -2585,7 +2604,7 @@ private fun IpodSettingsScreen(
 
         // Animação da Traseira do MediaPod (Easter Egg)
         item {
-            val isChassisAnimEnabled = viewModel?.isChassisBackAnimationEnabled?.collectAsState()?.value ?: true
+            val isChassisAnimEnabled = viewModel?.isChassisBackAnimationEnabled?.collectAsState()?.value ?: false
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -2621,7 +2640,55 @@ private fun IpodSettingsScreen(
             }
         }
 
-        // --- 6. SEGUNDO PLANO E BATERIA ---
+        // --- 6. ESTABILIDADE & MODO STREAMING PURO ---
+        item {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "ESTABILIDADE & TRANSMISSÃO",
+                color = backlightTextSecondary,
+                fontSize = (10f * fontScale).sp,
+                fontWeight = FontWeight.Black,
+                fontFamily = fontFamily
+            )
+        }
+        item {
+            val isPureAudio = viewModel?.isPureAudioModeEnabled?.collectAsState()?.value ?: false
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0x33000000))
+                    .clickable { viewModel?.togglePureAudioMode() }
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Modo Streaming Puro (Apenas Áudio)",
+                        color = backlightTextPrimary,
+                        fontSize = (10.5f * fontScale).sp,
+                        fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+                        fontFamily = fontFamily
+                    )
+                    Text(
+                        text = "Desativa leitura de títulos/artistas do stream para eliminar travamentos e sobrecargas no servidor",
+                        color = backlightTextSecondary,
+                        fontSize = 9.sp,
+                        fontFamily = fontFamily
+                    )
+                }
+                Text(
+                    text = if (isPureAudio) "✓ ATIVO 🔊" else "DESATIVADO",
+                    color = if (isPureAudio) backlightHighlight else backlightTextSecondary,
+                    fontSize = 9.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = fontFamily
+                )
+            }
+        }
+
+        // --- 7. SEGUNDO PLANO E BATERIA ---
         item {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
@@ -3062,260 +3129,67 @@ private fun IpodAboutScreen(
     isBold: Boolean = true,
     onShowChassisBack: () -> Unit = {}
 ) {
-    LazyColumn(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 8.dp, vertical = 6.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+            .background(backlightBg)
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
     ) {
-        item {
-            Column(
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .background(backlightTextPrimary.copy(alpha = 0.08f))
+                .border(1.dp, backlightTextPrimary.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
+                .clickable { onShowChassisBack() }
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // Logotipo do Aplicativo
+            androidx.compose.foundation.Image(
+                painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.ic_pear_logo),
+                contentDescription = "Logotipo do Aplicativo",
+                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(backlightTextPrimary),
+                contentScale = androidx.compose.ui.layout.ContentScale.Fit,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(backlightTextPrimary.copy(alpha = 0.08f))
-                    .border(1.dp, backlightTextPrimary.copy(alpha = 0.35f), RoundedCornerShape(6.dp))
-                    .clickable { onShowChassisBack() }
-                    .padding(10.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                androidx.compose.foundation.Image(
-                    painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.ic_pear_logo),
-                    contentDescription = "Logo Pera",
-                    colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(backlightTextPrimary),
-                    contentScale = androidx.compose.ui.layout.ContentScale.Fit,
-                    modifier = Modifier
-                        .width(36.dp)
-                        .height(48.dp)
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = "MediaPod + Radio / Podcast",
-                    color = backlightTextPrimary,
-                    fontSize = (13.5f * fontScale).sp,
-                    fontWeight = FontWeight.Black,
-                    fontFamily = fontFamily,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "Versão 37.0 • Global RadioPod",
-                    color = backlightTextSecondary,
-                    fontSize = (10.5f * fontScale).sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = fontFamily,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "💡 Toque aqui ou vire o celular para ver a traseira em Aço Inox",
-                    color = backlightHighlight,
-                    fontSize = (9f * fontScale).sp,
-                    fontWeight = FontWeight.Medium,
-                    fontFamily = fontFamily,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                )
-            }
-        }
+                    .width(44.dp)
+                    .height(56.dp)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
 
-        item {
+            // Nome do Aplicativo
             Text(
-                text = "INFORMAÇÕES DO AUTOR",
-                color = backlightTextSecondary,
-                fontSize = (10.5f * fontScale).sp,
+                text = "Global RadioPod",
+                color = backlightTextPrimary,
+                fontSize = (16f * fontScale).sp,
                 fontWeight = FontWeight.Black,
                 fontFamily = fontFamily,
-                letterSpacing = 0.8.sp
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
-        }
+            Spacer(modifier = Modifier.height(6.dp))
 
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(backlightTextPrimary.copy(alpha = 0.08f))
-                    .border(1.dp, backlightTextPrimary.copy(alpha = 0.25f), RoundedCornerShape(6.dp))
-                    .padding(10.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Column {
-                    Text(
-                        text = "Autor:",
-                        color = backlightTextSecondary,
-                        fontSize = (9.5f * fontScale).sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = fontFamily
-                    )
-                    Text(
-                        text = "Márcio Amaro",
-                        color = backlightTextPrimary,
-                        fontSize = (11.5f * fontScale).sp,
-                        fontWeight = FontWeight.Black,
-                        fontFamily = fontFamily
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(backlightTextPrimary.copy(alpha = 0.2f))
-                )
-
-                Column {
-                    Text(
-                        text = "E-mail:",
-                        color = backlightTextSecondary,
-                        fontSize = (9.5f * fontScale).sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = fontFamily
-                    )
-                    Text(
-                        text = "marcio.amaro@gmail.com",
-                        color = backlightTextPrimary,
-                        fontSize = (11.5f * fontScale).sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = fontFamily
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(backlightTextPrimary.copy(alpha = 0.2f))
-                )
-
-                Column {
-                    Text(
-                        text = "Localização:",
-                        color = backlightTextSecondary,
-                        fontSize = (9.5f * fontScale).sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = fontFamily
-                    )
-                    Text(
-                        text = "Araras - SP / Brasil",
-                        color = backlightTextPrimary,
-                        fontSize = (11.5f * fontScale).sp,
-                        fontWeight = FontWeight.Black,
-                        fontFamily = fontFamily
-                    )
-                }
-            }
-        }
-
-        item {
+            // Data da versão aaaa.mm.dd e número da versão
             Text(
-                text = "ESPECIFICAÇÕES DO SISTEMA",
+                text = "2026.09.03 - v72.0",
                 color = backlightTextSecondary,
-                fontSize = (10.5f * fontScale).sp,
-                fontWeight = FontWeight.Black,
+                fontSize = (12f * fontScale).sp,
+                fontWeight = FontWeight.Bold,
                 fontFamily = fontFamily,
-                letterSpacing = 0.8.sp
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
-        }
+            Spacer(modifier = Modifier.height(12.dp))
 
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(backlightTextPrimary.copy(alpha = 0.08f))
-                    .border(1.dp, backlightTextPrimary.copy(alpha = 0.25f), RoundedCornerShape(6.dp))
-                    .padding(10.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Column {
-                    Text(
-                        text = "Controle:",
-                        color = backlightTextSecondary,
-                        fontSize = (9.5f * fontScale).sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = fontFamily
-                    )
-                    Text(
-                        text = "SlideCircle Click Háptica",
-                        color = backlightTextPrimary,
-                        fontSize = (11.5f * fontScale).sp,
-                        fontWeight = FontWeight.Black,
-                        fontFamily = fontFamily
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(backlightTextPrimary.copy(alpha = 0.2f))
-                )
-
-                Column {
-                    Text(
-                        text = "Decodificador:",
-                        color = backlightTextSecondary,
-                        fontSize = (9.5f * fontScale).sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = fontFamily
-                    )
-                    Text(
-                        text = "RDS / Radiotext (RT+)",
-                        color = backlightTextPrimary,
-                        fontSize = (11.5f * fontScale).sp,
-                        fontWeight = FontWeight.Black,
-                        fontFamily = fontFamily
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(backlightTextPrimary.copy(alpha = 0.2f))
-                )
-
-                Column {
-                    Text(
-                        text = "Integração Veicular:",
-                        color = backlightTextSecondary,
-                        fontSize = (9.5f * fontScale).sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = fontFamily
-                    )
-                    Text(
-                        text = "Modo Carro & Android Auto",
-                        color = backlightTextPrimary,
-                        fontSize = (11.5f * fontScale).sp,
-                        fontWeight = FontWeight.Black,
-                        fontFamily = fontFamily
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(backlightTextPrimary.copy(alpha = 0.2f))
-                )
-
-                Column {
-                    Text(
-                        text = "Versão Atual:",
-                        color = backlightTextSecondary,
-                        fontSize = (9.5f * fontScale).sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = fontFamily
-                    )
-                    Text(
-                        text = "Versão 35.0",
-                        color = backlightTextPrimary,
-                        fontSize = (11.5f * fontScale).sp,
-                        fontWeight = FontWeight.Black,
-                        fontFamily = fontFamily
-                    )
-                }
-            }
+            // Autor
+            Text(
+                text = "autor: Márcio Amaro - marcio.amaro@gmail.com",
+                color = backlightHighlight,
+                fontSize = (11f * fontScale).sp,
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = fontFamily,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
         }
     }
 }

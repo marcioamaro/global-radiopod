@@ -273,12 +273,14 @@ fun RdsDisplay(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        val rdsTextToDisplay = if (rdsInfo.radioText.isNotBlank()) {
+        val rdsTextToDisplay = if (station == null) {
+            "SINTONIZE UMA EMISSORA"
+        } else if (rdsInfo.hasRealRds && rdsInfo.radioText.isNotBlank() && !rdsInfo.radioText.equals("[sem informações]", ignoreCase = true)) {
             rdsInfo.radioText.replace("/RDS", "", ignoreCase = true)
                 .replace("/ RDS", "", ignoreCase = true)
                 .trim()
         } else {
-            station?.name?.uppercase() ?: "SINTONIZE UMA EMISSORA"
+            "[SEM INFORMAÇÕES]"
         }
 
         Box(

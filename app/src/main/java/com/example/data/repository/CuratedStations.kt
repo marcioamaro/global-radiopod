@@ -1659,12 +1659,17 @@ object CuratedData {
             id = "br_sp_102",
             name = "Rádio Disney - Brasil FM 91.3",
             streamUrl = "https://playerservices.streamtheworld.com/api/livestream-redirect/DISNEY_BRA_SP_ADP.aac",
+            alternativeStreamUrls = listOf(
+                "https://playerservices.streamtheworld.com/api/livestream-redirect/DISNEY_BRA_SP.mp3",
+                "https://playerservices.streamtheworld.com/api/livestream-redirect/DISNEY_BRA_SP.aac",
+                "https://playerservices.streamtheworld.com/api/livestream-redirect/DISNEY_BRA_SP_SC"
+            ),
             favicon = "https://tudoradio.com/img/layout/icone_tudoradio.jpg",
-            tags = "",
+            tags = "pop, hits, jovem, pop rock, teen pop",
             country = "Brasil",
             countryCode = "BR",
             state = "SP",
-            city = "Capital",
+            city = "São Paulo",
             codec = "AAC+",
             bitrate = 128,
             votes = 506

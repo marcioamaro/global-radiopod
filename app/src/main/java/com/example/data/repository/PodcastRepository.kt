@@ -66,7 +66,7 @@ class PodcastRepository private constructor(private val context: Context) {
         "educacao" to "1304"
     )
 
-    suspend fun getTopPodcasts(countryCode: String, limit: Int = 100): List<PodcastShow> = withContext(Dispatchers.IO) {
+    suspend fun getTopPodcasts(countryCode: String, limit: Int = 500): List<PodcastShow> = withContext(Dispatchers.IO) {
         val favIds = _favoritesFlow.value.map { it.id }.toSet()
         val local = if (countryCode.equals("GLOBAL", ignoreCase = true)) {
             _curatedShows.filter { !it.country.equals("BR", ignoreCase = true) }
@@ -86,7 +86,7 @@ class PodcastRepository private constructor(private val context: Context) {
             .filter { it.feedUrl.isNotBlank() && it.episodeCount > 0 }
             .map { it.copy(isFavorite = favIds.contains(it.id)) }
 
-        combined.take(limit)
+        if (limit > 0) combined.take(limit) else combined
     }
 
     suspend fun getPodcastsByCategory(categoryKeyword: String): List<PodcastShow> = withContext(Dispatchers.IO) {

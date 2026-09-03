@@ -76,10 +76,15 @@ class IpodPreferencesManager private constructor(context: Context) {
         private const val KEY_HAPTICS_ENABLED = "key_haptics_enabled"
         private const val KEY_RECENTS_JSON = "key_recents_json"
         private const val KEY_VOLUME = "key_volume"
+        private const val KEY_LAST_MEDIA_TYPE = "key_last_media_type"
+        private const val KEY_LAST_PODCAST_EPISODE_JSON = "key_last_podcast_episode_json"
+        private const val KEY_LAST_PODCAST_SHOW_JSON = "key_last_podcast_show_json"
+        private const val KEY_DISPLAY_MODE = "key_display_mode"
         private const val KEY_DOCK_CLOCK_SCALE = "key_dock_clock_scale"
         private const val KEY_DOCK_SHOW_SECONDS = "key_dock_show_seconds"
         private const val KEY_CHASSIS_BACK_ANIMATION_ENABLED = "key_chassis_back_animation_enabled"
         private const val KEY_BRICK_HIGH_SCORES_JSON = "key_brick_high_scores_json"
+        private const val KEY_PURE_AUDIO_MODE = "key_pure_audio_mode"
         private const val MAX_RECENTS = 20
 
         @Volatile
@@ -92,17 +97,48 @@ class IpodPreferencesManager private constructor(context: Context) {
         }
     }
 
+    /**
+     * Modo Streaming Puro (Apenas Áudio): Quando ativado, desativa permanentemente a extração
+     * e atualização de metadados ICY/ID3 de músicas/artistas do stream para eliminar sobrecarga e travamentos.
+     */
+    fun isPureAudioModeEnabled(): Boolean {
+        return prefs.getBoolean(KEY_PURE_AUDIO_MODE, false)
+    }
+
+    fun setPureAudioModeEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_PURE_AUDIO_MODE, enabled).apply()
+    }
+
     fun isChassisBackAnimationEnabled(): Boolean {
-        return prefs.getBoolean(KEY_CHASSIS_BACK_ANIMATION_ENABLED, true)
+        return prefs.getBoolean(KEY_CHASSIS_BACK_ANIMATION_ENABLED, false)
     }
 
     fun setChassisBackAnimationEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_CHASSIS_BACK_ANIMATION_ENABLED, enabled).apply()
     }
 
+    // Media Type persistence (RADIO or PODCAST)
+    fun saveLastMediaType(type: String) {
+        prefs.edit().putString(KEY_LAST_MEDIA_TYPE, type).apply()
+    }
+
+    fun getLastMediaType(): String? {
+        return prefs.getString(KEY_LAST_MEDIA_TYPE, null)
+    }
+
+    // Display mode persistence
+    fun saveDisplayMode(mode: String) {
+        prefs.edit().putString(KEY_DISPLAY_MODE, mode).apply()
+    }
+
+    fun getDisplayMode(): String {
+        return prefs.getString(KEY_DISPLAY_MODE, "IPOD_CLASSIC") ?: "IPOD_CLASSIC"
+    }
+
     // Last station persistence
     fun saveLastPlayedStation(station: RadioStation) {
         try {
+            saveLastMediaType("RADIO")
             val json = JSONObject().apply {
                 put("id", station.id)
                 put("name", station.name)
@@ -139,6 +175,76 @@ class IpodPreferencesManager private constructor(context: Context) {
                 codec = obj.optString("codec", "MP3"),
                 votes = obj.optInt("votes", 0)
             )
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    // Last podcast persistence
+    fun saveLastPlayedPodcast(episode: com.example.data.model.PodcastEpisode, show: com.example.data.model.PodcastShow?) {
+        try {
+            saveLastMediaType("PODCAST")
+            val epJson = JSONObject().apply {
+                put("id", episode.id)
+                put("showId", episode.showId)
+                put("showTitle", episode.showTitle)
+                put("title", episode.title)
+                put("description", episode.description)
+                put("audioUrl", episode.audioUrl)
+                put("durationMs", episode.durationMs)
+                put("publishDate", episode.publishDate)
+                put("artworkUrl", episode.artworkUrl)
+            }
+            val editor = prefs.edit().putString(KEY_LAST_PODCAST_EPISODE_JSON, epJson.toString())
+            if (show != null) {
+                val showJson = JSONObject().apply {
+                    put("id", show.id)
+                    put("title", show.title)
+                    put("author", show.author)
+                    put("description", show.description)
+                    put("feedUrl", show.feedUrl)
+                    put("artworkUrl", show.artworkUrl)
+                    put("country", show.country)
+                    put("category", show.category)
+                }
+                editor.putString(KEY_LAST_PODCAST_SHOW_JSON, showJson.toString())
+            } else {
+                editor.remove(KEY_LAST_PODCAST_SHOW_JSON)
+            }
+            editor.apply()
+        } catch (_: Exception) {}
+    }
+
+    fun getLastPlayedPodcast(): Pair<com.example.data.model.PodcastEpisode, com.example.data.model.PodcastShow?>? {
+        val epStr = prefs.getString(KEY_LAST_PODCAST_EPISODE_JSON, null) ?: return null
+        return try {
+            val obj = JSONObject(epStr)
+            val ep = com.example.data.model.PodcastEpisode(
+                id = obj.getString("id"),
+                showId = obj.optString("showId", ""),
+                showTitle = obj.optString("showTitle", ""),
+                title = obj.getString("title"),
+                description = obj.optString("description", ""),
+                audioUrl = obj.getString("audioUrl"),
+                durationMs = obj.optLong("durationMs", 0L),
+                publishDate = obj.optString("publishDate", ""),
+                artworkUrl = obj.optString("artworkUrl", "")
+            )
+            val showStr = prefs.getString(KEY_LAST_PODCAST_SHOW_JSON, null)
+            val show = showStr?.let {
+                val sObj = JSONObject(it)
+                com.example.data.model.PodcastShow(
+                    id = sObj.getString("id"),
+                    title = sObj.getString("title"),
+                    author = sObj.optString("author", ""),
+                    description = sObj.optString("description", ""),
+                    feedUrl = sObj.getString("feedUrl"),
+                    artworkUrl = sObj.optString("artworkUrl", ""),
+                    country = sObj.optString("country", "BR"),
+                    category = sObj.optString("category", "Geral")
+                )
+            }
+            ep to show
         } catch (_: Exception) {
             null
         }

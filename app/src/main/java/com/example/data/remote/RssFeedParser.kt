@@ -235,9 +235,6 @@ object RssFeedParser {
                                     chapters = initialChapters
                                 )
                             )
-                            if (resultList.size >= 200) {
-                                return
-                            }
                         }
                     }
                 }
