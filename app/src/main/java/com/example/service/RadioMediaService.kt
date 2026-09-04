@@ -524,10 +524,13 @@ class RadioMediaService : MediaLibraryService() {
             localAudio != null -> localAudio.artist
             podcast != null -> podcast.showTitle
             station != null -> {
-                if (rds.hasRealRds && rds.radioText.isNotBlank() && !rds.radioText.equals("[sem informações]", ignoreCase = true)) {
+                val nowPlaying = playerManager.nowPlaying.value
+                if (nowPlaying.hasTrackInfo && nowPlaying.artist.isNotBlank() && !nowPlaying.artist.equals("[sem informações]", ignoreCase = true)) {
+                    nowPlaying.artist
+                } else if (rds.hasRealRds && rds.radioText.isNotBlank() && !rds.radioText.equals("[sem informações]", ignoreCase = true)) {
                     rds.radioText
                 } else {
-                    "[sem informações]"
+                    "Ao Vivo"
                 }
             }
             else -> "Streaming de Áudio Digital"
@@ -1445,7 +1448,13 @@ class RadioMediaService : MediaLibraryService() {
             extras: Bundle,
             customMediaId: String? = null
         ): MediaItem {
-            val subtitle = "Ao Vivo"
+            val isCurrent = playerManager.currentStation.value?.id == station.id
+            val nowPlaying = playerManager.nowPlaying.value
+            val subtitle = if (isCurrent && nowPlaying.hasTrackInfo && nowPlaying.artist.isNotBlank() && !nowPlaying.artist.equals("[sem informações]", ignoreCase = true)) {
+                nowPlaying.artist
+            } else {
+                "Ao Vivo"
+            }
             val artworkUri = LocalArtworkGenerator.getOrCreate(applicationContext, station.name)
                 ?: radioDefaultIconUri
             val itemMediaId = customMediaId ?: "radio_${station.id}"
@@ -1460,9 +1469,10 @@ class RadioMediaService : MediaLibraryService() {
                 .setMediaMetadata(
                     MediaMetadata.Builder()
                         .setTitle(station.name.take(40))
+                        .setDisplayTitle(station.name.take(40))
                         .setArtist(subtitle)
                         .setSubtitle(subtitle)
-                        .setAlbumTitle(station.country.ifBlank { "Rádio Ao Vivo" })
+                        .setAlbumTitle("MediaPod • Rádio")
                         .setArtworkUri(artworkUri)
                         .setIsBrowsable(false)
                         .setIsPlayable(true)
