@@ -62,7 +62,7 @@ object LocalArtworkGenerator {
      * @return Uri `file://` do artwork, ou null em caso de falha de I/O
      */
     fun getOrCreate(context: Context, stationName: String): Uri? {
-        return try {
+        return getDefaultRadioArtwork(context) ?: try {
             val cacheFile = getCacheFile(context, stationName)
             if (!cacheFile.exists()) {
                 generateAndSave(stationName, cacheFile)
@@ -72,6 +72,49 @@ object LocalArtworkGenerator {
             android.util.Log.w("LocalArtworkGenerator", "Falha ao gerar artwork para '$stationName'", e)
             null
         }
+    }
+
+    /**
+     * Retorna o Uri do artwork padrão com o logotipo oficial retrô de rádio (ic_radio_retro).
+     * O bitmap gerado é renderizado em alta definição (512x512) com acabamento refinado
+     * para os cards de rádio e capa do player do Android Auto.
+     */
+    fun getDefaultRadioArtwork(context: Context): Uri? {
+        return try {
+            val dir = File(context.cacheDir, CACHE_DIR).also { it.mkdirs() }
+            val file = File(dir, "default_radio_logo_card_v2.png")
+            if (!file.exists()) {
+                val bitmap = generateDefaultRadioBitmap(context)
+                FileOutputStream(file).use { out ->
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+                }
+                bitmap.recycle()
+            }
+            Uri.fromFile(file)
+        } catch (e: Exception) {
+            android.util.Log.w("LocalArtworkGenerator", "Falha ao gerar artwork padrão de rádio", e)
+            null
+        }
+    }
+
+    private fun generateDefaultRadioBitmap(context: Context): Bitmap {
+        val bitmap = Bitmap.createBitmap(SIZE_PX, SIZE_PX, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        // Ícone retrô de rádio oficial (ic_radio_retro) em branco puro em alta definição
+        try {
+            val drawable = androidx.core.content.ContextCompat.getDrawable(context, com.example.R.drawable.ic_radio_retro)
+            drawable?.let {
+                val iconPadding = (SIZE_PX * 0.10f).toInt()
+                it.setBounds(iconPadding, iconPadding, SIZE_PX - iconPadding, SIZE_PX - iconPadding)
+                androidx.core.graphics.drawable.DrawableCompat.setTint(it, Color.WHITE)
+                it.draw(canvas)
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("LocalArtworkGenerator", "Falha ao desenhar ic_radio_retro no bitmap", e)
+        }
+
+        return bitmap
     }
 
     /**

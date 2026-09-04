@@ -557,6 +557,8 @@ class RadioPlayerManager private constructor(private val context: Context) {
         }
     }
 
+    fun getCurrentPlaylist(): List<RadioStation> = playlist
+
     fun playNextStation() {
         val list = if (playlist.isNotEmpty()) playlist else com.example.data.repository.CuratedData.CURATED_GLOBAL_STATIONS
         if (list.isNotEmpty()) {
@@ -650,16 +652,16 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
         _nowPlaying.value = NowPlayingMetadata(
             title = station.name,
-            artist = "Conectando...",
-            album = "Ao Vivo",
+            artist = "Ao Vivo",
+            album = "MediaPod • Rádio",
             artworkUri = null,
             isLiveStream = true,
             hasTrackInfo = false
         )
         updateNotificationAndSessionMetadata(
             title = station.name,
-            artist = "Conectando...",
-            album = "Ao Vivo",
+            artist = "Ao Vivo",
+            album = "MediaPod • Rádio",
             artworkUri = null
         )
 
@@ -1040,12 +1042,9 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
         val player = getPlayer()
         try {
-            player.stop()
-            player.clearMediaItems()
-
             val mediaSource = DefaultMediaSourceFactory(getHttpDataSourceFactory())
                 .createMediaSource(mediaItem)
-            player.setMediaSource(mediaSource)
+            player.setMediaSource(mediaSource, /* resetPosition = */ true)
             player.playlistMetadata = mediaMetadata
 
             player.prepare()
@@ -1662,11 +1661,11 @@ class RadioPlayerManager private constructor(private val context: Context) {
             try {
                 val appLogoUri = Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
                 val emptyMetadata = MediaMetadata.Builder()
-                    .setTitle("Preparando reprodução")
-                    .setDisplayTitle("Preparando reprodução")
-                    .setArtist("Conectando...")
-                    .setSubtitle("Conectando...")
-                    .setAlbumTitle("Ao Vivo")
+                    .setTitle("MediaPod • Rádio")
+                    .setDisplayTitle("MediaPod • Rádio")
+                    .setArtist("Ao Vivo")
+                    .setSubtitle("Ao Vivo")
+                    .setAlbumTitle("MediaPod • Rádio")
                     .setArtworkUri(appLogoUri)
                     .setIsPlayable(true)
                     .build()
@@ -1697,6 +1696,8 @@ class RadioPlayerManager private constructor(private val context: Context) {
         }
     }
 
+    fun getLastRealSongTitle(): String? = lastRealSongTitle
+
     private fun processDetectedRdsTitle(rawTitle: String) {
         val clean = rawTitle.replace("/RDS", "", ignoreCase = true)
             .replace("/ RDS", "", ignoreCase = true)
@@ -1720,32 +1721,29 @@ class RadioPlayerManager private constructor(private val context: Context) {
             _nowPlaying.value = metadata
 
             if (isCommercialOrStationPromo(clean, station.name)) {
-                // It's a commercial or slogan: do NOT erase last detected song!
+                // Intervalo/vinheta: mantém a última música real detectada (sem mensagem de busca)
                 val displayText = if (!lastRealSongTitle.isNullOrBlank()) {
-                    "COMERCIAL • ANTERIOR: $lastRealSongTitle"
+                    lastRealSongTitle!!
                 } else {
-                    "SINTONIZANDO RDS... [BUSCANDO FAIXA]"
+                    "Ao Vivo"
                 }
                 _rdsInfo.value = _rdsInfo.value.copy(
                     radioText = displayText,
-                    hasRealRds = true
+                    hasRealRds = !lastRealSongTitle.isNullOrBlank()
                 )
             } else {
-                // Real song identified!
-                if (newValidTitle != null) {
-                    lastRealSongTitle = newValidTitle
-                } else {
-                    lastRealSongTitle = clean
-                }
+                // Música real identificada diretamente pelo stream do ExoPlayer
+                val validSong = newValidTitle ?: clean
+                lastRealSongTitle = validSong
                 _rdsInfo.value = _rdsInfo.value.copy(
-                    radioText = clean,
+                    radioText = validSong,
                     hasRealRds = true
                 )
                 updateNotificationAndSessionMetadata(
                     title = station.name,
-                    artist = clean,
-                    album = clean,
-                    artworkUri = Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
+                    artist = validSong,
+                    album = "MediaPod • Rádio",
+                    artworkUri = LocalArtworkGenerator.getDefaultRadioArtwork(context)
                 )
                 if (AudioRouteManager.getInstance(context).isCastingActive()) {
                     AudioRouteManager.getInstance(context).updateCastMedia()
@@ -1754,113 +1752,23 @@ class RadioPlayerManager private constructor(private val context: Context) {
         }
     }
 
-    private fun pollIcyMetadata(streamUrl: String): String? {
-        var connection: HttpURLConnection? = null
-        try {
-            val url = URL(streamUrl)
-            connection = url.openConnection() as HttpURLConnection
-            connection.setRequestProperty("Icy-MetaData", "1")
-            connection.setRequestProperty("User-Agent", "WinampMPEG/5.0")
-            connection.connectTimeout = 2500
-            connection.readTimeout = 2500
-            connection.instanceFollowRedirects = true
-            connection.connect()
-
-            val metaIntHeader = connection.getHeaderField("icy-metaint")
-            if (metaIntHeader != null) {
-                val metaInt = metaIntHeader.toIntOrNull() ?: 0
-                if (metaInt > 0) {
-                    val inputStream = connection.inputStream
-                    var skipped = 0L
-                    while (skipped < metaInt) {
-                        val s = inputStream.skip(metaInt - skipped)
-                        if (s <= 0) break
-                        skipped += s
-                    }
-                    val lengthByte = inputStream.read()
-                    val metaLength = lengthByte * 16
-                    if (metaLength in 1..4096) {
-                        val buffer = ByteArray(metaLength)
-                        var read = 0
-                        while (read < metaLength) {
-                            val r = inputStream.read(buffer, read, metaLength - read)
-                            if (r <= 0) break
-                            read += r
-                        }
-                        val metaString = String(buffer, 0, read, Charsets.UTF_8)
-                        val match = Regex("StreamTitle='(.*?)';", RegexOption.IGNORE_CASE).find(metaString)
-                        return match?.groupValues?.getOrNull(1)?.trim()
-                    }
-                }
-            }
-        } catch (_: Exception) {
-        } finally {
-            connection?.disconnect()
-        }
-        return null
-    }
-
     private fun startRdsMetadataSimulation(station: RadioStation) {
         rdsSimulationJob?.cancel()
         lastRealSongTitle = null
         lastRawStreamTitle = null
 
-        // Initial background ICY probe on station connect (single shot)
-        scope.launch(Dispatchers.IO) {
-            try {
-                val initialTitle = pollIcyMetadata(station.streamUrl)
-                if (!initialTitle.isNullOrBlank()) {
-                    processDetectedRdsTitle(initialTitle)
-                }
-            } catch (_: Exception) {}
-        }
-
-        // Lightweight smooth ticker rotation using ONLY real station and ICY/RDS stream metadata
-        rdsSimulationJob = scope.launch(Dispatchers.Default) {
-            var tickerPhase = 0
-            var pollCounter = 0
-
-            while (isActive) {
-                if (_playbackStatus.value == RadioPlaybackStatus.PLAYING) {
-                    // Probe stream ICY metadata every 14 seconds for real-time track changes
-                    pollCounter++
-                    if (pollCounter >= 4) {
-                        pollCounter = 0
-                        scope.launch(Dispatchers.IO) {
-                            try {
-                                val probeResult = pollIcyMetadata(station.streamUrl)
-                                if (!probeResult.isNullOrBlank() && probeResult != lastRawStreamTitle) {
-                                    processDetectedRdsTitle(probeResult)
-                                }
-                            } catch (_: Exception) {}
-                        }
-                    }
-
-                    // Smooth RDS ticker rotation using ONLY real station or real song data
-                    val currentSong = lastRealSongTitle
-                    scope.launch(Dispatchers.Main) {
-                        if (!currentSong.isNullOrBlank()) {
-                            val displayText = when (tickerPhase % 3) {
-                                0, 1 -> currentSong
-                                else -> "${station.name.uppercase()} • ${station.displayFrequency}"
-                            }
-                            _rdsInfo.value = _rdsInfo.value.copy(
-                                radioText = displayText,
-                                programService = station.name.take(12).uppercase()
-                            )
-                        } else {
-                            val displayText = "${station.name.uppercase()} • ${station.displayFrequency}"
-                            _rdsInfo.value = _rdsInfo.value.copy(
-                                radioText = displayText,
-                                programService = station.name.take(12).uppercase()
-                            )
-                        }
-                    }
-                    tickerPhase++
-                }
-                delay(3500L) // Lightweight, calm rotation interval
-            }
-        }
+        // Inicializa dados de exibição diretamente sem abrir conexões concorrentes que interfiram no streaming de áudio
+        _rdsInfo.value = RdsInfo(
+            programService = station.name.take(12).uppercase(),
+            radioText = "${station.name.uppercase()} • ${station.displayFrequency}",
+            hasRealRds = false,
+            programType = "[${station.primaryGenre.uppercase()}]",
+            signalStrengthBars = 5,
+            isStereo = true,
+            hasTrafficProgram = true,
+            bitrateInfo = "${station.bitrate} kbps ${station.codec}",
+            frequencyMhz = station.displayFrequency
+        )
     }
 
 

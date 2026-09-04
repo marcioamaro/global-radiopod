@@ -17,8 +17,8 @@ android {
     applicationId = "com.aistudio.worldradio.ipodapp"
     minSdk = 24
     targetSdk = 36
-    versionCode = 77
-    versionName = "77.0"
+    versionCode = 79
+    versionName = "79.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
