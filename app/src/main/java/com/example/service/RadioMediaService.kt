@@ -334,20 +334,30 @@ class RadioMediaService : MediaLibraryService() {
             playerManager.stop()
         }
 
+        private var lastSkipTimeMs = 0L
+
         override fun seekToNext() {
-            playerManager.playNext()
+            val now = System.currentTimeMillis()
+            if (now - lastSkipTimeMs > 400L) {
+                lastSkipTimeMs = now
+                playerManager.playNext()
+            }
         }
 
         override fun seekToNextMediaItem() {
-            playerManager.playNext()
+            seekToNext()
         }
 
         override fun seekToPrevious() {
-            playerManager.playPrevious()
+            val now = System.currentTimeMillis()
+            if (now - lastSkipTimeMs > 400L) {
+                lastSkipTimeMs = now
+                playerManager.playPrevious()
+            }
         }
 
         override fun seekToPreviousMediaItem() {
-            playerManager.playPrevious()
+            seekToPrevious()
         }
 
         override fun seekBack() {
@@ -1174,30 +1184,47 @@ class RadioMediaService : MediaLibraryService() {
             val target = mediaItems.getOrNull(startIndex) ?: mediaItems.firstOrNull()
             if (target != null) {
                 val mediaId = target.mediaId
-                val streamUrl = target.requestMetadata.mediaUri?.toString() ?: mediaId
+                val listExtras = createContentStyleExtras(isGrid = false)
+                val future = SettableFuture.create<MediaSession.MediaItemsWithStartPosition>()
 
                 serviceScope.launch(Dispatchers.IO) {
                     when {
                         mediaId.startsWith("radio_fav_") -> {
                             val realId = mediaId.removePrefix("radio_fav_")
                             val favs = repository.getFavoritesDirect()
-                            val station = favs.find { it.id == realId } ?: CuratedData.CURATED_GLOBAL_STATIONS.find { it.id == realId }
+                            val matchIndex = favs.indexOfFirst { it.id == realId }.coerceAtLeast(0)
+                            val station = favs.getOrNull(matchIndex) ?: CuratedData.CURATED_GLOBAL_STATIONS.find { it.id == realId }
                             if (station != null) {
                                 withContext(Dispatchers.Main) {
                                     if (favs.isNotEmpty()) playerManager.updatePlaylist(favs)
                                     playerManager.playStation(station)
                                 }
+                                val fullQueue = if (favs.isNotEmpty()) {
+                                    favs.map { createStationCardItem(it, listExtras, "radio_fav_${it.id}") }
+                                } else {
+                                    listOf(createStationCardItem(station, listExtras, "radio_fav_${station.id}"))
+                                }
+                                future.set(MediaSession.MediaItemsWithStartPosition(fullQueue, matchIndex, 0))
+                                return@launch
                             }
                         }
                         mediaId.startsWith("radio_rec_") -> {
                             val realId = mediaId.removePrefix("radio_rec_")
                             val recents = IpodPreferencesManager.getInstance(applicationContext).getRecentStations()
-                            val station = recents.find { it.id == realId } ?: repository.getFavoritesDirect().find { it.id == realId } ?: CuratedData.CURATED_GLOBAL_STATIONS.find { it.id == realId }
+                            val matchIndex = recents.indexOfFirst { it.id == realId }.coerceAtLeast(0)
+                            val station = recents.getOrNull(matchIndex) ?: repository.getFavoritesDirect().find { it.id == realId }
                             if (station != null) {
                                 withContext(Dispatchers.Main) {
                                     if (recents.isNotEmpty()) playerManager.updatePlaylist(recents)
                                     playerManager.playStation(station)
                                 }
+                                val fullQueue = if (recents.isNotEmpty()) {
+                                    recents.map { createStationCardItem(it, listExtras, "radio_rec_${it.id}") }
+                                } else {
+                                    listOf(createStationCardItem(station, listExtras, "radio_rec_${station.id}"))
+                                }
+                                future.set(MediaSession.MediaItemsWithStartPosition(fullQueue, matchIndex, 0))
+                                return@launch
                             }
                         }
                         mediaId.startsWith("radio_") -> {
@@ -1206,22 +1233,30 @@ class RadioMediaService : MediaLibraryService() {
                             val recents = IpodPreferencesManager.getInstance(applicationContext).getRecentStations()
                             val station = favs.find { it.id == realId } ?: recents.find { it.id == realId } ?: CuratedData.CURATED_GLOBAL_STATIONS.find { it.id == realId }
                             if (station != null) {
+                                val activeList = if (favs.any { it.id == station.id }) favs else if (recents.any { it.id == station.id }) recents else listOf(station)
+                                val matchIndex = activeList.indexOfFirst { it.id == station.id }.coerceAtLeast(0)
                                 withContext(Dispatchers.Main) {
-                                    val activeList = if (favs.any { it.id == station.id }) favs else if (recents.any { it.id == station.id }) recents else listOf(station)
                                     playerManager.updatePlaylist(activeList)
                                     playerManager.playStation(station)
                                 }
+                                val fullQueue = activeList.map { createStationCardItem(it, listExtras, "radio_${it.id}") }
+                                future.set(MediaSession.MediaItemsWithStartPosition(fullQueue, matchIndex, 0))
+                                return@launch
                             }
                         }
                         mediaId.startsWith("podrec_") -> {
                             val epId = mediaId.removePrefix("podrec_")
                             val recentEps = podcastRepository.recentEpisodesFlow.value
-                            val ep = recentEps.find { it.id == epId }
+                            val matchIndex = recentEps.indexOfFirst { it.id == epId }.coerceAtLeast(0)
+                            val ep = recentEps.getOrNull(matchIndex)
                             if (ep != null) {
                                 val show = podcastRepository.favoritesFlow.value.find { it.id == ep.showId }
                                 withContext(Dispatchers.Main) {
                                     playerManager.playPodcastEpisode(ep, show, recentEps)
                                 }
+                                val fullQueue = recentEps.map { createPodcastEpisodeCardItem(it, listExtras, "podrec_${it.id}") }
+                                future.set(MediaSession.MediaItemsWithStartPosition(fullQueue, matchIndex, 0))
+                                return@launch
                             }
                         }
                         mediaId.startsWith("podelem_") -> {
@@ -1230,22 +1265,21 @@ class RadioMediaService : MediaLibraryService() {
                                 podcastRepository.getEpisodesForShow(s).any { it.id == epId }
                             }
                             val episodes = show?.let { podcastRepository.getEpisodesForShow(it) } ?: emptyList()
-                            val episode = episodes.find { it.id == epId } ?: com.example.data.model.PodcastEpisode(
-                                id = epId,
-                                showId = "",
-                                showTitle = target.mediaMetadata.artist?.toString() ?: "Podcast",
-                                title = target.mediaMetadata.title?.toString() ?: "Episódio",
-                                description = target.mediaMetadata.subtitle?.toString() ?: "",
-                                audioUrl = streamUrl,
-                                artworkUrl = target.mediaMetadata.artworkUri?.toString() ?: "",
-                                publishDate = target.mediaMetadata.albumTitle?.toString() ?: ""
-                            )
-                            withContext(Dispatchers.Main) {
-                                playerManager.playPodcastEpisode(episode, show, episodes)
+                            val matchIndex = episodes.indexOfFirst { it.id == epId }.coerceAtLeast(0)
+                            val episode = episodes.getOrNull(matchIndex)
+                            if (episode != null) {
+                                withContext(Dispatchers.Main) {
+                                    playerManager.playPodcastEpisode(episode, show, episodes)
+                                }
+                                val fullQueue = episodes.map { createPodcastEpisodeCardItem(it, listExtras, "podelem_${it.id}") }
+                                future.set(MediaSession.MediaItemsWithStartPosition(fullQueue, matchIndex, 0))
+                                return@launch
                             }
                         }
                     }
+                    future.set(MediaSession.MediaItemsWithStartPosition(mediaItems, startIndex, startPositionMs))
                 }
+                return future
             }
             return Futures.immediateFuture(
                 MediaSession.MediaItemsWithStartPosition(mediaItems, startIndex, startPositionMs)
