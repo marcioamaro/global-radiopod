@@ -242,14 +242,18 @@ class RadioMediaService : MediaLibraryService() {
             playerManager.nowPlaying.collect { nowPlaying ->
                 updateNotification()
                 try {
-                    val appLogoUri = Uri.parse("android.resource://${packageName}/${R.mipmap.ic_launcher}")
+                    val stationName = playerManager.currentStation.value?.name ?: nowPlaying.title
+                    val artworkUri = LocalArtworkGenerator.getOrCreate(applicationContext, stationName)
+                        ?: nowPlaying.artworkUri
+                        ?: Uri.parse("android.resource://${packageName}/${R.mipmap.ic_launcher}")
+
                     val metadata = MediaMetadata.Builder()
                         .setTitle(nowPlaying.title)
                         .setDisplayTitle(nowPlaying.title)
                         .setArtist(nowPlaying.artist)
                         .setSubtitle(nowPlaying.artist)
-                        .setAlbumTitle(nowPlaying.album ?: "RadioPod")
-                        .setArtworkUri(nowPlaying.artworkUri ?: appLogoUri)
+                        .setAlbumTitle("MediaPod • Rádio")
+                        .setArtworkUri(artworkUri)
                         .setIsPlayable(true)
                         .build()
                     playerManager.getPlayer().playlistMetadata = metadata
@@ -1533,7 +1537,7 @@ class RadioMediaService : MediaLibraryService() {
                 .build()
         }
 
-        private fun createContentStyleExtras(isGrid: Boolean = false): Bundle {
+        private fun createContentStyleExtras(isGrid: Boolean = true): Bundle {
             return Bundle().apply {
                 putBoolean("android.media.browse.SEARCH_SUPPORTED", true)
                 putBoolean("android.media.browse.CONTENT_STYLE_SUPPORTED", true)

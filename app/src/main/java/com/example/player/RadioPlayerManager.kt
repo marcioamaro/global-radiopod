@@ -1678,12 +1678,17 @@ class RadioPlayerManager private constructor(private val context: Context) {
     fun updateNotificationAndSessionMetadata(title: String, artist: String, album: String, artworkUri: Uri?) {
         scope.launch(Dispatchers.Main) {
             try {
-                val appLogoUri = Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
+                val logoUri = LocalArtworkGenerator.getOrCreate(context, title)
+                    ?: artworkUri
+                    ?: Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
                 val metadata = MediaMetadata.Builder()
                     .setTitle(title)
+                    .setDisplayTitle(title)
                     .setArtist(artist)
+                    .setSubtitle(artist)
                     .setAlbumTitle(album)
-                    .setArtworkUri(appLogoUri)
+                    .setArtworkUri(logoUri)
+                    .setIsPlayable(true)
                     .build()
                 exoPlayer?.playlistMetadata = metadata
             } catch (e: Exception) {
