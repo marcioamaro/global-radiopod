@@ -1813,26 +1813,22 @@ class RadioPlayerManager private constructor(private val context: Context) {
         // Lightweight smooth ticker rotation using ONLY real station and ICY/RDS stream metadata
         rdsSimulationJob = scope.launch(Dispatchers.Default) {
             var tickerPhase = 0
-            var intervalsWithoutSong = 0
+            var pollCounter = 0
 
             while (isActive) {
                 if (_playbackStatus.value == RadioPlaybackStatus.PLAYING) {
-                    // If ExoPlayer in-stream ICY hasn't provided a title after 30 seconds (10 intervals of 3s), try a single probe
-                    if (lastRealSongTitle.isNullOrBlank()) {
-                        intervalsWithoutSong++
-                        if (intervalsWithoutSong >= 10) {
-                            intervalsWithoutSong = 0
-                            scope.launch(Dispatchers.IO) {
-                                try {
-                                    val probeResult = pollIcyMetadata(station.streamUrl)
-                                    if (!probeResult.isNullOrBlank()) {
-                                        processDetectedRdsTitle(probeResult)
-                                    }
-                                } catch (_: Exception) {}
-                            }
+                    // Probe stream ICY metadata every 14 seconds for real-time track changes
+                    pollCounter++
+                    if (pollCounter >= 4) {
+                        pollCounter = 0
+                        scope.launch(Dispatchers.IO) {
+                            try {
+                                val probeResult = pollIcyMetadata(station.streamUrl)
+                                if (!probeResult.isNullOrBlank() && probeResult != lastRawStreamTitle) {
+                                    processDetectedRdsTitle(probeResult)
+                                }
+                            } catch (_: Exception) {}
                         }
-                    } else {
-                        intervalsWithoutSong = 0
                     }
 
                     // Smooth RDS ticker rotation using ONLY real station or real song data
