@@ -85,6 +85,13 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.syncVolumeFromSystem()
+
+        // Verificação de Otimização de Bateria e Xiaomi/MIUI para manter o áudio ativo
+        val prefs = getSharedPreferences("app_battery_prefs", Context.MODE_PRIVATE)
+        if (!prefs.getBoolean("battery_opt_checked", false)) {
+            com.example.util.BatteryOptimizationHelper.checkAndRequest(this, this)
+            prefs.edit().putBoolean("battery_opt_checked", true).apply()
+        }
     }
 }
 

@@ -3156,7 +3156,7 @@ private fun IpodAboutScreen(
 
             // Data da versão aaaa.mm.dd e número da versão
             Text(
-                text = "2026.09.03 - v73.0",
+                text = "2026.09.03 - v74.0",
                 color = backlightTextSecondary,
                 fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Bold,

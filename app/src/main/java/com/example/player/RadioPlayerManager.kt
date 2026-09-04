@@ -1004,6 +1004,14 @@ class RadioPlayerManager private constructor(private val context: Context) {
     }
 
     private fun playStreamUrl(station: RadioStation, streamUrl: String) {
+        if (AudioRouteManager.getInstance(context).isCastingActive()) {
+            AudioRouteManager.getInstance(context).updateCastMedia()
+            pauseLocalOnly()
+            startMediaService()
+            startRdsMetadataSimulation(station)
+            return
+        }
+
         val streamTitle = _rdsInfo.value.radioText.ifBlank {
             lastRealSongTitle?.ifBlank { null } ?: lastRawStreamTitle?.ifBlank { null } ?: "Ao Vivo"
         }
@@ -1127,6 +1135,14 @@ class RadioPlayerManager private constructor(private val context: Context) {
             frequencyMhz = track.displayDuration
         )
 
+        if (AudioRouteManager.getInstance(context).isCastingActive()) {
+            AudioRouteManager.getInstance(context).updateCastMedia()
+            pauseLocalOnly()
+            startMediaService()
+            startAudioProgressTracker()
+            return
+        }
+
         val player = getPlayer()
         try {
             player.stop()
@@ -1238,6 +1254,14 @@ class RadioPlayerManager private constructor(private val context: Context) {
             bitrateInfo = "Podcast Áudio Digital",
             frequencyMhz = ""
         )
+
+        if (AudioRouteManager.getInstance(context).isCastingActive()) {
+            AudioRouteManager.getInstance(context).updateCastMedia()
+            pauseLocalOnly()
+            startMediaService()
+            startAudioProgressTracker()
+            return
+        }
 
         val player = getPlayer()
         try {

@@ -1,55 +1,128 @@
 package com.example.util
 
-import android.annotation.SuppressLint
+import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
-import android.widget.Toast
 
 object BatteryOptimizationHelper {
 
-    /**
-     * Checks if the app is currently whitelisted from battery optimizations.
-     */
+    fun checkAndRequest(context: Context, activity: Activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val pm = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+            if (pm != null && !pm.isIgnoringBatteryOptimizations(context.packageName)) {
+                showBatteryDialog(context, activity)
+            } else if (isXiaomiDevice()) {
+                checkXiaomiBackgroundRestriction(context, activity)
+            }
+        }
+    }
+
     fun isIgnoringBatteryOptimizations(context: Context): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val powerManager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
-            return powerManager?.isIgnoringBatteryOptimizations(context.packageName) ?: true
+            val pm = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+            return pm?.isIgnoringBatteryOptimizations(context.packageName) ?: true
         }
         return true
     }
 
-    /**
-     * Requests the system to exclude this app from battery optimizations
-     * so that radio streaming continues without pausing when the screen turns off.
-     */
-    @SuppressLint("BatteryLife")
     fun requestDisableBatteryOptimization(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (context is Activity) {
+            checkAndRequest(context, context)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             try {
-                if (!isIgnoringBatteryOptimizations(context)) {
-                    val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                        data = Uri.parse("package:${context.packageName}")
+                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                    data = Uri.parse("package:${context.packageName}")
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                context.startActivity(intent)
+            } catch (_: Exception) {
+                try {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", context.packageName, null)
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     }
                     context.startActivity(intent)
-                } else {
-                    Toast.makeText(context, "Segundo plano irrestrito já ativado!", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                // Fallback to general battery saver settings screen if direct action is blocked
-                try {
-                    val fallbackIntent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    }
-                    context.startActivity(fallbackIntent)
-                } catch (e2: Exception) {
-                    Toast.makeText(context, "Abra Configurações > Bateria > Sem restrições", Toast.LENGTH_LONG).show()
-                }
+                } catch (_: Exception) {}
             }
         }
+    }
+
+    private fun showBatteryDialog(context: Context, activity: Activity) {
+        AlertDialog.Builder(activity)
+            .setTitle("Garantir Reprodução Contínua")
+            .setMessage("Para evitar que a rádio pare de tocar quando você sair do app ou desligar a tela, precisamos que você desative a 'Otimização de Bateria' para este aplicativo. Isso garante que o serviço de áudio permaneça ativo em segundo plano.")
+            .setPositiveButton("Configurar Agora") { _, _ ->
+                requestIgnoreBatteryOptimizations(activity)
+            }
+            .setNegativeButton("Entendi", null)
+            .show()
+    }
+
+    private fun requestIgnoreBatteryOptimizations(activity: Activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            try {
+                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                    data = Uri.parse("package:${activity.packageName}")
+                }
+                activity.startActivity(intent)
+            } catch (_: Exception) {
+                openAppDetailsSettings(activity)
+            }
+        }
+    }
+
+    private fun isXiaomiDevice(): Boolean {
+        val manufacturer = Build.MANUFACTURER.lowercase()
+        val brand = Build.BRAND.lowercase()
+        return manufacturer.contains("xiaomi") || manufacturer.contains("redmi") || manufacturer.contains("poco") ||
+                brand.contains("xiaomi") || brand.contains("redmi") || brand.contains("poco")
+    }
+
+    private fun checkXiaomiBackgroundRestriction(context: Context, activity: Activity) {
+        val prefs = activity.getSharedPreferences("xiaomi_opt_prefs", Context.MODE_PRIVATE)
+        if (prefs.getBoolean("xiaomi_checked", false)) return
+
+        try {
+            val miuiIntent = Intent("miui.intent.action.APP_PERM_EDITOR").apply {
+                putExtra("extra_pkgname", context.packageName)
+            }
+            val canResolve = miuiIntent.resolveActivity(context.packageManager) != null
+
+            AlertDialog.Builder(activity)
+                .setTitle("Configuração Xiaomi (MIUI / HyperOS)")
+                .setMessage("Dispositivos Xiaomi possuem uma configuração extra que pausa apps em segundo plano. Por favor, vá em 'Permissões' e defina 'Executar em segundo plano' como 'Sem Restrições' ou desative 'Pausar atividades'.")
+                .setPositiveButton("Abrir Configurações") { _, _ ->
+                    prefs.edit().putBoolean("xiaomi_checked", true).apply()
+                    try {
+                        if (canResolve) {
+                            context.startActivity(miuiIntent)
+                        } else {
+                            openAppDetailsSettings(activity)
+                        }
+                    } catch (_: Exception) {
+                        openAppDetailsSettings(activity)
+                    }
+                }
+                .setNegativeButton("Agora Não") { _, _ ->
+                    prefs.edit().putBoolean("xiaomi_checked", true).apply()
+                }
+                .show()
+        } catch (_: Exception) {
+            openAppDetailsSettings(activity)
+        }
+    }
+
+    fun openAppDetailsSettings(activity: Activity) {
+        try {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", activity.packageName, null)
+            }
+            activity.startActivity(intent)
+        } catch (_: Exception) {}
     }
 }
