@@ -1057,9 +1057,9 @@ class RadioMediaService : MediaLibraryService() {
                 .setMediaId(ROOT_MEDIA_ID)
                 .setMediaMetadata(
                     MediaMetadata.Builder()
-                        .setTitle("Global RadioPod")
+                        .setTitle("MediaPod + Radio / Podcast")
                         .setSubtitle("Rádios & Podcasts")
-                        .setArtworkUri(appLogoUri)
+                        .setArtworkUri(radioDefaultIconUri)
                         .setIsBrowsable(true)
                         .setIsPlayable(false)
                         .setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_RADIO_STATIONS)

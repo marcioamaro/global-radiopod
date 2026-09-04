@@ -226,7 +226,7 @@ fun IpodRootHomeScreen(
                         } else {
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "GLOBAL\nRADIOPOD",
+                                text = "MEDIAPOD\nRADIO / PODCAST",
                                 color = backlightTextPrimary.copy(alpha = 0.6f),
                                 fontSize = 8.5.sp,
                                 fontWeight = FontWeight.Bold,
@@ -254,7 +254,7 @@ fun IpodRootHomeScreen(
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "GLOBAL\nRADIOPOD",
+                            text = "MEDIAPOD\nRADIO / PODCAST",
                             color = backlightTextPrimary.copy(alpha = 0.5f),
                             fontSize = 8.5.sp,
                             fontWeight = FontWeight.Bold,

@@ -3145,7 +3145,7 @@ private fun IpodAboutScreen(
 
             // Nome do Aplicativo
             Text(
-                text = "Global RadioPod",
+                text = "MediaPod + Radio / Podcast",
                 color = backlightTextPrimary,
                 fontSize = (16f * fontScale).sp,
                 fontWeight = FontWeight.Black,
@@ -3156,7 +3156,7 @@ private fun IpodAboutScreen(
 
             // Data da versão aaaa.mm.dd e número da versão
             Text(
-                text = "2026.09.04 - v77.0",
+                text = "2026.09.04 - Inicial PlayStore - Release Candidate",
                 color = backlightTextSecondary,
                 fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Bold,

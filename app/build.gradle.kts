@@ -14,11 +14,11 @@ android {
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
   defaultConfig {
-    applicationId = "com.aistudio.worldradio.ipodapp"
+    applicationId = "com.marcioamaro.mediapod"
     minSdk = 24
     targetSdk = 36
-    versionCode = 79
-    versionName = "RC.79.1"
+    versionCode = 1
+    versionName = "Inicial PlayStore - Release Candidate"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
