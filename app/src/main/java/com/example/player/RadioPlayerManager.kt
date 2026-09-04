@@ -1017,13 +1017,13 @@ class RadioPlayerManager private constructor(private val context: Context) {
         val streamTitle = _rdsInfo.value.radioText.ifBlank {
             lastRealSongTitle?.ifBlank { null } ?: lastRawStreamTitle?.ifBlank { null } ?: "Ao Vivo"
         }
-        val appLogoUri = Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
+        val radioLogoUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.ic_radio_retro}")
         val mediaMetadata = MediaMetadata.Builder()
             .setTitle(station.name)
             .setArtist(streamTitle)
             .setSubtitle(streamTitle)
             .setAlbumTitle("Ao Vivo")
-            .setArtworkUri(appLogoUri)
+            .setArtworkUri(radioLogoUri)
             .setIsPlayable(true)
             .build()
 
@@ -1677,9 +1677,8 @@ class RadioPlayerManager private constructor(private val context: Context) {
     fun updateNotificationAndSessionMetadata(title: String, artist: String, album: String, artworkUri: Uri?) {
         scope.launch(Dispatchers.Main) {
             try {
-                val logoUri = LocalArtworkGenerator.getOrCreate(context, title)
-                    ?: artworkUri
-                    ?: Uri.parse("android.resource://${context.packageName}/${R.mipmap.ic_launcher}")
+                val logoUri = artworkUri
+                    ?: Uri.parse("android.resource://${context.packageName}/${R.drawable.ic_radio_retro}")
                 val metadata = MediaMetadata.Builder()
                     .setTitle(title)
                     .setDisplayTitle(title)
