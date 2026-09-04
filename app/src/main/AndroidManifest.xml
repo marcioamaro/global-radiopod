@@ -56,6 +56,7 @@
                 <action android:name="androidx.media3.session.MediaSessionService" />
                 <action android:name="android.media.browse.MediaBrowserService" />
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
+                <category android:name="com.google.android.gms.car.category.CATEGORY_MEDIA_PLAYBACK" />
             </intent-filter>
         </service>
 
