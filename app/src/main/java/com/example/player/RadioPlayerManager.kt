@@ -1810,10 +1810,8 @@ class RadioPlayerManager private constructor(private val context: Context) {
             } catch (_: Exception) {}
         }
 
-        // Lightweight smooth ticker rotation (zero network sockets, zero modem heating)
+        // Lightweight smooth ticker rotation using ONLY real station and ICY/RDS stream metadata
         rdsSimulationJob = scope.launch(Dispatchers.Default) {
-            val sampleTracks = getSampleTrackListForGenre(station.tags + " " + station.primaryGenre)
-            var sampleIndex = 0
             var tickerPhase = 0
             var intervalsWithoutSong = 0
 
@@ -1837,13 +1835,12 @@ class RadioPlayerManager private constructor(private val context: Context) {
                         intervalsWithoutSong = 0
                     }
 
-                    // Smooth RDS ticker rotation
+                    // Smooth RDS ticker rotation using ONLY real station or real song data
                     val currentSong = lastRealSongTitle
                     scope.launch(Dispatchers.Main) {
                         if (!currentSong.isNullOrBlank()) {
-                            val displayText = when (tickerPhase % 4) {
+                            val displayText = when (tickerPhase % 3) {
                                 0, 1 -> currentSong
-                                2 -> "MÚSICA: $currentSong"
                                 else -> "${station.name.uppercase()} • ${station.displayFrequency}"
                             }
                             _rdsInfo.value = _rdsInfo.value.copy(
@@ -1851,17 +1848,11 @@ class RadioPlayerManager private constructor(private val context: Context) {
                                 programService = station.name.take(12).uppercase()
                             )
                         } else {
-                            val currentSample = sampleTracks[sampleIndex % sampleTracks.size]
-                            val displayText = when (tickerPhase % 3) {
-                                0 -> currentSample
-                                1 -> "${station.name.uppercase()} • ${station.displayFrequency}"
-                                else -> "MÚSICA: $currentSample"
-                            }
+                            val displayText = "${station.name.uppercase()} • ${station.displayFrequency}"
                             _rdsInfo.value = _rdsInfo.value.copy(
                                 radioText = displayText,
                                 programService = station.name.take(12).uppercase()
                             )
-                            if (tickerPhase % 3 == 0) sampleIndex++
                         }
                     }
                     tickerPhase++
@@ -1871,65 +1862,6 @@ class RadioPlayerManager private constructor(private val context: Context) {
         }
     }
 
-    private fun getSampleTrackListForGenre(tags: String): List<String> {
-        val lower = tags.lowercase()
-        return when {
-            lower.contains("rock") -> listOf(
-                "QUEEN - BOHEMIAN RHAPSODY",
-                "PINK FLOYD - COMFORTABLY NUMB",
-                "AC/DC - HIGHWAY TO HELL",
-                "LED ZEPPELIN - STAIRWAY TO HEAVEN",
-                "THE ROLLING STONES - PAINT IT BLACK",
-                "FOO FIGHTERS - EVERLONG"
-            )
-            lower.contains("jazz") -> listOf(
-                "MILES DAVIS - SO WHAT",
-                "JOHN COLTRANE - GIANT STEPS",
-                "DAVE BRUBECK - TAKE FIVE",
-                "BILL EVANS - AUTUMN LEAVES",
-                "CHET BAKER - MY FUNNY VALENTINE"
-            )
-            lower.contains("sertanejo") -> listOf(
-                "CHITÃOZINHO & XORORÓ - EVIDÊNCIAS",
-                "JORGE & MATEUS - AMO NOITE E DIA",
-                "HENRIQUE & JULIANO - LIBERDADE PROVISÓRIA",
-                "ZEZÉ DI CAMARGO & LUCIANO - É O AMOR"
-            )
-            lower.contains("mpb") -> listOf(
-                "TOM JOBIM - GAROTA DE IPANEMA",
-                "TIM MAIA - NÃO QUERO DINHEIRO",
-                "DJAVAN - OCEANO",
-                "CAETANO VELOSO - VOCÊ É LINDA",
-                "ELIS REGINA - COMO NOSSOS PAIS"
-            )
-            lower.contains("dance") || lower.contains("electronic") -> listOf(
-                "DAFT PUNK - ONE MORE TIME",
-                "AVICII - LEVELS",
-                "CALVIN HARRIS - SUMMER",
-                "DAVID GUETTA - TITANIUM",
-                "SWEDISH HOUSE MAFIA - DON'T YOU WORRY CHILD"
-            )
-            lower.contains("classical") -> listOf(
-                "L. V. BEETHOVEN - SYMPHONY NO. 5 IN C MINOR",
-                "W. A. MOZART - EINE KLEINE NACHTMUSIK",
-                "A. VIVALDI - LE QUATTRO STAGIONI (SPRING)",
-                "J. S. BACH - CELLO SUITE NO. 1 IN G MAJOR"
-            )
-            lower.contains("news") -> listOf(
-                "GIRO DE NOTÍCIAS • ECONOMIA, MUNDO E POLÍTICA",
-                "BOLETIM DO TRÂNSITO E TEMPO EM TEMPO REAL",
-                "DEBATE AO VIVO • JORNALISMO 24 HORAS"
-            )
-            else -> listOf(
-                "DUA LIPA - LEVITATING",
-                "THE WEEKND - BLINDING LIGHTS",
-                "COLDPLAY - VIVA LA VIDA",
-                "MICHAEL JACKSON - BILLIE JEAN",
-                "ADELE - ROLLING IN THE DEEP",
-                "BRUNO MARS - 24K MAGIC"
-            )
-        }
-    }
 
     private var isUiActive = true
 
