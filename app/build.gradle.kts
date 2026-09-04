@@ -25,11 +25,10 @@ android {
 
   signingConfigs {
     create("release") {
-      val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
-      storeFile = file(keystorePath)
-      storePassword = System.getenv("STORE_PASSWORD")
-      keyAlias = "upload"
-      keyPassword = System.getenv("KEY_PASSWORD")
+      storeFile = file("${rootDir}/PlayStore/mediapod-upload-key.jks")
+      storePassword = "MediaPod2026Key!"
+      keyAlias = "mediapod"
+      keyPassword = "MediaPod2026Key!"
     }
     create("debugConfig") {
       storeFile = file("${rootDir}/debug.keystore")
@@ -45,11 +44,7 @@ android {
       isMinifyEnabled = true
       isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = if (file("${rootDir}/my-upload-key.jks").exists()) {
-        signingConfigs.getByName("release")
-      } else {
-        signingConfigs.getByName("debugConfig")
-      }
+      signingConfig = signingConfigs.getByName("release")
     }
     debug { signingConfig = signingConfigs.getByName("debugConfig") }
   }
