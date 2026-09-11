@@ -9,17 +9,16 @@ sealed class YouTubeValidationResult {
 
 object YouTubeUrlValidator {
 
-    private val YOUTUBE_PATTERNS = listOf(
-        // youtu.be/<id>
+    private val EXACT_PATTERNS = listOf(
         Pattern.compile("^https?://(?:www\\.)?youtu\\.be/([a-zA-Z0-9_-]{11})(?:\\?.*)?$", Pattern.CASE_INSENSITIVE),
-        // youtube.com/watch?v=<id>
         Pattern.compile("^https?://(?:[a-zA-Z0-9-]+\\.)?youtube\\.com/watch\\?(?:.*&)?v=([a-zA-Z0-9_-]{11})(?:&.*)?$", Pattern.CASE_INSENSITIVE),
-        // youtube.com/shorts/<id>
         Pattern.compile("^https?://(?:[a-zA-Z0-9-]+\\.)?youtube\\.com/shorts/([a-zA-Z0-9_-]{11})(?:\\?.*)?$", Pattern.CASE_INSENSITIVE),
-        // youtube.com/embed/<id>
         Pattern.compile("^https?://(?:[a-zA-Z0-9-]+\\.)?youtube\\.com/embed/([a-zA-Z0-9_-]{11})(?:\\?.*)?$", Pattern.CASE_INSENSITIVE),
-        // youtube.com/v/<id>
         Pattern.compile("^https?://(?:[a-zA-Z0-9-]+\\.)?youtube\\.com/v/([a-zA-Z0-9_-]{11})(?:\\?.*)?$", Pattern.CASE_INSENSITIVE)
+    )
+
+    private val EMBEDDED_PATTERNS = listOf(
+        Pattern.compile("(?:youtu\\.be/|v/|u/\\w/|embed/|shorts/|watch\\?(?:.*&)?v=)([a-zA-Z0-9_-]{11})", Pattern.CASE_INSENSITIVE)
     )
 
     fun extractVideoId(rawUrl: String): String? {
@@ -27,13 +26,19 @@ object YouTubeUrlValidator {
         if (trimmed.length == 11 && trimmed.matches(Regex("^[a-zA-Z0-9_-]{11}$"))) {
             return trimmed
         }
-        for (pattern in YOUTUBE_PATTERNS) {
+        val cleanUrl = MediaNameResolver.extractUrlFromText(trimmed)
+        for (pattern in EXACT_PATTERNS) {
+            val matcher = pattern.matcher(cleanUrl)
+            if (matcher.find()) {
+                val id = matcher.group(1)
+                if (!id.isNullOrBlank()) return id
+            }
+        }
+        for (pattern in EMBEDDED_PATTERNS) {
             val matcher = pattern.matcher(trimmed)
             if (matcher.find()) {
                 val id = matcher.group(1)
-                if (!id.isNullOrBlank()) {
-                    return id
-                }
+                if (!id.isNullOrBlank()) return id
             }
         }
         return null

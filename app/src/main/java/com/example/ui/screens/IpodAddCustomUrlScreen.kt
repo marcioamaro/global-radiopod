@@ -1,19 +1,16 @@
 package com.example.ui.screens
 
-import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Context
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Assignment
+import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.HourglassBottom
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
@@ -31,8 +28,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.util.ValidationResult
+import com.example.util.MediaNameResolver
 import com.example.util.UrlStreamValidator
+import com.example.util.ValidationResult
 import kotlinx.coroutines.launch
 
 enum class CustomUrlTarget {
@@ -59,24 +57,61 @@ fun IpodAddCustomUrlScreen(
     var nameInput by remember { mutableStateOf("") }
     var urlInput by remember { mutableStateOf("") }
 
+    var isResolvingName by remember { mutableStateOf(false) }
     var isValidating by remember { mutableStateOf(false) }
     var validationMessage by remember { mutableStateOf<String?>(null) }
     var isSuccess by remember { mutableStateOf(false) }
 
-    fun pasteFromClipboard() {
+    fun triggerNameResolution(url: String) {
+        if (!url.startsWith("http://", ignoreCase = true) && !url.startsWith("https://", ignoreCase = true)) return
+        coroutineScope.launch {
+            isResolvingName = true
+            val resolved = if (target == CustomUrlTarget.RADIO) {
+                MediaNameResolver.resolveRadioName(url)
+            } else {
+                MediaNameResolver.resolvePodcastName(url)
+            }
+            isResolvingName = false
+            if (!resolved.isNullOrBlank()) {
+                if (nameInput.isBlank() ||
+                    nameInput.startsWith("Minha Rádio", ignoreCase = true) ||
+                    nameInput.startsWith("Rádio Personalizada", ignoreCase = true) ||
+                    nameInput.startsWith("Meu Podcast", ignoreCase = true) ||
+                    nameInput.startsWith("Podcast Personalizado", ignoreCase = true)) {
+                    nameInput = resolved
+                }
+            }
+        }
+    }
+
+    fun pasteNameFromClipboard() {
         try {
             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
             if (clipboard != null && clipboard.hasPrimaryClip()) {
                 val clip = clipboard.primaryClip
                 if (clip != null && clip.itemCount > 0) {
-                    val text = clip.getItemAt(0).text?.toString()?.trim().orEmpty()
-                    if (text.startsWith("http://", ignoreCase = true) || text.startsWith("https://", ignoreCase = true)) {
-                        urlInput = text
-                        if (nameInput.isBlank()) {
-                            nameInput = if (target == CustomUrlTarget.RADIO) "Minha Rádio Personalizada" else "Meu Podcast Personalizado"
-                        }
-                    } else if (text.isNotBlank()) {
-                        if (urlInput.isBlank()) urlInput = text else nameInput = text
+                    val rawText = clip.getItemAt(0).coerceToText(context).toString().trim()
+                    if (rawText.isNotBlank()) {
+                        nameInput = rawText
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+    }
+
+    fun pasteUrlFromClipboard() {
+        try {
+            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+            if (clipboard != null && clipboard.hasPrimaryClip()) {
+                val clip = clipboard.primaryClip
+                if (clip != null && clip.itemCount > 0) {
+                    val rawText = clip.getItemAt(0).coerceToText(context).toString().trim()
+                    val cleanUrl = MediaNameResolver.extractUrlFromText(rawText)
+                    val urlToSet = if (cleanUrl.isNotBlank()) cleanUrl else rawText
+                    if (urlToSet.isNotBlank()) {
+                        urlInput = urlToSet
+                        validationMessage = null
+                        triggerNameResolution(urlToSet)
                     }
                 }
             }
@@ -110,15 +145,29 @@ fun IpodAddCustomUrlScreen(
             when (result) {
                 is ValidationResult.RadioSuccess -> {
                     isSuccess = true
+                    val finalName = if (nameInput.isNotBlank() &&
+                        !nameInput.startsWith("Minha Rádio", ignoreCase = true) &&
+                        !nameInput.startsWith("Rádio Personalizada", ignoreCase = true)) {
+                        nameInput.trim()
+                    } else {
+                        result.station.name
+                    }
                     validationMessage = "URL validada com sucesso! (${result.station.codec} ${result.station.bitrate}kbps)"
                     kotlinx.coroutines.delay(650L)
-                    onSaveSuccess(result.station.name, result.station.streamUrl)
+                    onSaveSuccess(finalName, result.station.streamUrl)
                 }
                 is ValidationResult.PodcastSuccess -> {
                     isSuccess = true
-                    validationMessage = "Feed validado com sucesso! (${result.show.title})"
+                    val finalTitle = if (nameInput.isNotBlank() &&
+                        !nameInput.startsWith("Meu Podcast", ignoreCase = true) &&
+                        !nameInput.startsWith("Podcast Personalizado", ignoreCase = true)) {
+                        nameInput.trim()
+                    } else {
+                        result.show.title
+                    }
+                    validationMessage = "Feed validado com sucesso! ($finalTitle)"
                     kotlinx.coroutines.delay(650L)
-                    onSaveSuccess(result.show.title, result.show.feedUrl)
+                    onSaveSuccess(finalTitle, result.show.feedUrl)
                 }
                 is ValidationResult.Error -> {
                     isSuccess = false
@@ -162,14 +211,58 @@ fun IpodAddCustomUrlScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Campo Nome
-            Text(
-                text = "NOME DE EXIBIÇÃO",
-                color = backlightTextPrimary,
-                fontSize = (9f * fontScale).sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = fontFamily
-            )
+            // Campo Nome / Descrição
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "NOME DE EXIBIÇÃO",
+                        color = backlightTextPrimary,
+                        fontSize = (9f * fontScale).sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily
+                    )
+                    if (isResolvingName) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "(Buscando nome...)",
+                            color = backlightHighlight,
+                            fontSize = (8f * fontScale).sp,
+                            fontFamily = fontFamily
+                        )
+                    }
+                }
+
+                // Botão Colar Nome
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(3.dp))
+                        .background(backlightHighlight.copy(alpha = 0.18f))
+                        .border(1.dp, backlightHighlight, RoundedCornerShape(3.dp))
+                        .clickable { pasteNameFromClipboard() }
+                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Assignment,
+                        contentDescription = "Colar Nome",
+                        tint = backlightTextPrimary,
+                        modifier = Modifier.size(11.dp)
+                    )
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Text(
+                        text = "COLAR",
+                        color = backlightTextPrimary,
+                        fontSize = (8.5f * fontScale).sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(2.dp))
             OutlinedTextField(
                 value = nameInput,
@@ -189,6 +282,15 @@ fun IpodAddCustomUrlScreen(
                         color = backlightTextSecondary.copy(alpha = 0.6f)
                     )
                 },
+                trailingIcon = {
+                    if (isResolvingName) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(14.dp),
+                            strokeWidth = 2.dp,
+                            color = backlightHighlight
+                        )
+                    }
+                },
                 singleLine = true,
                 shape = RoundedCornerShape(6.dp),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -203,7 +305,7 @@ fun IpodAddCustomUrlScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Campo URL
+            // Campo URL / Endereço
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -217,19 +319,19 @@ fun IpodAddCustomUrlScreen(
                     fontFamily = fontFamily
                 )
 
-                // Botão Colar
+                // Botão Colar URL
                 Row(
                     modifier = Modifier
                         .clip(RoundedCornerShape(3.dp))
                         .background(backlightHighlight.copy(alpha = 0.18f))
                         .border(1.dp, backlightHighlight, RoundedCornerShape(3.dp))
-                        .clickable { pasteFromClipboard() }
+                        .clickable { pasteUrlFromClipboard() }
                         .padding(horizontal = 6.dp, vertical = 2.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Assignment,
-                        contentDescription = "Colar",
+                        imageVector = Icons.AutoMirrored.Filled.Assignment,
+                        contentDescription = "Colar URL",
                         tint = backlightTextPrimary,
                         modifier = Modifier.size(11.dp)
                     )
@@ -250,6 +352,11 @@ fun IpodAddCustomUrlScreen(
                 onValueChange = {
                     urlInput = it
                     validationMessage = null
+                    if (it.startsWith("http://", ignoreCase = true) || it.startsWith("https://", ignoreCase = true)) {
+                        if (nameInput.isBlank()) {
+                            triggerNameResolution(it)
+                        }
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -262,7 +369,7 @@ fun IpodAddCustomUrlScreen(
                 ),
                 placeholder = {
                     Text(
-                        text = "https://servidor.com/stream.mp3",
+                        text = if (target == CustomUrlTarget.RADIO) "https://servidor.com/stream.mp3" else "https://servidor.com/feed.xml",
                         fontSize = (9.5f * fontScale).sp,
                         color = backlightTextSecondary.copy(alpha = 0.6f),
                         fontFamily = FontFamily.Monospace
@@ -345,8 +452,8 @@ fun IpodAddCustomUrlScreen(
                     .clip(RoundedCornerShape(4.dp))
                     .background(Color(0x22000000))
                     .border(1.dp, backlightTextSecondary.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
-                .clickable { onCancel() }
-                .padding(vertical = 8.dp),
+                    .clickable { onCancel() }
+                    .padding(vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(

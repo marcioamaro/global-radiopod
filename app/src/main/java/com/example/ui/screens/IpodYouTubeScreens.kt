@@ -77,6 +77,7 @@ import androidx.mediarouter.media.MediaRouteSelector
 import androidx.mediarouter.media.MediaRouter
 import coil.compose.AsyncImage
 import com.example.data.model.YouTubeVideo
+import com.example.util.MediaNameResolver
 import com.example.util.YouTubeUrlValidator
 import com.example.util.YouTubeValidationResult
 import kotlinx.coroutines.launch
@@ -270,28 +271,61 @@ fun IpodAddYouTubeUrlScreen(
     isBold: Boolean = true
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     var urlInput by remember { mutableStateOf("") }
     var titleInput by remember { mutableStateOf("") }
+    var isResolvingTitle by remember { mutableStateOf(false) }
     var validationMessage by remember { mutableStateOf<String?>(null) }
     var isError by remember { mutableStateOf(false) }
 
-    fun handlePasteFromClipboard() {
-        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
-        val clip = clipboard?.primaryClip
-        if (clip != null && clip.itemCount > 0) {
-            val text = clip.getItemAt(0).coerceToText(context).toString().trim()
-            if (text.isNotBlank()) {
-                urlInput = text
-                val result = YouTubeUrlValidator.validateUrl(text)
-                if (result is YouTubeValidationResult.Success) {
-                    isError = false
-                    validationMessage = "URL do YouTube válida! ID: ${result.videoId}"
-                } else if (result is YouTubeValidationResult.Error) {
-                    isError = true
-                    validationMessage = result.message
+    fun triggerTitleResolution(url: String) {
+        coroutineScope.launch {
+            isResolvingTitle = true
+            val resolved = MediaNameResolver.resolveYouTubeTitle(url)
+            isResolvingTitle = false
+            if (!resolved.isNullOrBlank()) {
+                if (titleInput.isBlank() || titleInput.startsWith("Vídeo YouTube", ignoreCase = true)) {
+                    titleInput = resolved
                 }
             }
         }
+    }
+
+    fun handlePasteFromClipboard() {
+        try {
+            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+            val clip = clipboard?.primaryClip
+            if (clip != null && clip.itemCount > 0) {
+                val rawText = clip.getItemAt(0).coerceToText(context).toString().trim()
+                val cleanUrl = MediaNameResolver.extractUrlFromText(rawText)
+                val urlToSet = if (cleanUrl.isNotBlank()) cleanUrl else rawText
+                if (urlToSet.isNotBlank()) {
+                    urlInput = urlToSet
+                    val result = YouTubeUrlValidator.validateUrl(urlToSet)
+                    if (result is YouTubeValidationResult.Success) {
+                        isError = false
+                        validationMessage = "URL do YouTube válida! ID: ${result.videoId}"
+                        triggerTitleResolution(result.cleanUrl)
+                    } else if (result is YouTubeValidationResult.Error) {
+                        isError = true
+                        validationMessage = result.message
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+    }
+
+    fun handlePasteTitleFromClipboard() {
+        try {
+            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+            val clip = clipboard?.primaryClip
+            if (clip != null && clip.itemCount > 0) {
+                val rawText = clip.getItemAt(0).coerceToText(context).toString().trim()
+                if (rawText.isNotBlank()) {
+                    titleInput = rawText
+                }
+            }
+        } catch (_: Exception) {}
     }
 
     fun handleSave() {
@@ -338,12 +372,43 @@ fun IpodAddYouTubeUrlScreen(
             }
         }
 
-        Text(
-            text = "URL do Vídeo (youtube.com, youtu.be, shorts):",
-            color = backlightTextSecondary,
-            fontSize = (9f * fontScale).sp,
-            fontFamily = fontFamily
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "URL do Vídeo (youtube.com, youtu.be, shorts):",
+                color = backlightTextSecondary,
+                fontSize = (9f * fontScale).sp,
+                fontFamily = fontFamily
+            )
+
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(3.dp))
+                    .background(backlightHighlight.copy(alpha = 0.18f))
+                    .border(1.dp, backlightHighlight, RoundedCornerShape(3.dp))
+                    .clickable { handlePasteFromClipboard() }
+                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ContentPaste,
+                    contentDescription = "Colar URL",
+                    tint = backlightTextPrimary,
+                    modifier = Modifier.size(11.dp)
+                )
+                Spacer(modifier = Modifier.width(3.dp))
+                Text(
+                    text = "COLAR",
+                    color = backlightTextPrimary,
+                    fontSize = (8.5f * fontScale).sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = fontFamily
+                )
+            }
+        }
 
         OutlinedTextField(
             value = urlInput,
@@ -354,6 +419,9 @@ fun IpodAddYouTubeUrlScreen(
                     if (res is YouTubeValidationResult.Success) {
                         isError = false
                         validationMessage = "URL válida! ID: ${res.videoId}"
+                        if (titleInput.isBlank()) {
+                            triggerTitleResolution(res.cleanUrl)
+                        }
                     } else if (res is YouTubeValidationResult.Error) {
                         isError = true
                         validationMessage = res.message
@@ -375,7 +443,7 @@ fun IpodAddYouTubeUrlScreen(
                 IconButton(onClick = { handlePasteFromClipboard() }) {
                     Icon(
                         imageVector = Icons.Default.ContentPaste,
-                        contentDescription = "Colar",
+                        contentDescription = "Colar URL",
                         tint = backlightHighlight
                     )
                 }
@@ -388,12 +456,54 @@ fun IpodAddYouTubeUrlScreen(
             )
         )
 
-        Text(
-            text = "Título Personalizado (Opcional):",
-            color = backlightTextSecondary,
-            fontSize = (9f * fontScale).sp,
-            fontFamily = fontFamily
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "Título Personalizado (Opcional):",
+                    color = backlightTextSecondary,
+                    fontSize = (9f * fontScale).sp,
+                    fontFamily = fontFamily
+                )
+                if (isResolvingTitle) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "(Buscando título...)",
+                        color = backlightHighlight,
+                        fontSize = (8f * fontScale).sp,
+                        fontFamily = fontFamily
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(3.dp))
+                    .background(backlightHighlight.copy(alpha = 0.18f))
+                    .border(1.dp, backlightHighlight, RoundedCornerShape(3.dp))
+                    .clickable { handlePasteTitleFromClipboard() }
+                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ContentPaste,
+                    contentDescription = "Colar Título",
+                    tint = backlightTextPrimary,
+                    modifier = Modifier.size(11.dp)
+                )
+                Spacer(modifier = Modifier.width(3.dp))
+                Text(
+                    text = "COLAR",
+                    color = backlightTextPrimary,
+                    fontSize = (8.5f * fontScale).sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = fontFamily
+                )
+            }
+        }
 
         OutlinedTextField(
             value = titleInput,
@@ -402,6 +512,15 @@ fun IpodAddYouTubeUrlScreen(
                 .fillMaxWidth()
                 .defaultMinSize(minHeight = 46.dp),
             placeholder = { Text("Nome do clipe ou apresentação", fontSize = (9.5f * fontScale).sp) },
+            trailingIcon = {
+                if (isResolvingTitle) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(14.dp),
+                        strokeWidth = 2.dp,
+                        color = backlightHighlight
+                    )
+                }
+            },
             singleLine = true,
             textStyle = LocalTextStyle.current.copy(
                 fontSize = (10f * fontScale).sp,
