@@ -3156,7 +3156,7 @@ private fun IpodAboutScreen(
 
             // Data da versão aaaa.mm.dd e número da versão
             Text(
-                text = "2026.09.04 - Inicial PlayStore - Release Candidate",
+                text = "2026.09.11 - Versão 0.2",
                 color = backlightTextSecondary,
                 fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Bold,
