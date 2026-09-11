@@ -1,0 +1,20 @@
+========================================================================
+ NOTAS DA VERSÃO 0.2 (TESTE FECHADO / CLOSED TESTING) - MEDIAPOD
+========================================================================
+Cole o texto abaixo no campo "Notas da versão" no Google Play Console:
+
+<pt-BR>
+Novidades da versão 0.2:
+• Correção nos botões de colar ao adicionar URLs personalizadas: o endereço agora é inserido diretamente no campo de stream/link, mesmo com textos compartilhados.
+• Botão dedicado de colar para o campo de nome/descrição.
+• Resolução automática de nomes ao colar a URL: identificação oficial de rádios (metadados ICY), podcasts (feed RSS) e vídeos do YouTube (título oficial).
+• Aprimoramentos de estabilidade na reprodução e navegação retrô estilo iPod Classic.
+</pt-BR>
+
+<en-US>
+What's new in version 0.2:
+• Fixed paste buttons when adding custom URLs: addresses are now correctly pasted into the URL field.
+• Dedicated paste button for the name/description field.
+• Automatic metadata resolution: stations (ICY stream headers), podcasts (RSS feeds), and YouTube video titles.
+• Stability improvements and enhanced retro iPod Classic experience.
+</en-US>
