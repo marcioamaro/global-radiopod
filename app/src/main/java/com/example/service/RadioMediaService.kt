@@ -63,48 +63,56 @@ class RadioMediaService : MediaLibraryService() {
     }
 
     private val radioDefaultIconUri: Uri by lazy {
-        Uri.parse("android.resource://${applicationContext.packageName}/${R.drawable.ic_radio_retro}")
+        Uri.parse("android.resource://${applicationContext.packageName}/${R.drawable.ic_radio_generic}")
     }
 
     private val podcastDefaultIconUri: Uri by lazy {
-        Uri.parse("android.resource://${applicationContext.packageName}/${R.drawable.ic_podcast_retro}")
+        Uri.parse("android.resource://${applicationContext.packageName}/${R.drawable.ic_podcast_generic}")
     }
 
     private val radioDefaultIconBytes: ByteArray by lazy {
         try {
-            val drawable = androidx.core.content.ContextCompat.getDrawable(applicationContext, R.drawable.ic_radio_retro)
-            if (drawable != null) {
-                val size = 512
-                val bitmap = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
-                val canvas = android.graphics.Canvas(bitmap)
-                drawable.setBounds(0, 0, size, size)
-                drawable.draw(canvas)
-                val stream = java.io.ByteArrayOutputStream()
-                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
-                bitmap.recycle()
-                stream.toByteArray()
-            } else ByteArray(0)
+            resources.openRawResource(R.drawable.ic_radio_generic).use { it.readBytes() }
         } catch (_: Exception) {
-            ByteArray(0)
+            try {
+                val drawable = androidx.core.content.ContextCompat.getDrawable(applicationContext, R.drawable.ic_radio_generic)
+                if (drawable != null) {
+                    val size = 512
+                    val bitmap = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
+                    val canvas = android.graphics.Canvas(bitmap)
+                    drawable.setBounds(0, 0, size, size)
+                    drawable.draw(canvas)
+                    val stream = java.io.ByteArrayOutputStream()
+                    bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
+                    bitmap.recycle()
+                    stream.toByteArray()
+                } else ByteArray(0)
+            } catch (_: Exception) {
+                ByteArray(0)
+            }
         }
     }
 
     private val podcastDefaultIconBytes: ByteArray by lazy {
         try {
-            val drawable = androidx.core.content.ContextCompat.getDrawable(applicationContext, R.drawable.ic_podcast_retro)
-            if (drawable != null) {
-                val size = 512
-                val bitmap = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
-                val canvas = android.graphics.Canvas(bitmap)
-                drawable.setBounds(0, 0, size, size)
-                drawable.draw(canvas)
-                val stream = java.io.ByteArrayOutputStream()
-                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
-                bitmap.recycle()
-                stream.toByteArray()
-            } else ByteArray(0)
+            resources.openRawResource(R.drawable.ic_podcast_generic).use { it.readBytes() }
         } catch (_: Exception) {
-            ByteArray(0)
+            try {
+                val drawable = androidx.core.content.ContextCompat.getDrawable(applicationContext, R.drawable.ic_podcast_generic)
+                if (drawable != null) {
+                    val size = 512
+                    val bitmap = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
+                    val canvas = android.graphics.Canvas(bitmap)
+                    drawable.setBounds(0, 0, size, size)
+                    drawable.draw(canvas)
+                    val stream = java.io.ByteArrayOutputStream()
+                    bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
+                    bitmap.recycle()
+                    stream.toByteArray()
+                } else ByteArray(0)
+            } catch (_: Exception) {
+                ByteArray(0)
+            }
         }
     }
 
@@ -308,6 +316,24 @@ class RadioMediaService : MediaLibraryService() {
             playerManager.nowPlaying.collect { nowPlaying ->
                 updateNotification()
                 try {
+                    val podcast = playerManager.currentPodcastEpisode.value
+                    if (podcast != null) {
+                        val builder = MediaMetadata.Builder()
+                            .setTitle(podcast.title)
+                            .setDisplayTitle(podcast.title)
+                            .setArtist(podcast.showTitle)
+                            .setSubtitle(podcast.showTitle)
+                            .setAlbumTitle("MediaPod • Podcast")
+                            .setArtworkUri(podcastDefaultIconUri)
+                            .setIsPlayable(true)
+                        if (podcastDefaultIconBytes.isNotEmpty()) {
+                            builder.setArtworkData(podcastDefaultIconBytes, MediaMetadata.PICTURE_TYPE_FRONT_COVER)
+                        }
+                        val metadata = builder.build()
+                        playerManager.getPlayer().playlistMetadata = metadata
+                        forwardingPlayerInstance?.notifyMetadataChanged(metadata)
+                        return@collect
+                    }
                     val station = playerManager.currentStation.value
                     val stationName = station?.name ?: nowPlaying.title
                     val songTitle = getActiveSongOrLiveText()
@@ -371,8 +397,26 @@ class RadioMediaService : MediaLibraryService() {
 
         // 6. Atualização para episódios de podcasts
         serviceScope.launch {
-            playerManager.currentPodcastEpisode.collect {
+            playerManager.currentPodcastEpisode.collect { episode ->
                 updateNotification()
+                if (episode != null) {
+                    try {
+                        val builder = MediaMetadata.Builder()
+                            .setTitle(episode.title)
+                            .setDisplayTitle(episode.title)
+                            .setArtist(episode.showTitle)
+                            .setSubtitle(episode.showTitle)
+                            .setAlbumTitle("MediaPod • Podcast")
+                            .setArtworkUri(podcastDefaultIconUri)
+                            .setIsPlayable(true)
+                        if (podcastDefaultIconBytes.isNotEmpty()) {
+                            builder.setArtworkData(podcastDefaultIconBytes, MediaMetadata.PICTURE_TYPE_FRONT_COVER)
+                        }
+                        val metadata = builder.build()
+                        playerManager.getPlayer().playlistMetadata = metadata
+                        forwardingPlayerInstance?.notifyMetadataChanged(metadata)
+                    } catch (_: Exception) {}
+                }
             }
         }
 
@@ -457,6 +501,21 @@ class RadioMediaService : MediaLibraryService() {
         override fun hasPreviousMediaItem(): Boolean = true
 
         override fun getMediaMetadata(): MediaMetadata {
+            val podcast = playerManager.currentPodcastEpisode.value
+            if (podcast != null) {
+                val builder = MediaMetadata.Builder()
+                    .setTitle(podcast.title)
+                    .setDisplayTitle(podcast.title)
+                    .setArtist(podcast.showTitle)
+                    .setSubtitle(podcast.showTitle)
+                    .setAlbumTitle("MediaPod • Podcast")
+                    .setArtworkUri(podcastDefaultIconUri)
+                    .setIsPlayable(true)
+                if (podcastDefaultIconBytes.isNotEmpty()) {
+                    builder.setArtworkData(podcastDefaultIconBytes, MediaMetadata.PICTURE_TYPE_FRONT_COVER)
+                }
+                return builder.build()
+            }
             val station = playerManager.currentStation.value
             if (station != null) {
                 val songTitle = getActiveSongOrLiveText()
@@ -477,6 +536,26 @@ class RadioMediaService : MediaLibraryService() {
         }
 
         override fun getCurrentMediaItem(): MediaItem? {
+            val podcast = playerManager.currentPodcastEpisode.value
+            if (podcast != null) {
+                val builder = MediaMetadata.Builder()
+                    .setTitle(podcast.title)
+                    .setDisplayTitle(podcast.title)
+                    .setArtist(podcast.showTitle)
+                    .setSubtitle(podcast.showTitle)
+                    .setAlbumTitle("MediaPod • Podcast")
+                    .setArtworkUri(podcastDefaultIconUri)
+                    .setIsPlayable(true)
+                if (podcastDefaultIconBytes.isNotEmpty()) {
+                    builder.setArtworkData(podcastDefaultIconBytes, MediaMetadata.PICTURE_TYPE_FRONT_COVER)
+                }
+                val metadata = builder.build()
+                return MediaItem.Builder()
+                    .setMediaId("podcast_${podcast.id}")
+                    .setUri(podcast.audioUrl)
+                    .setMediaMetadata(metadata)
+                    .build()
+            }
             val station = playerManager.currentStation.value
             if (station != null) {
                 val songTitle = getActiveSongOrLiveText()
@@ -801,17 +880,17 @@ class RadioMediaService : MediaLibraryService() {
         val playPauseTitle = if (isPlaying) "Pausar" else "Tocar"
 
         val largeIcon = try {
-            val drawable = androidx.core.content.ContextCompat.getDrawable(
-                this,
-                if (podcast != null) R.drawable.ic_podcast_retro else R.drawable.ic_radio_retro
-            )
-            drawable?.let {
-                val size = 256
-                val b = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
-                val c = android.graphics.Canvas(b)
-                it.setBounds(0, 0, size, size)
-                it.draw(c)
-                b
+            val iconRes = if (podcast != null) R.drawable.ic_podcast_generic else R.drawable.ic_radio_generic
+            android.graphics.BitmapFactory.decodeResource(resources, iconRes) ?: run {
+                val drawable = androidx.core.content.ContextCompat.getDrawable(this, iconRes)
+                drawable?.let {
+                    val size = 512
+                    val b = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
+                    val c = android.graphics.Canvas(b)
+                    it.setBounds(0, 0, size, size)
+                    it.draw(c)
+                    b
+                }
             }
         } catch (_: Exception) { null }
 
@@ -1710,22 +1789,24 @@ class RadioMediaService : MediaLibraryService() {
             iconUri: Uri,
             extras: Bundle
         ): MediaItem {
+            val builder = MediaMetadata.Builder()
+                .setTitle(title)
+                .setSubtitle(subtitle)
+                .setArtworkUri(iconUri)
+                .setIsBrowsable(true)
+                .setIsPlayable(false)
+                .setMediaType(
+                    if (id == FAVORITE_PODCASTS || id == RECENT_PODCASTS) MediaMetadata.MEDIA_TYPE_FOLDER_PODCASTS
+                    else MediaMetadata.MEDIA_TYPE_FOLDER_RADIO_STATIONS
+                )
+                .setExtras(extras)
+            val bytes = if (id == FAVORITE_PODCASTS || id == RECENT_PODCASTS) podcastDefaultIconBytes else radioDefaultIconBytes
+            if (bytes.isNotEmpty()) {
+                builder.setArtworkData(bytes, MediaMetadata.PICTURE_TYPE_FRONT_COVER)
+            }
             return MediaItem.Builder()
                 .setMediaId(id)
-                .setMediaMetadata(
-                    MediaMetadata.Builder()
-                        .setTitle(title)
-                        .setSubtitle(subtitle)
-                        .setArtworkUri(iconUri)
-                        .setIsBrowsable(true)
-                        .setIsPlayable(false)
-                        .setMediaType(
-                            if (id == FAVORITE_PODCASTS || id == RECENT_PODCASTS) MediaMetadata.MEDIA_TYPE_FOLDER_PODCASTS
-                            else MediaMetadata.MEDIA_TYPE_FOLDER_RADIO_STATIONS
-                        )
-                        .setExtras(extras)
-                        .build()
-                )
+                .setMediaMetadata(builder.build())
                 .build()
         }
 
@@ -1735,17 +1816,19 @@ class RadioMediaService : MediaLibraryService() {
             subtitle: String,
             iconUri: Uri
         ): MediaItem {
+            val builder = MediaMetadata.Builder()
+                .setTitle(title)
+                .setSubtitle(subtitle)
+                .setArtworkUri(iconUri)
+                .setIsBrowsable(false)
+                .setIsPlayable(false)
+            val bytes = if (iconUri == podcastDefaultIconUri) podcastDefaultIconBytes else radioDefaultIconBytes
+            if (bytes.isNotEmpty()) {
+                builder.setArtworkData(bytes, MediaMetadata.PICTURE_TYPE_FRONT_COVER)
+            }
             return MediaItem.Builder()
                 .setMediaId(id)
-                .setMediaMetadata(
-                    MediaMetadata.Builder()
-                        .setTitle(title)
-                        .setSubtitle(subtitle)
-                        .setArtworkUri(iconUri)
-                        .setIsBrowsable(false)
-                        .setIsPlayable(false)
-                        .build()
-                )
+                .setMediaMetadata(builder.build())
                 .build()
         }
 
@@ -1790,19 +1873,20 @@ class RadioMediaService : MediaLibraryService() {
             show: com.example.data.model.PodcastShow,
             extras: Bundle
         ): MediaItem {
+            val builder = MediaMetadata.Builder()
+                .setTitle(show.title)
+                .setSubtitle(show.author.ifBlank { "Podcast" })
+                .setArtworkUri(podcastDefaultIconUri)
+                .setIsBrowsable(true)
+                .setIsPlayable(false)
+                .setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_PODCASTS)
+                .setExtras(extras)
+            if (podcastDefaultIconBytes.isNotEmpty()) {
+                builder.setArtworkData(podcastDefaultIconBytes, MediaMetadata.PICTURE_TYPE_FRONT_COVER)
+            }
             return MediaItem.Builder()
                 .setMediaId("podshow_${show.id}")
-                .setMediaMetadata(
-                    MediaMetadata.Builder()
-                        .setTitle(show.title)
-                        .setSubtitle(show.author.ifBlank { "Podcast" })
-                        .setArtworkUri(podcastDefaultIconUri)
-                        .setIsBrowsable(true)
-                        .setIsPlayable(false)
-                        .setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_PODCASTS)
-                        .setExtras(extras)
-                        .build()
-                )
+                .setMediaMetadata(builder.build())
                 .build()
         }
 
@@ -1812,6 +1896,19 @@ class RadioMediaService : MediaLibraryService() {
             customMediaId: String? = null
         ): MediaItem {
             val itemMediaId = customMediaId ?: "podelem_${episode.id}"
+            val builder = MediaMetadata.Builder()
+                .setTitle(episode.title)
+                .setArtist(episode.showTitle)
+                .setSubtitle(episode.showTitle)
+                .setAlbumTitle(episode.publishDate)
+                .setArtworkUri(podcastDefaultIconUri)
+                .setIsBrowsable(false)
+                .setIsPlayable(true)
+                .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST_EPISODE)
+                .setExtras(extras)
+            if (podcastDefaultIconBytes.isNotEmpty()) {
+                builder.setArtworkData(podcastDefaultIconBytes, MediaMetadata.PICTURE_TYPE_FRONT_COVER)
+            }
             return MediaItem.Builder()
                 .setMediaId(itemMediaId)
                 .setUri(episode.audioUrl)
@@ -1820,19 +1917,7 @@ class RadioMediaService : MediaLibraryService() {
                         .setMediaUri(Uri.parse(episode.audioUrl))
                         .build()
                 )
-                .setMediaMetadata(
-                    MediaMetadata.Builder()
-                        .setTitle(episode.title)
-                        .setArtist(episode.showTitle)
-                        .setSubtitle(episode.showTitle)
-                        .setAlbumTitle(episode.publishDate)
-                        .setArtworkUri(podcastDefaultIconUri)
-                        .setIsBrowsable(false)
-                        .setIsPlayable(true)
-                        .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST_EPISODE)
-                        .setExtras(extras)
-                        .build()
-                )
+                .setMediaMetadata(builder.build())
                 .build()
         }
 

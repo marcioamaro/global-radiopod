@@ -2142,9 +2142,9 @@ private fun IpodSettingsScreen(
     if (activeColorPickerTarget != null && isManualColorEditingEnabled) {
         val target = activeColorPickerTarget!!
         val (pickerTitle, initialColor) = when (target) {
-            ColorPickerTarget.CHASSIS -> "Cor da Carcaça (AmbilWarna)" to uiState.customBodyColor
-            ColorPickerTarget.CLICK_WHEEL -> "Cor da Click Wheel (AmbilWarna)" to uiState.customWheelColor
-            ColorPickerTarget.CENTER_BUTTON -> "Cor do Botão Central (AmbilWarna)" to uiState.customCenterButtonColor
+            ColorPickerTarget.CHASSIS -> "Cor da Carcaça (Cor Personalizada)" to uiState.customBodyColor
+            ColorPickerTarget.CLICK_WHEEL -> "Cor da Click Wheel (Cor Personalizada)" to uiState.customWheelColor
+            ColorPickerTarget.CENTER_BUTTON -> "Cor do Botão Central (Cor Personalizada)" to uiState.customCenterButtonColor
         }
         AmbilWarnaColorPickerDialog(
             title = pickerTitle,
@@ -2420,7 +2420,7 @@ private fun IpodSettingsScreen(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "Modo Aleatório ativo: Edição manual e seletores AmbilWarna estão bloqueados para preservar a paleta de hardware da sessão.",
+                            text = "Modo Aleatório ativo: Edição manual e seletores de Cor Personalizada estão bloqueados para preservar a paleta de hardware da sessão.",
                             color = Color.White,
                             fontSize = 8.sp,
                             lineHeight = 11.sp,
@@ -2463,7 +2463,7 @@ private fun IpodSettingsScreen(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "Edição Manual liberada: Escolha presets ou use o AmbilWarna Color Picker livremente.",
+                            text = "Edição Manual liberada: Escolha presets ou use o seletor de Cor Personalizada livremente.",
                             color = backlightTextPrimary,
                             fontSize = 8.sp,
                             lineHeight = 11.sp,
@@ -2518,7 +2518,7 @@ private fun IpodSettingsScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "AmbilWarna: Roda do iPod...",
+                            text = "Cor Personalizada: Roda do iPod...",
                             color = backlightTextPrimary,
                             fontSize = (10.5f * fontScale).sp,
                             fontWeight = FontWeight.Bold,
@@ -2558,7 +2558,7 @@ private fun IpodSettingsScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "AmbilWarna: Botão Central...",
+                            text = "Cor Personalizada: Botão Central...",
                             color = backlightTextPrimary,
                             fontSize = (10.5f * fontScale).sp,
                             fontWeight = FontWeight.Bold,
@@ -2721,7 +2721,7 @@ private fun IpodSettingsScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "AmbilWarna: Cor da Carcaça...",
+                        text = "Cor Personalizada: Cor da Carcaça...",
                         color = backlightTextPrimary,
                         fontSize = (10.5f * fontScale).sp,
                         fontWeight = FontWeight.Bold,
@@ -3724,7 +3724,7 @@ private fun IpodAboutScreen(
 
             // Data da versão aaaa.mm.dd e número da versão
             Text(
-                text = "2026.09.19 - Versão 0.2 (v82dw01)",
+                text = "2026.09.19 - Versão 0.3 (v82dw01)",
                 color = backlightTextSecondary,
                 fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Bold,

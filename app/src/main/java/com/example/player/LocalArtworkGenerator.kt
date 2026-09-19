@@ -2,6 +2,7 @@ package com.example.player
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -72,7 +73,7 @@ object LocalArtworkGenerator {
      */
     fun getDefaultRadioArtwork(context: Context): Uri? {
         return try {
-            Uri.parse("android.resource://${context.packageName}/${com.example.R.drawable.ic_radio_retro}")
+            Uri.parse("android.resource://${context.packageName}/${com.example.R.drawable.ic_radio_generic}")
         } catch (e: Exception) {
             android.util.Log.w("LocalArtworkGenerator", "Falha ao gerar artwork padrão de rádio", e)
             null
@@ -80,12 +81,16 @@ object LocalArtworkGenerator {
     }
 
     private fun generateDefaultRadioBitmap(context: Context): Bitmap {
+        val decoded = try {
+            BitmapFactory.decodeResource(context.resources, com.example.R.drawable.ic_radio_generic)
+        } catch (_: Exception) { null }
+        if (decoded != null) return decoded
+
         val bitmap = Bitmap.createBitmap(SIZE_PX, SIZE_PX, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
-        // Ícone retrô de rádio oficial (ic_radio_retro) em branco puro em alta definição
         try {
-            val drawable = androidx.core.content.ContextCompat.getDrawable(context, com.example.R.drawable.ic_radio_retro)
+            val drawable = androidx.core.content.ContextCompat.getDrawable(context, com.example.R.drawable.ic_radio_generic)
             drawable?.let {
                 val iconPadding = (SIZE_PX * 0.10f).toInt()
                 it.setBounds(iconPadding, iconPadding, SIZE_PX - iconPadding, SIZE_PX - iconPadding)
@@ -93,7 +98,7 @@ object LocalArtworkGenerator {
                 it.draw(canvas)
             }
         } catch (e: Exception) {
-            android.util.Log.w("LocalArtworkGenerator", "Falha ao desenhar ic_radio_retro no bitmap", e)
+            android.util.Log.w("LocalArtworkGenerator", "Falha ao desenhar ic_radio_generic no bitmap", e)
         }
 
         return bitmap
