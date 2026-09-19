@@ -35,6 +35,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -200,12 +203,53 @@ fun RdsDisplay(
                     .border(1.2.dp, backlightTextPrimary.copy(alpha = 0.5f), RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Radio,
-                    contentDescription = "Logotipo da Rádio",
-                    tint = backlightTextPrimary,
-                    modifier = Modifier.size(38.dp)
-                )
+                val favicon = station?.favicon?.trim().orEmpty()
+                if (favicon.isNotBlank()) {
+                    var loadFailed by remember(favicon) { mutableStateOf(false) }
+
+                    if (!loadFailed) {
+                        val imageRequest = remember(favicon, backlightTextPrimary, backlightBg) {
+                            ImageRequest.Builder(context)
+                                .data(favicon)
+                                .transformations(
+                                    LcdMonochromeTransformation(
+                                        darkColor = backlightTextPrimary,
+                                        lightColor = Color.Transparent,
+                                        dither = true,
+                                        targetResolution = 128
+                                    )
+                                )
+                                .crossfade(false)
+                                .build()
+                        }
+
+                        AsyncImage(
+                            model = imageRequest,
+                            contentDescription = station?.name ?: "Logotipo da Rádio",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(4.dp),
+                            contentScale = ContentScale.Fit,
+                            onError = { loadFailed = true }
+                        )
+                    } else {
+                        // Fallback do LCD: mantém o ícone clássico do display físico
+                        Icon(
+                            imageVector = Icons.Default.Radio,
+                            contentDescription = "Logotipo da Rádio",
+                            tint = backlightTextPrimary,
+                            modifier = Modifier.size(38.dp)
+                        )
+                    }
+                } else {
+                    // Sem logo remoto: mantém o ícone clássico do display físico
+                    Icon(
+                        imageVector = Icons.Default.Radio,
+                        contentDescription = "Logotipo da Rádio",
+                        tint = backlightTextPrimary,
+                        modifier = Modifier.size(38.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(8.dp))
