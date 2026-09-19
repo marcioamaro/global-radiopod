@@ -42,14 +42,6 @@ fun IpodMp3FoldersScreen(
     fontScale: Float,
     isBold: Boolean
 ) {
-    val listState = rememberLazyListState()
-
-    LaunchedEffect(selectedIndex) {
-        if (selectedIndex in folders.indices) {
-            listState.animateScrollToItem(selectedIndex)
-        }
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -95,54 +87,53 @@ fun IpodMp3FoldersScreen(
                 )
             }
         } else {
-            LazyColumn(
-                state = listState,
+            com.example.ui.components.SelectableLazyColumn(
+                items = folders,
+                selectedIndex = selectedIndex,
+                key = { _, folder -> folder.path },
                 modifier = Modifier.fillMaxSize()
-            ) {
-                itemsIndexed(folders) { index, folder ->
-                    val isSelected = index == selectedIndex
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                if (isSelected) backlightHighlight.copy(alpha = 0.85f)
-                                else Color.Transparent
-                            )
-                            .clickable { onSelectFolder(folder) }
-                            .padding(horizontal = 10.dp, vertical = 7.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.FolderOpen,
-                            contentDescription = null,
-                            tint = if (isSelected) Color.White else backlightTextSecondary,
-                            modifier = Modifier.size(16.dp)
+            ) { index, folder, isSelected ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            if (isSelected) backlightHighlight.copy(alpha = 0.85f)
+                            else Color.Transparent
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = folder.name,
-                                color = if (isSelected) Color.White else backlightTextPrimary,
-                                fontSize = (12f * fontScale).sp,
-                                fontWeight = if (isBold || isSelected) FontWeight.Bold else FontWeight.Medium,
-                                fontFamily = fontFamily,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Text(
-                                text = "${folder.itemCount} faixas",
-                                color = if (isSelected) Color.White.copy(alpha = 0.8f) else backlightTextSecondary,
-                                fontSize = (10f * fontScale).sp,
-                                fontFamily = fontFamily
-                            )
-                        }
-                        Icon(
-                            imageVector = Icons.Default.ChevronRight,
-                            contentDescription = null,
-                            tint = if (isSelected) Color.White else backlightTextSecondary,
-                            modifier = Modifier.size(16.dp)
+                        .clickable { onSelectFolder(folder) }
+                        .padding(horizontal = 10.dp, vertical = 7.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.FolderOpen,
+                        contentDescription = null,
+                        tint = if (isSelected) Color.White else backlightTextSecondary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = folder.name,
+                            color = if (isSelected) Color.White else backlightTextPrimary,
+                            fontSize = (12f * fontScale).sp,
+                            fontWeight = if (isBold || isSelected) FontWeight.Bold else FontWeight.Medium,
+                            fontFamily = fontFamily,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = "${folder.itemCount} faixas",
+                            color = if (isSelected) Color.White.copy(alpha = 0.8f) else backlightTextSecondary,
+                            fontSize = (10f * fontScale).sp,
+                            fontFamily = fontFamily
                         )
                     }
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        tint = if (isSelected) Color.White else backlightTextSecondary,
+                        modifier = Modifier.size(16.dp)
+                    )
                 }
             }
         }
@@ -164,14 +155,6 @@ fun IpodMp3TracksListScreen(
     fontScale: Float,
     isBold: Boolean
 ) {
-    val listState = rememberLazyListState()
-
-    LaunchedEffect(selectedIndex) {
-        if (selectedIndex in tracks.indices) {
-            listState.animateScrollToItem(selectedIndex)
-        }
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -218,12 +201,12 @@ fun IpodMp3TracksListScreen(
                 )
             }
         } else {
-            LazyColumn(
-                state = listState,
+            com.example.ui.components.SelectableLazyColumn(
+                items = tracks,
+                selectedIndex = selectedIndex,
+                key = { _, track -> track.id },
                 modifier = Modifier.fillMaxSize()
-            ) {
-                itemsIndexed(tracks) { index, track ->
-                    val isSelected = index == selectedIndex
+            ) { index, track, isSelected ->
                     val isCurrentPlaying = track.id == currentTrackId
 
                     Row(
@@ -269,7 +252,6 @@ fun IpodMp3TracksListScreen(
             }
         }
     }
-}
 
 @Composable
 fun IpodMp3NowPlayingScreen(

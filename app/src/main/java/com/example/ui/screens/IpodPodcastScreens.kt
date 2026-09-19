@@ -57,23 +57,14 @@ fun IpodPodcastMenuScreen(
         stringResource(R.string.podcast_custom) to Icons.Default.Podcasts
     )
 
-    val listState = rememberLazyListState()
-
-    LaunchedEffect(selectedIndex) {
-        if (selectedIndex in menuItems.indices) {
-            listState.animateScrollToItem(selectedIndex)
-        }
-    }
-
-    LazyColumn(
-        state = listState,
+    com.example.ui.components.SelectableLazyColumn(
+        items = menuItems,
+        selectedIndex = selectedIndex,
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 6.dp, vertical = 2.dp),
         verticalArrangement = Arrangement.spacedBy(1.5.dp)
-    ) {
-        itemsIndexed(menuItems) { index, (title, icon) ->
-            val isSelected = index == selectedIndex
+    ) { index, (title, icon), isSelected ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -115,7 +106,6 @@ fun IpodPodcastMenuScreen(
             }
         }
     }
-}
 
 @Composable
 fun IpodPodcastShowsScreen(
@@ -136,14 +126,7 @@ fun IpodPodcastShowsScreen(
     onClearAll: (() -> Unit)? = null,
     clearAllLabel: String = "Limpar Histórico Recente"
 ) {
-    val listState = rememberLazyListState()
     val bwColorMatrix = remember { ColorMatrix().apply { setToSaturation(0f) } }
-
-    LaunchedEffect(selectedIndex) {
-        if (selectedIndex in shows.indices) {
-            listState.animateScrollToItem(selectedIndex)
-        }
-    }
 
     Column(
         modifier = Modifier
@@ -216,13 +199,13 @@ fun IpodPodcastShowsScreen(
                 )
             }
         } else {
-            LazyColumn(
-                state = listState,
+            com.example.ui.components.SelectableLazyColumn(
+                items = shows,
+                selectedIndex = selectedIndex,
+                key = { _, show -> show.id },
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                itemsIndexed(shows) { index, show ->
-                    val isSelected = index == selectedIndex
+            ) { index, show, isSelected ->
                     val fav = isFavorite(show.id)
 
                     Row(
@@ -293,7 +276,6 @@ fun IpodPodcastShowsScreen(
             }
         }
     }
-}
 
 @Composable
 fun IpodPodcastEpisodesScreen(
@@ -310,14 +292,6 @@ fun IpodPodcastEpisodesScreen(
     fontScale: Float,
     isBold: Boolean
 ) {
-    val listState = rememberLazyListState()
-
-    LaunchedEffect(selectedIndex) {
-        if (selectedIndex in episodes.indices) {
-            listState.animateScrollToItem(selectedIndex)
-        }
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -351,13 +325,13 @@ fun IpodPodcastEpisodesScreen(
                 )
             }
         } else {
-            LazyColumn(
-                state = listState,
+            com.example.ui.components.SelectableLazyColumn(
+                items = episodes,
+                selectedIndex = selectedIndex,
+                key = { _, ep -> ep.id },
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                itemsIndexed(episodes) { index, ep ->
-                    val isSelected = index == selectedIndex
+            ) { index, ep, isSelected ->
 
                     Row(
                         modifier = Modifier
@@ -409,7 +383,6 @@ fun IpodPodcastEpisodesScreen(
             }
         }
     }
-}
 
 @Composable
 fun IpodPodcastNowPlayingScreen(
@@ -806,25 +779,21 @@ fun IpodCustomItemsListScreen(
     fontScale: Float,
     isBold: Boolean
 ) {
-    val listState = rememberLazyListState()
-
-    LaunchedEffect(selectedIndex) {
-        if (selectedIndex in 0..items.size) {
-            listState.animateScrollToItem(selectedIndex)
-        }
+    val allEntries: List<Pair<String, String>?> = remember(items) {
+        listOf<Pair<String, String>?>(null) + items
     }
 
-    LazyColumn(
-        state = listState,
+    com.example.ui.components.SelectableLazyColumn(
+        items = allEntries,
+        selectedIndex = selectedIndex,
         modifier = Modifier
             .fillMaxSize()
             .background(backlightBg)
             .padding(horizontal = 6.dp, vertical = 3.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp)
-    ) {
-        // Item 0: Botão de Adicionar Personalizado
-        item {
-            val isSelected = selectedIndex == 0
+    ) { index, entry, isSelected ->
+        if (index == 0 || entry == null) {
+            // Item 0: Botão de Adicionar Personalizado
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -850,17 +819,15 @@ fun IpodCustomItemsListScreen(
                     fontFamily = fontFamily
                 )
             }
-        }
-
-        // Custom items list (index 1..N)
-        itemsIndexed(items) { index, (name, url) ->
-            val isSelected = selectedIndex == (index + 1)
+        } else {
+            val (name, url) = entry
+            val itemIdx = index - 1
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(4.dp))
                     .background(if (isSelected) backlightHighlight else Color.Transparent)
-                    .clickable { onSelectItem(index) }
+                    .clickable { onSelectItem(itemIdx) }
                     .padding(horizontal = 8.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -886,7 +853,7 @@ fun IpodCustomItemsListScreen(
                 }
 
                 IconButton(
-                    onClick = { onDeleteItem(index) },
+                    onClick = { onDeleteItem(itemIdx) },
                     modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
@@ -915,14 +882,6 @@ fun IpodChaptersListScreen(
     fontScale: Float,
     isBold: Boolean
 ) {
-    val listState = rememberLazyListState()
-
-    LaunchedEffect(selectedIndex) {
-        if (selectedIndex in chapters.indices) {
-            listState.animateScrollToItem(selectedIndex)
-        }
-    }
-
     if (chapters.isEmpty()) {
         Box(
             modifier = Modifier
@@ -942,15 +901,14 @@ fun IpodChaptersListScreen(
         return
     }
 
-    LazyColumn(
-        state = listState,
+    com.example.ui.components.SelectableLazyColumn(
+        items = chapters,
+        selectedIndex = selectedIndex,
         modifier = Modifier
             .fillMaxSize()
             .background(backlightBg)
             .padding(horizontal = 8.dp, vertical = 4.dp)
-    ) {
-        itemsIndexed(chapters) { index, chapter ->
-            val isSelected = index == selectedIndex
+    ) { index, chapter, isSelected ->
             val isCurrent = currentChapter?.startTimeMs == chapter.startTimeMs || currentChapter?.title == chapter.title
 
             Row(
@@ -995,7 +953,6 @@ fun IpodChaptersListScreen(
             }
         }
     }
-}
 
 @Composable
 fun IpodPodcastSearchScreen(
@@ -1015,14 +972,6 @@ fun IpodPodcastSearchScreen(
     fontScale: Float,
     isBold: Boolean
 ) {
-    val listState = rememberLazyListState()
-
-    LaunchedEffect(selectedIndex) {
-        if (selectedIndex in shows.indices) {
-            listState.animateScrollToItem(selectedIndex)
-        }
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -1142,13 +1091,13 @@ fun IpodPodcastSearchScreen(
                 )
             }
         } else {
-            LazyColumn(
-                state = listState,
+            com.example.ui.components.SelectableLazyColumn(
+                items = shows,
+                selectedIndex = selectedIndex,
+                key = { _, show -> show.id },
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                itemsIndexed(shows) { index, show ->
-                    val isSelected = index == selectedIndex
+            ) { index, show, isSelected ->
                     val fav = isFavorite(show.id)
 
                     Row(
@@ -1218,4 +1167,3 @@ fun IpodPodcastSearchScreen(
             }
         }
     }
-}

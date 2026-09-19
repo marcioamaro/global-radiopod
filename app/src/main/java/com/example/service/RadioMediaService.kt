@@ -33,6 +33,7 @@ import com.example.data.model.RadioStation
 import com.example.data.preferences.IpodPreferencesManager
 import com.example.data.repository.CuratedData
 import com.example.data.repository.RadioRepository
+import com.example.player.AudioRouteManager
 import com.example.player.LocalArtworkGenerator
 import com.example.player.RadioPlaybackStatus
 import com.example.player.RadioPlayerManager
@@ -243,7 +244,9 @@ class RadioMediaService : MediaLibraryService() {
             repository.favoritesFlow.collect {
                 try {
                     mediaLibrarySession?.notifyChildrenChanged(FAVORITE_RADIOS, 0, null)
-                } catch (_: Exception) {}
+                } catch (e: Exception) {
+                    android.util.Log.w("RadioMediaService", "Falha ao notificar mudança em FAVORITE_RADIOS: ${e.message}")
+                }
             }
         }
 
@@ -252,7 +255,9 @@ class RadioMediaService : MediaLibraryService() {
                 if (station != null) {
                     try {
                         mediaLibrarySession?.notifyChildrenChanged(RECENT_RADIOS, 0, null)
-                    } catch (_: Exception) {}
+                    } catch (e: Exception) {
+                        android.util.Log.w("RadioMediaService", "Falha ao notificar mudança em RECENT_RADIOS: ${e.message}")
+                    }
                 }
                 updateNotification()
             }
@@ -262,7 +267,9 @@ class RadioMediaService : MediaLibraryService() {
             podcastRepository.favoritesFlow.collect {
                 try {
                     mediaLibrarySession?.notifyChildrenChanged(FAVORITE_PODCASTS, 0, null)
-                } catch (_: Exception) {}
+                } catch (e: Exception) {
+                    android.util.Log.w("RadioMediaService", "Falha ao notificar mudança em FAVORITE_PODCASTS: ${e.message}")
+                }
             }
         }
 
@@ -270,7 +277,9 @@ class RadioMediaService : MediaLibraryService() {
             podcastRepository.recentEpisodesFlow.collect {
                 try {
                     mediaLibrarySession?.notifyChildrenChanged(RECENT_PODCASTS, 0, null)
-                } catch (_: Exception) {}
+                } catch (e: Exception) {
+                    android.util.Log.w("RadioMediaService", "Falha ao notificar mudança em RECENT_PODCASTS: ${e.message}")
+                }
             }
         }
 
@@ -416,6 +425,11 @@ class RadioMediaService : MediaLibraryService() {
                 .add(Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
                 .add(Player.COMMAND_SEEK_BACK)
                 .add(Player.COMMAND_SEEK_FORWARD)
+                .add(Player.COMMAND_SET_DEVICE_VOLUME)
+                .add(Player.COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS)
+                .add(Player.COMMAND_ADJUST_DEVICE_VOLUME)
+                .add(Player.COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS)
+                .add(Player.COMMAND_GET_DEVICE_VOLUME)
                 .build()
         }
 
@@ -429,7 +443,12 @@ class RadioMediaService : MediaLibraryService() {
                 Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM,
                 Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM,
                 Player.COMMAND_SEEK_BACK,
-                Player.COMMAND_SEEK_FORWARD -> true
+                Player.COMMAND_SEEK_FORWARD,
+                Player.COMMAND_SET_DEVICE_VOLUME,
+                Player.COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS,
+                Player.COMMAND_ADJUST_DEVICE_VOLUME,
+                Player.COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS,
+                Player.COMMAND_GET_DEVICE_VOLUME -> true
                 else -> super.isCommandAvailable(command)
             }
         }
@@ -500,7 +519,13 @@ class RadioMediaService : MediaLibraryService() {
             val now = System.currentTimeMillis()
             if (now - lastSkipTimeMs > 400L) {
                 lastSkipTimeMs = now
-                playerManager.playNext()
+                android.util.Log.w("MEDIA_BTN", "✅ onSkipToNext/seekToNext recebido do sistema — roteando via NavigationContext")
+                val coordinator = (applicationContext as? com.example.RadioApp)?.playbackCoordinator
+                if (coordinator != null) {
+                    coordinator.skipToNext()
+                } else {
+                    playerManager.playNext()
+                }
             }
         }
 
@@ -512,7 +537,13 @@ class RadioMediaService : MediaLibraryService() {
             val now = System.currentTimeMillis()
             if (now - lastSkipTimeMs > 400L) {
                 lastSkipTimeMs = now
-                playerManager.playPrevious()
+                android.util.Log.w("MEDIA_BTN", "✅ onSkipToPrevious/seekToPrevious recebido do sistema")
+                val coordinator = (applicationContext as? com.example.RadioApp)?.playbackCoordinator
+                if (coordinator != null) {
+                    coordinator.skipToPrevious()
+                } else {
+                    playerManager.playPrevious()
+                }
             }
         }
 
@@ -526,6 +557,40 @@ class RadioMediaService : MediaLibraryService() {
 
         override fun seekForward() {
             playerManager.seekRelative(30000L)
+        }
+
+        override fun getDeviceInfo(): androidx.media3.common.DeviceInfo {
+            return androidx.media3.common.DeviceInfo.Builder(androidx.media3.common.DeviceInfo.PLAYBACK_TYPE_REMOTE)
+                .setMinVolume(0)
+                .setMaxVolume(100)
+                .build()
+        }
+
+        override fun getDeviceVolume(): Int {
+            val coordinator = (applicationContext as? com.example.RadioApp)?.playbackCoordinator
+            return ((coordinator?.activeVolume?.value ?: 0.8f) * 100).toInt()
+        }
+
+        override fun setDeviceVolume(volume: Int) {
+            val coordinator = (applicationContext as? com.example.RadioApp)?.playbackCoordinator
+            coordinator?.setActiveVolume(volume.toFloat() / 100f)
+        }
+
+        override fun setDeviceVolume(volume: Int, flags: Int) {
+            val coordinator = (applicationContext as? com.example.RadioApp)?.playbackCoordinator
+            coordinator?.setActiveVolume(volume.toFloat() / 100f)
+        }
+
+        override fun increaseDeviceVolume(flags: Int) {
+            val coordinator = (applicationContext as? com.example.RadioApp)?.playbackCoordinator
+            val current = coordinator?.activeVolume?.value ?: 0.5f
+            coordinator?.setActiveVolume((current + 0.05f).coerceIn(0f, 1f))
+        }
+
+        override fun decreaseDeviceVolume(flags: Int) {
+            val coordinator = (applicationContext as? com.example.RadioApp)?.playbackCoordinator
+            val current = coordinator?.activeVolume?.value ?: 0.5f
+            coordinator?.setActiveVolume((current - 0.05f).coerceIn(0f, 1f))
         }
 
         override fun setMediaItem(mediaItem: MediaItem) {
@@ -600,6 +665,7 @@ class RadioMediaService : MediaLibraryService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_PLAY -> {
+                playerManager.requestAudioFocus()
                 playerManager.resume()
                 acquireServiceLocks()
                 updateNotification()
@@ -610,11 +676,23 @@ class RadioMediaService : MediaLibraryService() {
                 updateNotification()
             }
             ACTION_NEXT -> {
-                playerManager.playNext()
+                android.util.Log.w("MEDIA_BTN", "✅ ACTION_NEXT recebido — roteando via PlaybackCoordinator")
+                val coordinator = (applicationContext as? com.example.RadioApp)?.playbackCoordinator
+                if (coordinator != null) {
+                    coordinator.skipToNext()
+                } else {
+                    playerManager.playNext()
+                }
                 updateNotification()
             }
             ACTION_PREVIOUS -> {
-                playerManager.playPrevious()
+                android.util.Log.w("MEDIA_BTN", "✅ ACTION_PREVIOUS recebido — roteando via PlaybackCoordinator")
+                val coordinator = (applicationContext as? com.example.RadioApp)?.playbackCoordinator
+                if (coordinator != null) {
+                    coordinator.skipToPrevious()
+                } else {
+                    playerManager.playPrevious()
+                }
                 updateNotification()
             }
             ACTION_STOP -> {
@@ -835,6 +913,11 @@ class RadioMediaService : MediaLibraryService() {
 
     override fun onDestroy() {
         releaseServiceLocks()
+        try {
+            AudioRouteManager.getInstance(applicationContext).cleanup()
+        } catch (e: Exception) {
+            android.util.Log.w("RadioMediaService", "Falha ao limpar AudioRouteManager: ${e.message}")
+        }
         serviceScope.launch {
             mediaLibrarySession?.run {
                 player.release()
@@ -920,11 +1003,23 @@ class RadioMediaService : MediaLibraryService() {
                     return SessionResult.RESULT_SUCCESS
                 }
                 Player.COMMAND_SEEK_TO_NEXT, Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM -> {
-                    playerManager.playNext()
+                    android.util.Log.w("MEDIA_BTN", "✅ COMMAND_SEEK_TO_NEXT recebido do sistema — roteando via NavigationContext")
+                    val coordinator = (applicationContext as? com.example.RadioApp)?.playbackCoordinator
+                    if (coordinator != null) {
+                        coordinator.skipToNext()
+                    } else {
+                        playerManager.playNext()
+                    }
                     return SessionResult.RESULT_SUCCESS
                 }
                 Player.COMMAND_SEEK_TO_PREVIOUS, Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM -> {
-                    playerManager.playPrevious()
+                    android.util.Log.w("MEDIA_BTN", "✅ COMMAND_SEEK_TO_PREVIOUS recebido do sistema")
+                    val coordinator = (applicationContext as? com.example.RadioApp)?.playbackCoordinator
+                    if (coordinator != null) {
+                        coordinator.skipToPrevious()
+                    } else {
+                        playerManager.playPrevious()
+                    }
                     return SessionResult.RESULT_SUCCESS
                 }
                 Player.COMMAND_PLAY_PAUSE -> {
@@ -948,6 +1043,7 @@ class RadioMediaService : MediaLibraryService() {
             controllerInfo: MediaSession.ControllerInfo,
             intent: Intent
         ): Boolean {
+            android.util.Log.w("MEDIA_BTN", "🔘 MediaButton recebido: ${intent.action}")
             val keyEvent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT, KeyEvent::class.java)
             } else {
@@ -973,11 +1069,23 @@ class RadioMediaService : MediaLibraryService() {
                         return true
                     }
                     KeyEvent.KEYCODE_MEDIA_NEXT -> {
-                        playerManager.playNext()
+                        android.util.Log.w("MEDIA_BTN", "✅ onSkipToNext (KEYCODE_MEDIA_NEXT) recebido do sistema — roteando via NavigationContext")
+                        val coordinator = (applicationContext as? com.example.RadioApp)?.playbackCoordinator
+                        if (coordinator != null) {
+                            coordinator.skipToNext()
+                        } else {
+                            playerManager.playNext()
+                        }
                         return true
                     }
                     KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
-                        playerManager.playPrevious()
+                        android.util.Log.w("MEDIA_BTN", "✅ onSkipToPrevious (KEYCODE_MEDIA_PREVIOUS) recebido do sistema")
+                        val coordinator = (applicationContext as? com.example.RadioApp)?.playbackCoordinator
+                        if (coordinator != null) {
+                            coordinator.skipToPrevious()
+                        } else {
+                            playerManager.playPrevious()
+                        }
                         return true
                     }
                     KeyEvent.KEYCODE_MEDIA_STOP -> {
@@ -1374,6 +1482,13 @@ class RadioMediaService : MediaLibraryService() {
                                 withContext(Dispatchers.Main) {
                                     if (favs.isNotEmpty()) playerManager.updatePlaylist(favs)
                                     playerManager.playStation(station)
+                                    val coordinator = (applicationContext as? com.example.RadioApp)?.playbackCoordinator
+                                    coordinator?.setNavigationContext(
+                                        com.example.player.context.NavigationContext(
+                                            source = com.example.player.context.QueueSource.FAVORITES,
+                                            items = favs.map { stationToQueueItem(it) }
+                                        )
+                                    )
                                 }
                                 val fullQueue = if (favs.isNotEmpty()) {
                                     favs.map { createStationCardItem(it, gridExtras, "radio_fav_${it.id}") }
@@ -1393,6 +1508,13 @@ class RadioMediaService : MediaLibraryService() {
                                 withContext(Dispatchers.Main) {
                                     if (recents.isNotEmpty()) playerManager.updatePlaylist(recents)
                                     playerManager.playStation(station)
+                                    val coordinator = (applicationContext as? com.example.RadioApp)?.playbackCoordinator
+                                    coordinator?.setNavigationContext(
+                                        com.example.player.context.NavigationContext(
+                                            source = com.example.player.context.QueueSource.RECENTS,
+                                            items = recents.map { stationToQueueItem(it) }
+                                        )
+                                    )
                                 }
                                 val fullQueue = if (recents.isNotEmpty()) {
                                     recents.map { createStationCardItem(it, gridExtras, "radio_rec_${it.id}") }
@@ -1418,6 +1540,13 @@ class RadioMediaService : MediaLibraryService() {
                                 withContext(Dispatchers.Main) {
                                     playerManager.updatePlaylist(activeList)
                                     playerManager.playStation(station)
+                                    val coordinator = (applicationContext as? com.example.RadioApp)?.playbackCoordinator
+                                    coordinator?.setNavigationContext(
+                                        com.example.player.context.NavigationContext(
+                                            source = com.example.player.context.QueueSource.GLOBAL,
+                                            items = activeList.map { stationToQueueItem(it) }
+                                        )
+                                    )
                                 }
                                 val fullQueue = activeList.map { createStationCardItem(it, gridExtras, "radio_${it.id}") }
                                 future.set(MediaSession.MediaItemsWithStartPosition(fullQueue, matchIndex, 0))
@@ -1727,8 +1856,22 @@ class RadioMediaService : MediaLibraryService() {
                     "androidx.media.utils.MediaConstants.DESCRIPTION_EXTRAS_KEY_CONTENT_STYLE_BROWSABLE",
                     if (isGrid) 2 else 1
                 )
-                putBoolean("android.media.browse.CLIP_CHILDREN", true)
+                // CLIP_CHILDREN removido para permitir exibição completa e sem bloqueio no Android Auto durante a condução
             }
+        }
+
+        private fun stationToQueueItem(station: RadioStation): com.example.player.coordinator.PlaybackQueueItem {
+            val subtitle = if (station.city.isNotBlank()) "${station.city} • ${station.country}" else station.country
+            return com.example.player.coordinator.PlaybackQueueItem(
+                id = station.id,
+                mediaUri = station.streamUrl,
+                title = station.name,
+                subtitle = subtitle,
+                artworkUri = station.favicon.ifBlank { null },
+                mediaType = com.example.player.ActiveMediaType.LIVE_RADIO,
+                durationMs = null,
+                isLiveStream = true
+            )
         }
     }
 }

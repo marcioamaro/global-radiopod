@@ -7,6 +7,7 @@ import com.example.data.db.RadioStationDao
 import com.example.data.db.toCatalogEntity
 import com.example.data.db.toDomain
 import com.example.data.db.toEntity
+import com.example.data.cache.SearchResultCache
 import com.example.data.model.RadioStation
 import com.example.data.model.toDomain
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +18,8 @@ import kotlinx.coroutines.withContext
 
 class RadioRepository(
     private val favoriteDao: FavoriteStationDao,
-    private val stationDao: RadioStationDao? = null
+    private val stationDao: RadioStationDao? = null,
+    private val searchCache: SearchResultCache = SearchResultCache.getInstance()
 ) {
     val favoritesFlow: Flow<List<RadioStation>> = favoriteDao.getAllFavorites()
         .map { list -> list.map { it.toDomain() }.sortedBy { it.name.trim().lowercase() } }
@@ -116,6 +118,20 @@ class RadioRepository(
 
         val isCountryBrazil = cleanCountry?.equals("BR", ignoreCase = true) == true
 
+        val cacheKey = SearchResultCache.buildKey(
+            query = cleanQuery ?: "",
+            countryCode = cleanCountry,
+            stateCode = cleanState,
+            cityName = cleanCity,
+            genreTag = cleanTag
+        )
+
+        val cached = searchCache.get(cacheKey)
+        if (cached != null) {
+            val favIds = getFavoriteIdsSet()
+            return@withContext cached.map { it.copy(isFavorite = favIds.contains(it.id)) }
+        }
+
         val favIds = getFavoriteIdsSet()
         val stations = ensureDatabaseSeeded()
         val localMatches = stations
@@ -155,11 +171,18 @@ class RadioRepository(
             .map { it.copy(isFavorite = favIds.contains(it.id)) }
             .sortedBy { it.name.trim().lowercase() }
 
+        // Guarda em cache de resultados para navegação offline/imediata
+        if (localMatches.isNotEmpty()) {
+            searchCache.put(cacheKey, localMatches)
+        }
+
         // Enriquecimento sob demanda online quando houver query e poucos resultados locais
         if (cleanQuery != null && cleanQuery.length >= 3 && localMatches.size < 5) {
             try {
                 enrichStationsFromOnlineApis(cleanQuery)
-            } catch (_: Exception) {}
+            } catch (e: Exception) {
+                android.util.Log.d("RadioRepository", "Enriquecimento online falhou para $cleanQuery: ${e.message}")
+            }
         }
 
         localMatches

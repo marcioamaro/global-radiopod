@@ -238,38 +238,27 @@ fun FavoritesScreen(
                 }
             }
         } else {
-            val listState = androidx.compose.foundation.lazy.rememberLazyListState()
-            LaunchedEffect(selectedIndex) {
-                if (selectedIndex in displayedFavorites.indices) {
-                    try {
-                        listState.animateScrollToItem(selectedIndex)
-                    } catch (_: Exception) {
-                        listState.scrollToItem(selectedIndex)
-                    }
-                }
-            }
-
-            LazyColumn(
-                state = listState,
+            com.example.ui.components.SelectableLazyColumn(
+                items = displayedFavorites,
+                selectedIndex = selectedIndex,
+                key = { _, item -> item.id },
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                itemsIndexed(displayedFavorites, key = { _, item -> item.id }) { index, station ->
-                    StationLargeCard(
-                        station = station,
-                        isSelected = index == selectedIndex,
-                        isPlaying = station.id == currentStationId,
-                        onClick = { onSelectStation(station) },
-                        onDelete = { onDeleteFavorite(station.id) },
-                        backlightTextPrimary = backlightTextPrimary,
-                        backlightTextSecondary = backlightTextSecondary,
-                        backlightHighlight = backlightHighlight,
-                        fontFamily = fontFamily,
-                        fontScale = fontScale,
-                        isBold = isBold
-                    )
-                }
+            ) { index, station, isSelected ->
+                StationLargeCard(
+                    station = station,
+                    isSelected = isSelected,
+                    isPlaying = station.id == currentStationId,
+                    onClick = { onSelectStation(station) },
+                    onDelete = { onDeleteFavorite(station.id) },
+                    backlightTextPrimary = backlightTextPrimary,
+                    backlightTextSecondary = backlightTextSecondary,
+                    backlightHighlight = backlightHighlight,
+                    fontFamily = fontFamily,
+                    fontScale = fontScale,
+                    isBold = isBold
+                )
             }
         }
     }

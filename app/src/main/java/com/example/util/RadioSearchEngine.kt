@@ -151,6 +151,20 @@ object RadioSearchEngine {
 
         val targetCorpus = normalize("${station.name} ${station.tags} ${station.primaryGenre}")
 
-        return kws.any { kw -> targetCorpus.contains(kw) }
+        if (kws.any { kw -> targetCorpus.contains(kw) }) {
+            return true
+        }
+
+        // Variedades Musicais (eclética/comunitária) acolhe emissoras com programação geral sem gênero específico
+        if (cleanTag == "variedades_musicais") {
+            val matchesOther = TAXONOMY_KEYWORDS.entries
+                .filter { it.key != "variedades_musicais" }
+                .any { (_, otherKws) -> otherKws.any { kw -> targetCorpus.contains(kw) } }
+            if (!matchesOther) {
+                return true
+            }
+        }
+
+        return false
     }
 }

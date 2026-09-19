@@ -1,0 +1,75 @@
+[
+  {
+    "name": "Rural FM 87.9 Araras",
+    "urls_tested": [
+      {
+        "url": "https://hts02.brascast.com:9292/stream",
+        "status": "working",
+        "http_code": 200,
+        "content_type": "audio/aac",
+        "error": "",
+        "latency_ms": 151.1
+      }
+    ]
+  },
+  {
+    "name": "Rádio Araras FM 107.7",
+    "urls_tested": [
+      {
+        "url": "https://casthttps.suaradionanet.net/10841/stream",
+        "status": "working",
+        "http_code": 200,
+        "content_type": "audio/aacp",
+        "error": "",
+        "latency_ms": 195.3
+      },
+      {
+        "url": "https://stmv1.video.brstream.com.br/kirk9179/kirk9179/playlist.m3u8",
+        "status": "working",
+        "http_code": 206,
+        "content_type": "application/vnd.apple.mpegurl",
+        "error": "",
+        "latency_ms": 106.0
+      }
+    ]
+  },
+  {
+    "name": "Conecta FM 104.1 Araras",
+    "urls_tested": [
+      {
+        "url": "https://paineldj5.com.br:20135/stream",
+        "status": "working",
+        "http_code": 200,
+        "content_type": "audio/aacp",
+        "error": "",
+        "latency_ms": 545.3
+      }
+    ]
+  },
+  {
+    "name": "Rádio Cidade das Árvores",
+    "urls_tested": [
+      {
+        "url": "https://s02.transmissaodigital.com:7132/stream",
+        "status": "working",
+        "http_code": 200,
+        "content_type": "audio/aacp",
+        "error": "",
+        "latency_ms": 802.9
+      }
+    ]
+  },
+  {
+    "name": "Fraternidade FM 97.9",
+    "urls_tested": [
+      {
+        "url": "https://s02.transmissaodigital.com:7130/stream",
+        "status": "working",
+        "http_code": 200,
+        "content_type": "audio/aacp",
+        "error": "",
+        "latency_ms": 802.4
+      }
+    ]
+  }
+]

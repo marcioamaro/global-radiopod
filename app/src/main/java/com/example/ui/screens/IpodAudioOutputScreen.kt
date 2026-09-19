@@ -50,12 +50,6 @@ fun IpodAudioOutputScreen(
     val listState = rememberLazyListState()
     val totalCount = devices.size + 1 // Dispositivos + Opção do Seletor Nativo
 
-    LaunchedEffect(selectedIndex) {
-        if (selectedIndex in 0 until totalCount) {
-            listState.animateScrollToItem(selectedIndex)
-        }
-    }
-
     val currentFocusedDevice = devices.getOrNull(selectedIndex)
 
     Row(
@@ -64,22 +58,22 @@ fun IpodAudioOutputScreen(
             .background(backlightBg)
     ) {
         // Painel Esquerdo: Lista de Dispositivos com estilo do iPod Classic
-        LazyColumn(
-            state = listState,
+        com.example.ui.components.SelectableLazyColumn(
+            items = devices,
+            selectedIndex = selectedIndex,
+            key = { _, dev -> dev.id },
             modifier = Modifier
                 .weight(1.15f)
                 .fillMaxHeight()
-        ) {
-            itemsIndexed(devices) { index, device ->
-                val isFocused = index == selectedIndex
-                val isDeviceActive = device.isSelected || device.id == selectedDevice?.id
+        ) { index, device, isFocused ->
+            val isDeviceActive = device.isSelected || device.id == selectedDevice?.id
 
-                val icon: ImageVector = when (device.deviceType) {
-                    AudioDeviceType.THIS_DEVICE -> Icons.Default.PhoneAndroid
-                    AudioDeviceType.BLUETOOTH -> Icons.Default.Headphones
-                    AudioDeviceType.CAST_REMOTE -> Icons.Default.Cast
-                    AudioDeviceType.OTHER -> Icons.Default.Speaker
-                }
+            val icon: androidx.compose.ui.graphics.vector.ImageVector = when (device.deviceType) {
+                AudioDeviceType.THIS_DEVICE -> Icons.Default.PhoneAndroid
+                AudioDeviceType.BLUETOOTH -> Icons.Default.Headphones
+                AudioDeviceType.CAST_REMOTE -> Icons.Default.Cast
+                AudioDeviceType.OTHER -> Icons.Default.Speaker
+            }
 
                 Row(
                     modifier = Modifier
@@ -151,7 +145,6 @@ fun IpodAudioOutputScreen(
                     }
                 }
             }
-        }
 
         // Divisor vertical retrô do LCD
         Box(

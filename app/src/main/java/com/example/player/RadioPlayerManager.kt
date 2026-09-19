@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import com.example.R
 import android.media.AudioManager
+import android.media.AudioFocusRequest
 import android.media.audiofx.Equalizer
 import android.net.Uri
 import android.net.wifi.WifiManager
@@ -29,6 +30,7 @@ import androidx.media3.extractor.metadata.id3.TextInformationFrame
 import com.example.data.model.PodcastChapter
 import com.example.data.preferences.IpodPreferencesManager
 import com.example.data.model.RadioStation
+import com.example.player.coordinator.toRadioStation
 import com.example.service.RadioMediaService
 import com.example.util.NetworkConnectivityValidator
 import com.example.util.NetworkStatus
@@ -86,10 +88,22 @@ class RadioPlayerManager private constructor(private val context: Context) {
         _playbackStatus.value = status
     }
 
+    fun setAudioPositionDirect(positionMs: Long) {
+        if (_activeMediaType.value == ActiveMediaType.LIVE_RADIO || _currentStation.value != null) {
+            return
+        }
+        _audioPositionMs.value = positionMs
+        updateCurrentChapter(positionMs)
+    }
+
+    fun getCurrentPosition(): Long = exoPlayer?.currentPosition ?: _audioPositionMs.value
+
     fun pauseLocalOnly() {
         try {
             exoPlayer?.pause()
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            android.util.Log.w("RadioPlayerManager", "Falha ao pausar ExoPlayer local: ${e.message}")
+        }
         releaseLocks()
         stopVisualizer()
     }
@@ -245,11 +259,52 @@ class RadioPlayerManager private constructor(private val context: Context) {
             current.add(chapter)
             val sorted = current.sortedBy { it.startTimeMs }
             _currentPodcastChapters.value = sorted
-            updateCurrentChapter(_audioPositionMs.value)
+        }
+    }
+
+    fun skipToNextChapter() {
+        val chapters = _currentPodcastChapters.value
+        if (chapters.isEmpty()) return
+        val currentPos = _audioPositionMs.value
+        val nextChapter = chapters.firstOrNull { it.startTimeMs > currentPos + 2000L }
+        if (nextChapter != null) {
+            seekToPosition(nextChapter.startTimeMs)
+        }
+    }
+
+    fun skipToPreviousChapter() {
+        val chapters = _currentPodcastChapters.value
+        if (chapters.isEmpty()) return
+        val currentPos = _audioPositionMs.value
+        val currentChapter = _currentChapter.value
+        if (currentChapter != null && currentPos > currentChapter.startTimeMs + 3000L) {
+            seekToPosition(currentChapter.startTimeMs)
+            return
+        }
+        val prevChapter = chapters.lastOrNull { it.startTimeMs < (currentChapter?.startTimeMs ?: currentPos) }
+        if (prevChapter != null) {
+            seekToPosition(prevChapter.startTimeMs)
+        } else {
+            seekToPosition(0L)
         }
     }
 
     fun seekToPosition(posMs: Long) {
+        android.util.Log.d("AUDIO_DEBUG", "🔴 seekToPosition() chamado com posMs=$posMs (mídia: ${_activeMediaType.value})")
+        if (_activeMediaType.value == ActiveMediaType.LIVE_RADIO || _currentStation.value != null) {
+            android.util.Log.d("AUDIO_DEBUG", "seekToPosition ignorado: rádio ao vivo não permite seek")
+            return
+        }
+        val routeManager = AudioRouteManager.getInstance(context)
+        if (routeManager.isCastingActive()) {
+            routeManager.seekTo(posMs)
+            _audioPositionMs.value = posMs
+            updateCurrentChapter(posMs)
+            _currentPodcastEpisode.value?.let { ep ->
+                com.example.data.repository.PodcastRepository.getInstance(context).savePlaybackPosition(ep.id, posMs)
+            }
+            return
+        }
         val player = exoPlayer ?: return
         val duration = if (_audioDurationMs.value > 0) _audioDurationMs.value else player.duration
         val target = posMs.coerceIn(0L, duration.coerceAtLeast(0L))
@@ -361,6 +416,14 @@ class RadioPlayerManager private constructor(private val context: Context) {
         }
     }
 
+    fun requestAudioFocus(): Boolean {
+        // O ExoPlayer já gerencia nativamente o AudioFocus via setAudioAttributes(audioAttributes, true)
+        // e setHandleAudioBecomingNoisy(true). Registrar um listener manual concorrente no AudioManager
+        // faz com que o Android despache AUDIOFOCUS_LOSS (-1) para o listener manual assim que o ExoPlayer
+        // inicia o playback, causando o cancelamento/pausa imediata do áudio após ~600ms.
+        return true
+    }
+
     private fun initPlayer() {
         val audioAttributes = AudioAttributes.Builder()
             .setUsage(C.USAGE_MEDIA)
@@ -370,10 +433,10 @@ class RadioPlayerManager private constructor(private val context: Context) {
         // Configure buffer for continuous, resilient live radio streaming (zero backBuffer to save RAM)
         val loadControl = DefaultLoadControl.Builder()
             .setBufferDurationsMs(
-                6000,   // minBufferMs (6 segundos de reserva segura para evitar engasgos)
-                18000,  // maxBufferMs (18 segundos)
-                1200,   // bufferForPlaybackMs (1.2 segundos para início rápido sem engasgo)
-                2500    // bufferForPlaybackAfterRebufferMs (2.5 segundos para re-buffer seguro)
+                15000,  // minBufferMs (15 segundos para estabilidade contínua sem engasgo)
+                50000,  // maxBufferMs (50 segundos)
+                5000,   // bufferForPlaybackMs (5 segundos para iniciar reprodução sem rebuffering)
+                8000    // bufferForPlaybackAfterRebufferMs (8 segundos para rebuffer seguro)
             )
             .setPrioritizeTimeOverSizeThresholds(false)
             .setBackBuffer(0, false) // Sem retenção de buffer passado para economizar memória RAM
@@ -385,7 +448,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .setLoadControl(loadControl)
             .build().apply {
-                repeatMode = Player.REPEAT_MODE_ALL
+                repeatMode = Player.REPEAT_MODE_OFF
                 volume = 1.0f // Ganho unitário: delega o volume estritamente ao AudioManager.STREAM_MUSIC
                 addListener(object : Player.Listener {
                     override fun onPlaybackStateChanged(state: Int) {
@@ -421,8 +484,18 @@ class RadioPlayerManager private constructor(private val context: Context) {
                             }
                             Player.STATE_ENDED -> {
                                 cancelBufferingWatchdog()
-                                if (_currentLocalAudio.value != null) {
+                                if (stopAtEndOfEpisodeOrTrack) {
+                                    triggerSleepTimerStop()
+                                } else if (_currentLocalAudio.value != null) {
                                     nextLocalTrack()
+                                } else if (_currentPodcastEpisode.value != null) {
+                                    if (podcastQueue.size > 1) {
+                                        nextPodcastEpisode()
+                                    } else {
+                                        _playbackStatus.value = RadioPlaybackStatus.IDLE
+                                        releaseLocks()
+                                        stopVisualizer()
+                                    }
                                 } else {
                                     val station = _currentStation.value
                                     if (station != null && !userInitiatedPause) {
@@ -560,7 +633,14 @@ class RadioPlayerManager private constructor(private val context: Context) {
     fun getCurrentPlaylist(): List<RadioStation> = playlist
 
     fun playNextStation() {
-        val list = if (playlist.isNotEmpty()) playlist else com.example.data.repository.CuratedData.CURATED_GLOBAL_STATIONS
+        val coordinatorContextItems = (context.applicationContext as? com.example.RadioApp)?.playbackCoordinator?.navigationContext?.value?.items
+        val list = if (!coordinatorContextItems.isNullOrEmpty()) {
+            coordinatorContextItems.map { it.toRadioStation() }
+        } else if (playlist.isNotEmpty()) {
+            playlist
+        } else {
+            com.example.data.repository.CuratedData.CURATED_GLOBAL_STATIONS
+        }
         if (list.isNotEmpty()) {
             val current = _currentStation.value
             val currentIndex = list.indexOfFirst { it.id == current?.id }
@@ -570,7 +650,14 @@ class RadioPlayerManager private constructor(private val context: Context) {
     }
 
     fun playPreviousStation() {
-        val list = if (playlist.isNotEmpty()) playlist else com.example.data.repository.CuratedData.CURATED_GLOBAL_STATIONS
+        val coordinatorContextItems = (context.applicationContext as? com.example.RadioApp)?.playbackCoordinator?.navigationContext?.value?.items
+        val list = if (!coordinatorContextItems.isNullOrEmpty()) {
+            coordinatorContextItems.map { it.toRadioStation() }
+        } else if (playlist.isNotEmpty()) {
+            playlist
+        } else {
+            com.example.data.repository.CuratedData.CURATED_GLOBAL_STATIONS
+        }
         if (list.isNotEmpty()) {
             val current = _currentStation.value
             val currentIndex = list.indexOfFirst { it.id == current?.id }
@@ -615,6 +702,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
     }
 
     fun playStation(station: RadioStation) {
+        requestAudioFocus()
         clearPlayerMetadata()
         try {
             LocalVideoPlayerManager.getInstance(context).pause()
@@ -1077,6 +1165,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
     }
 
     fun playLocalAudio(track: com.example.data.model.LocalAudioTrack, queue: List<com.example.data.model.LocalAudioTrack> = emptyList()) {
+        requestAudioFocus()
         clearPlayerMetadata()
         try {
             LocalVideoPlayerManager.getInstance(context).pause()
@@ -1172,6 +1261,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
         show: com.example.data.model.PodcastShow? = null,
         queue: List<com.example.data.model.PodcastEpisode> = emptyList()
     ) {
+        requestAudioFocus()
         clearPlayerMetadata()
         try {
             LocalVideoPlayerManager.getInstance(context).pause()
@@ -1289,6 +1379,10 @@ class RadioPlayerManager private constructor(private val context: Context) {
     }
 
     fun seekRelative(offsetMs: Long) {
+        if (_activeMediaType.value == ActiveMediaType.LIVE_RADIO || _currentStation.value != null) {
+            android.util.Log.d("AUDIO_DEBUG", "seekRelative ignorado: rádio ao vivo não permite seek")
+            return
+        }
         val player = exoPlayer ?: return
         val current = player.currentPosition
         val target = (current + offsetMs).coerceIn(0L, player.duration.coerceAtLeast(0L))
@@ -1320,17 +1414,38 @@ class RadioPlayerManager private constructor(private val context: Context) {
         audioProgressJob?.cancel()
         audioProgressJob = scope.launch {
             while (isActive) {
-                exoPlayer?.let { p ->
-                    val pos = p.currentPosition.coerceAtLeast(0L)
-                    _audioPositionMs.value = pos
-                    updateCurrentChapter(pos)
-                    val dur = p.duration
-                    if (dur > 0) {
-                        _audioDurationMs.value = dur
-                    }
-                    _currentPodcastEpisode.value?.let { ep ->
+                val routeManager = AudioRouteManager.getInstance(context)
+                if (routeManager.isCastingActive()) {
+                    val rmc = routeManager.getRemoteMediaClient()
+                    if (rmc != null) {
+                        val pos = rmc.approximateStreamPosition.coerceAtLeast(0L)
                         if (pos > 0) {
-                            com.example.data.repository.PodcastRepository.getInstance(context).savePlaybackPosition(ep.id, pos)
+                            _audioPositionMs.value = pos
+                            updateCurrentChapter(pos)
+                        }
+                        val streamDur = rmc.streamDuration
+                        if (streamDur > 0) {
+                            _audioDurationMs.value = streamDur
+                        }
+                        _currentPodcastEpisode.value?.let { ep ->
+                            if (pos > 0) {
+                                com.example.data.repository.PodcastRepository.getInstance(context).savePlaybackPosition(ep.id, pos)
+                            }
+                        }
+                    }
+                } else {
+                    exoPlayer?.let { p ->
+                        val pos = p.currentPosition.coerceAtLeast(0L)
+                        _audioPositionMs.value = pos
+                        updateCurrentChapter(pos)
+                        val dur = p.duration
+                        if (dur > 0) {
+                            _audioDurationMs.value = dur
+                        }
+                        _currentPodcastEpisode.value?.let { ep ->
+                            if (pos > 0) {
+                                com.example.data.repository.PodcastRepository.getInstance(context).savePlaybackPosition(ep.id, pos)
+                            }
                         }
                     }
                 }
@@ -1393,7 +1508,10 @@ class RadioPlayerManager private constructor(private val context: Context) {
             eq.enabled = _isEqualizerEnabled.value
             if (!eq.enabled) return
 
-            val range = try { eq.bandLevelRange } catch (_: Exception) { shortArrayOf(-1200, 1200) }
+            val range = try { eq.bandLevelRange } catch (e: Exception) {
+                android.util.Log.d("RadioPlayerManager", "Using default bandLevelRange: ${e.message}")
+                shortArrayOf(-1200, 1200)
+            }
             val minMb = if (range.isNotEmpty()) range[0].toInt() else -1200
             val maxMb = if (range.size > 1) range[1].toInt() else 1200
 
@@ -1410,7 +1528,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
     fun setEqualizerEnabled(enabled: Boolean) {
         _isEqualizerEnabled.value = enabled
-        eqPrefs.edit().putBoolean("eq_enabled", enabled).apply()
+        eqPrefs.edit().putBoolean("eq_enabled", enabled).commit()
         applyEqualizerToHardware()
     }
 
@@ -1429,14 +1547,14 @@ class RadioPlayerManager private constructor(private val context: Context) {
         }
 
         _equalizerPreset.value = canonicalName
-        eqPrefs.edit().putString("eq_preset", canonicalName).apply()
+        eqPrefs.edit().putString("eq_preset", canonicalName).commit()
 
         if (canonicalName != "Personalizado") {
             val presetBands = EQUALIZER_PRESETS[canonicalName] ?: listOf(0f, 0f, 0f, 0f, 0f)
             _equalizerBands.value = presetBands
             eqPrefs.edit().apply {
                 presetBands.forEachIndexed { idx, v -> putFloat("eq_band_$idx", v) }
-                apply()
+                commit()
             }
         }
         applyEqualizerToHardware()
@@ -1452,7 +1570,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
         eqPrefs.edit().apply {
             putString("eq_preset", "Personalizado")
             updated.forEachIndexed { idx, v -> putFloat("eq_band_$idx", v) }
-            apply()
+            commit()
         }
         applyEqualizerToHardware()
     }
@@ -1491,12 +1609,15 @@ class RadioPlayerManager private constructor(private val context: Context) {
     }
 
     fun pause() {
+        android.util.Log.d("AUDIO_DEBUG", "🔴 pause() chamado")
         if (AudioRouteManager.getInstance(context).isCastingActive()) {
             AudioRouteManager.getInstance(context).pause()
         }
         try {
             LocalVideoPlayerManager.getInstance(context).pause()
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            android.util.Log.w("RadioPlayerManager", "Falha ao pausar LocalVideoPlayerManager: ${e.message}")
+        }
         userInitiatedPause = true
         cancelBufferingWatchdog()
         streamingTimeoutJob?.cancel()
@@ -1510,12 +1631,15 @@ class RadioPlayerManager private constructor(private val context: Context) {
     }
 
     fun resume() {
+        android.util.Log.d("AUDIO_DEBUG", "🔴 resume()/play chamado - estado: ${exoPlayer?.playbackState}")
+        requestAudioFocus()
         if (AudioRouteManager.getInstance(context).isCastingActive()) {
             AudioRouteManager.getInstance(context).play()
             return
         }
         userInitiatedPause = false
         acquireLocks()
+        exoPlayer?.volume = 1.0f
         exoPlayer?.play()
         _playbackStatus.value = RadioPlaybackStatus.PLAYING
         startVisualizer()
@@ -1528,6 +1652,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
     }
 
     fun stop() {
+        android.util.Log.d("AUDIO_DEBUG", "🔴 stop() chamado")
         if (AudioRouteManager.getInstance(context).isCastingActive()) {
             AudioRouteManager.getInstance(context).pause()
         }
@@ -1563,12 +1688,14 @@ class RadioPlayerManager private constructor(private val context: Context) {
     }
 
     fun setVolumeLevel(newVolume: Float) {
+        android.util.Log.d("AUDIO_DEBUG", "🔵 setVolumeLevel() chamado: $newVolume")
         val clamped = newVolume.coerceIn(0f, 1f)
         _volume.value = clamped
         _isMuted.value = (clamped <= 0.01f)
         exoPlayer?.volume = 1.0f
         if (AudioRouteManager.getInstance(context).isCastingActive()) {
             AudioRouteManager.getInstance(context).setVolume(clamped)
+            return
         }
         try {
             audioManager?.let { am ->
@@ -1576,27 +1703,74 @@ class RadioPlayerManager private constructor(private val context: Context) {
                 val targetVol = kotlin.math.round(clamped * maxVol).toInt().coerceIn(0, maxVol)
                 am.setStreamVolume(AudioManager.STREAM_MUSIC, targetVol, 0)
             }
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            android.util.Log.w("RadioPlayerManager", "Falha ao ajustar stream volume do sistema: ${e.message}")
+        }
 
         // Salvar persistentemente na preferência para preservar a consistência de volume entre execuções
         try {
             if (clamped > 0.01f) {
                 com.example.data.preferences.IpodPreferencesManager.getInstance(context).volumeLevel = clamped
             }
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            android.util.Log.w("RadioPlayerManager", "Falha ao salvar volume persistentemente: ${e.message}")
+        }
     }
 
     fun adjustVolumeDelta(delta: Float) {
         setVolumeLevel(_volume.value + delta)
     }
 
-    fun setSleepTimer(minutes: Int) {
+    private var stopAtEndOfEpisodeOrTrack = false
+
+    private fun triggerSleepTimerStop() {
+        pause()
+        try {
+            LocalVideoPlayerManager.getInstance(context).pause()
+        } catch (e: Exception) {
+            android.util.Log.w("RadioPlayerManager", "Falha ao pausar vídeo no sleep timer: ${e.message}")
+        }
+        try {
+            val pauseIntent = Intent(context, RadioMediaService::class.java).apply {
+                action = RadioMediaService.ACTION_PAUSE
+            }
+            context.startService(pauseIntent)
+        } catch (e: Exception) {
+            android.util.Log.w("RadioPlayerManager", "Falha ao enviar pauseIntent no sleep timer: ${e.message}")
+        }
+        exoPlayer?.volume = 1.0f
+        _sleepTimerSecondsRemaining.value = 0L
+        _sleepTimerMinutes.value = 0
+        stopAtEndOfEpisodeOrTrack = false
+    }
+
+    fun setSleepTimer(minutes: Int, stopAtEndOfEpisode: Boolean = false) {
         sleepTimerJob?.cancel()
+        stopAtEndOfEpisodeOrTrack = stopAtEndOfEpisode || minutes == -1
+
+        if (stopAtEndOfEpisodeOrTrack) {
+            _sleepTimerMinutes.value = -1
+            _sleepTimerSecondsRemaining.value = -1L
+            sleepTimerJob = scope.launch(Dispatchers.Main) {
+                while (isActive && stopAtEndOfEpisodeOrTrack) {
+                    val duration = _audioDurationMs.value
+                    val position = _audioPositionMs.value
+                    if (duration > 0L && position >= duration - 1500L) {
+                        triggerSleepTimerStop()
+                        break
+                    }
+                    delay(500L)
+                }
+            }
+            return
+        }
+
         val totalSeconds = minutes * 60L
         _sleepTimerSecondsRemaining.value = totalSeconds
         _sleepTimerMinutes.value = minutes
         if (totalSeconds > 0L) {
             val targetEndMs = System.currentTimeMillis() + totalSeconds * 1000L
+            val fadeDurationSec = 60L.coerceAtMost(totalSeconds / 3L).coerceAtLeast(10L)
             sleepTimerJob = scope.launch(Dispatchers.Main) {
                 while (isActive) {
                     val now = System.currentTimeMillis()
@@ -1607,23 +1781,25 @@ class RadioPlayerManager private constructor(private val context: Context) {
                     val remainingSec = (remainingMs + 999L) / 1000L
                     _sleepTimerSecondsRemaining.value = remainingSec
                     _sleepTimerMinutes.value = ((remainingSec + 59L) / 60L).toInt()
+
+                    // Suave Fade-out de volume nos últimos instantes antes de desligar
+                    if (remainingSec <= fadeDurationSec) {
+                        val fadeFactor = (remainingSec.toFloat() / fadeDurationSec.toFloat()).coerceIn(0.0f, 1.0f)
+                        exoPlayer?.volume = fadeFactor
+                    } else {
+                        if (exoPlayer?.volume != 1.0f) {
+                            exoPlayer?.volume = 1.0f
+                        }
+                    }
+
                     delay(1000L.coerceAtMost(remainingMs))
                 }
                 if (isActive) {
-                    pause()
-                    try {
-                        LocalVideoPlayerManager.getInstance(context).pause()
-                    } catch (_: Exception) {}
-                    try {
-                        val pauseIntent = Intent(context, RadioMediaService::class.java).apply {
-                            action = RadioMediaService.ACTION_PAUSE
-                        }
-                        context.startService(pauseIntent)
-                    } catch (_: Exception) {}
-                    _sleepTimerSecondsRemaining.value = 0L
-                    _sleepTimerMinutes.value = 0
+                    triggerSleepTimerStop()
                 }
             }
+        } else {
+            exoPlayer?.volume = 1.0f
         }
     }
 

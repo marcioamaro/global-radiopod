@@ -38,7 +38,12 @@ class PodcastRepository private constructor(private val context: Context) {
     private val _customShowsFlow = MutableStateFlow<List<PodcastShow>>(emptyList())
     val customShowsFlow: StateFlow<List<PodcastShow>> = _customShowsFlow.asStateFlow()
 
+    private val _subscriptionsFlow = MutableStateFlow<List<PodcastShow>>(emptyList())
+    val subscriptionsFlow: StateFlow<List<PodcastShow>> = _subscriptionsFlow.asStateFlow()
+
     fun getCustomPodcasts(): List<PodcastShow> = _customShowsFlow.value
+
+    fun getCuratedShows(): List<PodcastShow> = _curatedShows.toList()
 
     fun addCustomPodcast(title: String, feedUrl: String): PodcastShow {
         val show = PodcastShow(
@@ -155,6 +160,7 @@ class PodcastRepository private constructor(private val context: Context) {
         loadFavoritesFromPrefs()
         loadRecentsFromPrefs()
         loadCustomShowsFromPrefs()
+        loadSubscriptionsFromPrefs()
     }
 
     private fun loadCatalogFromAssets() {
@@ -422,6 +428,92 @@ class PodcastRepository private constructor(private val context: Context) {
         } catch (_: Exception) {}
     }
 
+    // --- Assinaturas de Podcasts (Subscriptions) & Badges ---
+
+    fun isSubscribed(showId: String): Boolean {
+        return _subscriptionsFlow.value.any { it.id == showId || it.feedUrl.equals(showId, ignoreCase = true) }
+    }
+
+    fun subscribe(show: PodcastShow) {
+        val current = _subscriptionsFlow.value.toMutableList()
+        val exists = current.any { it.id == show.id || it.feedUrl.equals(show.feedUrl, ignoreCase = true) }
+        if (!exists) {
+            current.add(0, show.copy(isSubscribed = true))
+            _subscriptionsFlow.value = current
+            saveSubscriptionsToPrefs()
+        }
+    }
+
+    fun unsubscribe(showId: String) {
+        val current = _subscriptionsFlow.value.toMutableList()
+        current.removeAll { it.id == showId || it.feedUrl.equals(showId, ignoreCase = true) }
+        _subscriptionsFlow.value = current
+        saveSubscriptionsToPrefs()
+    }
+
+    fun toggleSubscription(show: PodcastShow) {
+        if (isSubscribed(show.id)) {
+            unsubscribe(show.id)
+        } else {
+            subscribe(show)
+        }
+    }
+
+    fun markEpisodePlayed(episodeId: String, played: Boolean = true) {
+        prefs.edit().putBoolean("played_$episodeId", played).commit()
+    }
+
+    fun isEpisodePlayed(episodeId: String): Boolean {
+        return prefs.getBoolean("played_$episodeId", false)
+    }
+
+    fun getUnreadCount(episodes: List<PodcastEpisode>): Int {
+        return episodes.count { !isEpisodePlayed(it.id) }
+    }
+
+    private fun saveSubscriptionsToPrefs() {
+        val array = JSONArray()
+        for (item in _subscriptionsFlow.value) {
+            val obj = JSONObject().apply {
+                put("id", item.id)
+                put("title", item.title)
+                put("author", item.author)
+                put("description", item.description)
+                put("feedUrl", item.feedUrl)
+                put("artworkUrl", item.artworkUrl)
+                put("country", item.country)
+                put("category", item.category)
+            }
+            array.put(obj)
+        }
+        prefs.edit().putString("podcast_subscriptions_json", array.toString()).commit()
+    }
+
+    private fun loadSubscriptionsFromPrefs() {
+        val json = prefs.getString("podcast_subscriptions_json", null) ?: return
+        try {
+            val array = JSONArray(json)
+            val list = mutableListOf<PodcastShow>()
+            for (i in 0 until array.length()) {
+                val obj = array.getJSONObject(i)
+                list.add(
+                    PodcastShow(
+                        id = obj.getString("id"),
+                        title = obj.getString("title"),
+                        author = obj.optString("author", ""),
+                        description = obj.optString("description", ""),
+                        feedUrl = obj.getString("feedUrl"),
+                        artworkUrl = obj.optString("artworkUrl", ""),
+                        country = obj.optString("country", "BR"),
+                        category = obj.optString("category", "Geral"),
+                        isSubscribed = true
+                    )
+                )
+            }
+            _subscriptionsFlow.value = list
+        } catch (_: Exception) {}
+    }
+
     companion object {
         @Volatile
         private var INSTANCE: PodcastRepository? = null
@@ -432,6 +524,11 @@ class PodcastRepository private constructor(private val context: Context) {
                 INSTANCE = instance
                 instance
             }
+        }
+
+        @androidx.annotation.VisibleForTesting
+        fun clearInstanceForTesting() {
+            INSTANCE = null
         }
     }
 }

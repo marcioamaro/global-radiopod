@@ -1,0 +1,34 @@
+{
+  "timestamp": "2026-09-18T11:11:03.566190",
+  "dry_run": false,
+  "previous_total": 1549,
+  "added_count": 5,
+  "new_total": 1554,
+  "added_stations": [
+    {
+      "id": "br_sp_araras_rural_fm_87_9_araras",
+      "name": "Rural FM 87.9 Araras",
+      "city": "Araras"
+    },
+    {
+      "id": "br_sp_araras_araras_fm_107_7",
+      "name": "Rádio Araras FM 107.7",
+      "city": "Araras"
+    },
+    {
+      "id": "br_sp_araras_conecta_fm_104_1_araras",
+      "name": "Conecta FM 104.1 Araras",
+      "city": "Araras"
+    },
+    {
+      "id": "br_sp_araras_cidade_das_arvores",
+      "name": "Rádio Cidade das Árvores",
+      "city": "Araras"
+    },
+    {
+      "id": "br_sp_araras_fraternidade_fm_97_9",
+      "name": "Fraternidade FM 97.9",
+      "city": "Araras"
+    }
+  ]
+}

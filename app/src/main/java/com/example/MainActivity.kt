@@ -48,10 +48,33 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel: RadioViewModel by viewModels()
 
+    private var volumeObserver: android.database.ContentObserver? = null
+
+    private fun registerVolumeObserver() {
+        if (volumeObserver == null) {
+            val handler = android.os.Handler(android.os.Looper.getMainLooper())
+            volumeObserver = object : android.database.ContentObserver(handler) {
+                override fun onChange(selfChange: Boolean) {
+                    super.onChange(selfChange)
+                    val vm = com.example.audio.VolumeManager.getInstance(applicationContext)
+                    vm.setSystemVolume(vm.getSystemVolume())
+                }
+            }
+            try {
+                contentResolver.registerContentObserver(
+                    android.provider.Settings.System.CONTENT_URI,
+                    true,
+                    volumeObserver!!
+                )
+            } catch (_: Exception) {}
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         volumeControlStream = android.media.AudioManager.STREAM_MUSIC
         enableEdgeToEdge()
+        registerVolumeObserver()
 
         setContent {
             MyApplicationTheme {
@@ -67,11 +90,13 @@ class MainActivity : ComponentActivity() {
 
     override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
         if (event.keyCode == android.view.KeyEvent.KEYCODE_VOLUME_UP || event.keyCode == android.view.KeyEvent.KEYCODE_VOLUME_DOWN) {
-            val audioRouteManager = com.example.player.AudioRouteManager.getInstance(this)
-            if (audioRouteManager.isCastingActive()) {
+            val volumeManager = com.example.audio.VolumeManager.getInstance(this)
+            val coordinator = (applicationContext as? com.example.RadioApp)?.playbackCoordinator
+            if (volumeManager.activeRoute.value == com.example.audio.VolumeManager.AudioRoute.CAST) {
                 if (event.action == android.view.KeyEvent.ACTION_DOWN) {
                     val delta = if (event.keyCode == android.view.KeyEvent.KEYCODE_VOLUME_UP) 0.05f else -0.05f
-                    audioRouteManager.adjustVolumeDelta(delta)
+                    val current = volumeManager.getActiveVolume()
+                    coordinator?.setActiveVolume((current + delta).coerceIn(0f, 1f))
                 }
                 return true
             }
@@ -91,6 +116,14 @@ class MainActivity : ComponentActivity() {
         if (!prefs.getBoolean("battery_opt_checked", false)) {
             com.example.util.BatteryOptimizationHelper.checkAndRequest(this, this)
             prefs.edit().putBoolean("battery_opt_checked", true).apply()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        volumeObserver?.let {
+            try { contentResolver.unregisterContentObserver(it) } catch (_: Exception) {}
+            volumeObserver = null
         }
     }
 }

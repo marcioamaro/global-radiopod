@@ -15,7 +15,9 @@ data class PodcastShow(
     val episodeCount: Int = 0,
     val latestReleaseDate: String = "",
     val isCustom: Boolean = false,
-    val isFavorite: Boolean = false
+    val isFavorite: Boolean = false,
+    val isSubscribed: Boolean = false,
+    val unreadCount: Int = 0
 ) {
     val displayCountry: String
         get() = when (country.uppercase()) {
@@ -65,8 +67,13 @@ data class PodcastEpisode(
     val playbackPositionMs: Long = 0L,
     val isFavorite: Boolean = false,
     val chaptersUrl: String = "",
-    val chapters: List<PodcastChapter> = emptyList()
+    val chapters: List<PodcastChapter> = emptyList(),
+    val localFilePath: String? = null,
+    val isPlayed: Boolean = false
 ) {
+    val isDownloaded: Boolean
+        get() = !localFilePath.isNullOrBlank()
+
     val displayDuration: String
         get() {
             if (durationMs <= 0) return "Áudio"

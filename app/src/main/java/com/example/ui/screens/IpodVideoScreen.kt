@@ -44,14 +44,6 @@ fun IpodVideoFoldersScreen(
     fontScale: Float,
     isBold: Boolean
 ) {
-    val listState = rememberLazyListState()
-
-    LaunchedEffect(selectedIndex) {
-        if (selectedIndex in folders.indices) {
-            listState.animateScrollToItem(selectedIndex)
-        }
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -97,54 +89,53 @@ fun IpodVideoFoldersScreen(
                 )
             }
         } else {
-            LazyColumn(
-                state = listState,
+            com.example.ui.components.SelectableLazyColumn(
+                items = folders,
+                selectedIndex = selectedIndex,
+                key = { _, folder -> folder.path },
                 modifier = Modifier.fillMaxSize()
-            ) {
-                itemsIndexed(folders) { index, folder ->
-                    val isSelected = index == selectedIndex
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                if (isSelected) backlightHighlight.copy(alpha = 0.85f)
-                                else Color.Transparent
-                            )
-                            .clickable { onSelectFolder(folder) }
-                            .padding(horizontal = 10.dp, vertical = 7.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Folder,
-                            contentDescription = null,
-                            tint = if (isSelected) Color.White else backlightTextSecondary,
-                            modifier = Modifier.size(16.dp)
+            ) { index, folder, isSelected ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            if (isSelected) backlightHighlight.copy(alpha = 0.85f)
+                            else Color.Transparent
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = folder.name,
-                                color = if (isSelected) Color.White else backlightTextPrimary,
-                                fontSize = (12f * fontScale).sp,
-                                fontWeight = if (isBold || isSelected) FontWeight.Bold else FontWeight.Medium,
-                                fontFamily = fontFamily,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Text(
-                                text = "${folder.itemCount} vídeos",
-                                color = if (isSelected) Color.White.copy(alpha = 0.8f) else backlightTextSecondary,
-                                fontSize = (10f * fontScale).sp,
-                                fontFamily = fontFamily
-                            )
-                        }
-                        Icon(
-                            imageVector = Icons.Default.ChevronRight,
-                            contentDescription = null,
-                            tint = if (isSelected) Color.White else backlightTextSecondary,
-                            modifier = Modifier.size(16.dp)
+                        .clickable { onSelectFolder(folder) }
+                        .padding(horizontal = 10.dp, vertical = 7.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Folder,
+                        contentDescription = null,
+                        tint = if (isSelected) Color.White else backlightTextSecondary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = folder.name,
+                            color = if (isSelected) Color.White else backlightTextPrimary,
+                            fontSize = (12f * fontScale).sp,
+                            fontWeight = if (isBold || isSelected) FontWeight.Bold else FontWeight.Medium,
+                            fontFamily = fontFamily,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = "${folder.itemCount} vídeos",
+                            color = if (isSelected) Color.White.copy(alpha = 0.8f) else backlightTextSecondary,
+                            fontSize = (10f * fontScale).sp,
+                            fontFamily = fontFamily
                         )
                     }
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        tint = if (isSelected) Color.White else backlightTextSecondary,
+                        modifier = Modifier.size(16.dp)
+                    )
                 }
             }
         }
@@ -166,14 +157,6 @@ fun IpodVideoListScreen(
     fontScale: Float,
     isBold: Boolean
 ) {
-    val listState = rememberLazyListState()
-
-    LaunchedEffect(selectedIndex) {
-        if (selectedIndex in videos.indices) {
-            listState.animateScrollToItem(selectedIndex)
-        }
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -220,12 +203,12 @@ fun IpodVideoListScreen(
                 )
             }
         } else {
-            LazyColumn(
-                state = listState,
+            com.example.ui.components.SelectableLazyColumn(
+                items = videos,
+                selectedIndex = selectedIndex,
+                key = { _, video -> video.id },
                 modifier = Modifier.fillMaxSize()
-            ) {
-                itemsIndexed(videos) { index, video ->
-                    val isSelected = index == selectedIndex
+            ) { index, video, isSelected ->
                     val isCurrentPlaying = video.id == currentVideoId
 
                     Row(
@@ -269,7 +252,6 @@ fun IpodVideoListScreen(
             }
         }
     }
-}
 
 @OptIn(UnstableApi::class)
 @Composable

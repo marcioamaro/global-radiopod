@@ -99,157 +99,149 @@ fun IpodYouTubeListScreen(
     fontScale: Float = 1.5f,
     isBold: Boolean = true
 ) {
-    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
-    androidx.compose.runtime.LaunchedEffect(selectedIndex) {
-        if (selectedIndex in 0..videos.size) {
-            try {
-                listState.animateScrollToItem(selectedIndex)
-            } catch (_: Exception) {
-                listState.scrollToItem(selectedIndex)
-            }
-        }
+    val allEntries = remember(videos) {
+        listOf<YouTubeVideo?>(null) + videos
     }
 
-    LazyColumn(
-        state = listState,
+    com.example.ui.components.SelectableLazyColumn(
+        items = allEntries,
+        selectedIndex = selectedIndex,
+        key = { idx, entry -> entry?.id ?: "add_yt_btn" },
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 6.dp, vertical = 4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        // Item 0: Botão de Adicionar URL de Vídeo
-        item {
-            val isSelected = selectedIndex == 0
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(if (isSelected) backlightHighlight else backlightTextPrimary.copy(alpha = 0.08f))
-                    .clickable(onClick = onSelectAddVideo)
-                    .padding(horizontal = 8.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clip(CircleShape)
-                        .background(if (isSelected) Color.White.copy(alpha = 0.25f) else backlightHighlight.copy(alpha = 0.2f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Adicionar",
-                        tint = if (isSelected) Color.White else backlightHighlight,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(10.dp))
-
-                Column {
-                    Text(
-                        text = "[+ Adicionar Vídeo do YouTube]",
-                        color = if (isSelected) Color.White else backlightTextPrimary,
-                        fontSize = (11.5f * fontScale).coerceIn(10.5f, 15f).sp,
-                        fontWeight = if (isBold) FontWeight.Black else FontWeight.Bold,
-                        fontFamily = fontFamily
-                    )
-                    Text(
-                        text = "Cole links de vídeos, shorts ou músicas",
-                        color = if (isSelected) Color.White.copy(alpha = 0.85f) else backlightTextSecondary,
-                        fontSize = (9f * fontScale).coerceIn(8.5f, 11f).sp,
-                        fontFamily = fontFamily
-                    )
-                }
-            }
-        }
-
-        if (videos.isEmpty()) {
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 28.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Nenhum vídeo adicionado ainda.\nClique acima para colar uma URL do YouTube.",
-                        color = backlightTextSecondary,
-                        fontSize = (10f * fontScale).sp,
-                        fontFamily = fontFamily,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-                }
-            }
-        } else {
-            itemsIndexed(videos, key = { _, v -> v.id }) { index, video ->
-                val isSelected = selectedIndex == (index + 1)
+    ) { index, entry, isSelected ->
+        if (index == 0 || entry == null) {
+            Column {
+                // Item 0: Botão de Adicionar URL de Vídeo
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(6.dp))
-                        .background(if (isSelected) backlightHighlight else Color.Transparent)
-                        .clickable { onSelectVideo(video) }
-                        .padding(horizontal = 6.dp, vertical = 6.dp),
+                        .background(if (isSelected) backlightHighlight else backlightTextPrimary.copy(alpha = 0.08f))
+                        .clickable(onClick = onSelectAddVideo)
+                        .padding(horizontal = 8.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Thumbnail
                     Box(
                         modifier = Modifier
-                            .size(width = 54.dp, height = 36.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(Color(0x33000000))
-                            .border(0.8.dp, backlightTextPrimary.copy(alpha = 0.35f), RoundedCornerShape(4.dp)),
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .background(if (isSelected) Color.White.copy(alpha = 0.25f) else backlightHighlight.copy(alpha = 0.2f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        AsyncImage(
-                            model = video.thumbnailUrl,
-                            contentDescription = video.title,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
                         Icon(
-                            imageVector = Icons.Default.PlayArrow,
-                            contentDescription = null,
-                            tint = Color.White.copy(alpha = 0.9f),
-                            modifier = Modifier.size(16.dp)
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Adicionar",
+                            tint = if (isSelected) Color.White else backlightHighlight,
+                            modifier = Modifier.size(18.dp)
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
 
-                    Column(modifier = Modifier.weight(1f)) {
+                    Column {
                         Text(
-                            text = video.title,
+                            text = "[+ Adicionar Vídeo do YouTube]",
                             color = if (isSelected) Color.White else backlightTextPrimary,
-                            fontSize = (11f * fontScale).coerceIn(10.5f, 14f).sp,
-                            fontWeight = if (isBold) FontWeight.Bold else FontWeight.Medium,
-                            fontFamily = fontFamily,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            fontSize = (11.5f * fontScale).coerceIn(10.5f, 15f).sp,
+                            fontWeight = if (isBold) FontWeight.Black else FontWeight.Bold,
+                            fontFamily = fontFamily
                         )
                         Text(
-                            text = video.url,
-                            color = if (isSelected) Color.White.copy(alpha = 0.8f) else backlightTextSecondary,
-                            fontSize = (8.5f * fontScale).coerceIn(8f, 10.5f).sp,
-                            fontFamily = fontFamily,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            text = "Cole links de vídeos, shorts ou músicas",
+                            color = if (isSelected) Color.White.copy(alpha = 0.85f) else backlightTextSecondary,
+                            fontSize = (9f * fontScale).coerceIn(8.5f, 11f).sp,
+                            fontFamily = fontFamily
                         )
                     }
+                }
 
-                    // Delete Button
-                    IconButton(
-                        onClick = { onDeleteVideo(video.id) },
-                        modifier = Modifier.size(28.dp)
+                if (videos.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 28.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Excluir Vídeo",
-                            tint = if (isSelected) Color.White else backlightTextSecondary.copy(alpha = 0.7f),
-                            modifier = Modifier.size(16.dp)
+                        Text(
+                            text = "Nenhum vídeo adicionado ainda.\nClique acima para colar uma URL do YouTube.",
+                            color = backlightTextSecondary,
+                            fontSize = (10f * fontScale).sp,
+                            fontFamily = fontFamily,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                     }
+                }
+            }
+        } else {
+            val video = entry
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(if (isSelected) backlightHighlight else Color.Transparent)
+                    .clickable { onSelectVideo(video) }
+                    .padding(horizontal = 6.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Thumbnail
+                Box(
+                    modifier = Modifier
+                        .size(width = 54.dp, height = 36.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Color(0x33000000))
+                        .border(0.8.dp, backlightTextPrimary.copy(alpha = 0.35f), RoundedCornerShape(4.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AsyncImage(
+                        model = video.thumbnailUrl,
+                        contentDescription = video.title,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = null,
+                        tint = Color.White.copy(alpha = 0.9f),
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = video.title,
+                        color = if (isSelected) Color.White else backlightTextPrimary,
+                        fontSize = (11f * fontScale).coerceIn(10.5f, 14f).sp,
+                        fontWeight = if (isBold) FontWeight.Bold else FontWeight.Medium,
+                        fontFamily = fontFamily,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = video.url,
+                        color = if (isSelected) Color.White.copy(alpha = 0.8f) else backlightTextSecondary,
+                        fontSize = (8.5f * fontScale).coerceIn(8f, 10.5f).sp,
+                        fontFamily = fontFamily,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                // Delete Button
+                IconButton(
+                    onClick = { onDeleteVideo(video.id) },
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Excluir Vídeo",
+                        tint = if (isSelected) Color.White else backlightTextSecondary.copy(alpha = 0.7f),
+                        modifier = Modifier.size(16.dp)
+                    )
                 }
             }
         }

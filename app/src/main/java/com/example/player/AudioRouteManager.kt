@@ -23,6 +23,19 @@ enum class AudioDeviceType {
     OTHER
 }
 
+/**
+ * Máquina de estados formal para sessões do Google Cast (Chromecast/Nest).
+ */
+enum class CastSessionState {
+    DISCONNECTED,
+    CONNECTING,
+    CONNECTED,
+    TRANSFERRING,
+    SUSPENDED,
+    ENDING,
+    ERROR
+}
+
 data class AudioRouteDevice(
     val id: String,
     val name: String,
@@ -36,13 +49,28 @@ data class AudioRouteDevice(
 class AudioRouteManager private constructor(private val context: Context) {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    private val mediaRouter: MediaRouter = MediaRouter.getInstance(context)
+    private val mediaRouter: MediaRouter? by lazy {
+        try {
+            MediaRouter.getInstance(context)
+        } catch (e: Exception) {
+            android.util.Log.w("AudioRouteManager", "MediaRouter indisponível neste ambiente: ${e.message}")
+            null
+        }
+    }
 
     private val _availableDevices = MutableStateFlow<List<AudioRouteDevice>>(emptyList())
     val availableDevices: StateFlow<List<AudioRouteDevice>> = _availableDevices.asStateFlow()
 
     private val _selectedDevice = MutableStateFlow<AudioRouteDevice?>(null)
     val selectedDevice: StateFlow<AudioRouteDevice?> = _selectedDevice.asStateFlow()
+
+    private val _castSessionState = MutableStateFlow(CastSessionState.DISCONNECTED)
+    val castSessionState: StateFlow<CastSessionState> = _castSessionState.asStateFlow()
+
+    @androidx.annotation.VisibleForTesting
+    fun setCastSessionStateForTesting(state: CastSessionState) {
+        _castSessionState.value = state
+    }
 
     private val routeSelector: MediaRouteSelector by lazy {
         val builder = MediaRouteSelector.Builder()
@@ -84,59 +112,138 @@ class AudioRouteManager private constructor(private val context: Context) {
 
     private var castSession: com.google.android.gms.cast.framework.CastSession? = null
     private var isCastingActive = false
+    private var lastRemoteIsPlaying: Boolean = true
+    private var lastRemoteStreamPositionMs: Long = 0L
+
+    private val castVolumeListener = object : com.google.android.gms.cast.Cast.Listener() {
+        override fun onVolumeChanged() {
+            val session = castSession ?: return
+            try {
+                val reportedVol = session.volume
+                android.util.Log.d("CAST_VOL", "onVolumeChanged reportado pelo CastSession: $reportedVol")
+                com.example.audio.VolumeManager.getInstance(context).updateCastVolumeFromStatus(reportedVol)
+            } catch (e: Exception) {
+                android.util.Log.w("CAST_VOL", "Erro ao ler volume em onVolumeChanged: ${e.message}")
+            }
+        }
+    }
 
     private val castSessionListener = object : com.google.android.gms.cast.framework.SessionManagerListener<com.google.android.gms.cast.framework.CastSession> {
-        override fun onSessionStarting(session: com.google.android.gms.cast.framework.CastSession) {}
+        override fun onSessionStarting(session: com.google.android.gms.cast.framework.CastSession) {
+            _castSessionState.value = CastSessionState.CONNECTING
+        }
         override fun onSessionStarted(session: com.google.android.gms.cast.framework.CastSession, sessionId: String) {
             castSession = session
             isCastingActive = true
+            _castSessionState.value = CastSessionState.CONNECTED
             startLocalIconServer()
             session.remoteMediaClient?.registerCallback(remoteClientCallback)
+            try {
+                session.addCastListener(castVolumeListener)
+            } catch (e: Exception) {
+                android.util.Log.w("CAST_VOL", "Falha ao registrar castVolumeListener: ${e.message}")
+            }
+            val volumeManager = com.example.audio.VolumeManager.getInstance(context)
+            val castVol = try { session.volume.toFloat() } catch (_: Exception) { 1.0f }
+            volumeManager.switchToCast(castVol)
             transferPlaybackToCast(session)
             updateRoutes()
         }
         override fun onSessionStartFailed(session: com.google.android.gms.cast.framework.CastSession, error: Int) {
             session.remoteMediaClient?.unregisterCallback(remoteClientCallback)
+            try {
+                session.removeCastListener(castVolumeListener)
+            } catch (_: Exception) {}
             castSession = null
             isCastingActive = false
+            _castSessionState.value = CastSessionState.ERROR
+            com.example.audio.VolumeManager.getInstance(context).switchToLocal()
             stopLocalIconServer()
             updateRoutes()
         }
         override fun onSessionEnding(session: com.google.android.gms.cast.framework.CastSession) {
+            _castSessionState.value = CastSessionState.ENDING
             session.remoteMediaClient?.unregisterCallback(remoteClientCallback)
+            try {
+                session.removeCastListener(castVolumeListener)
+            } catch (_: Exception) {}
         }
         override fun onSessionEnded(session: com.google.android.gms.cast.framework.CastSession, error: Int) {
             session.remoteMediaClient?.unregisterCallback(remoteClientCallback)
+            try {
+                session.removeCastListener(castVolumeListener)
+            } catch (_: Exception) {}
             castSession = null
             stopLocalIconServer()
+            _castSessionState.value = CastSessionState.DISCONNECTED
+            com.example.audio.VolumeManager.getInstance(context).switchToLocal()
             if (isCastingActive) {
                 isCastingActive = false
                 transferPlaybackToLocal()
             }
             updateRoutes()
         }
-        override fun onSessionResuming(session: com.google.android.gms.cast.framework.CastSession, sessionId: String) {}
+        override fun onSessionResuming(session: com.google.android.gms.cast.framework.CastSession, sessionId: String) {
+            _castSessionState.value = CastSessionState.CONNECTING
+        }
         override fun onSessionResumed(session: com.google.android.gms.cast.framework.CastSession, wasSuspended: Boolean) {
             castSession = session
             isCastingActive = true
+            _castSessionState.value = CastSessionState.CONNECTED
             startLocalIconServer()
             session.remoteMediaClient?.registerCallback(remoteClientCallback)
+            try {
+                session.addCastListener(castVolumeListener)
+            } catch (e: Exception) {
+                android.util.Log.w("CAST_VOL", "Falha ao registrar castVolumeListener: ${e.message}")
+            }
+            val volumeManager = com.example.audio.VolumeManager.getInstance(context)
+            val castVol = try { session.volume.toFloat() } catch (_: Exception) { 1.0f }
+            volumeManager.switchToCast(castVol)
             updateRoutes()
         }
         override fun onSessionResumeFailed(session: com.google.android.gms.cast.framework.CastSession, error: Int) {
             session.remoteMediaClient?.unregisterCallback(remoteClientCallback)
+            try {
+                session.removeCastListener(castVolumeListener)
+            } catch (_: Exception) {}
             castSession = null
             isCastingActive = false
+            _castSessionState.value = CastSessionState.ERROR
             stopLocalIconServer()
+            transferPlaybackToLocal()
             updateRoutes()
         }
-        override fun onSessionSuspended(session: com.google.android.gms.cast.framework.CastSession, reason: Int) {}
+        override fun onSessionSuspended(session: com.google.android.gms.cast.framework.CastSession, reason: Int) {
+            _castSessionState.value = CastSessionState.SUSPENDED
+        }
     }
 
     private val remoteClientCallback = object : com.google.android.gms.cast.framework.media.RemoteMediaClient.Callback() {
         override fun onStatusUpdated() {
             val rmc = castSession?.remoteMediaClient ?: return
             val playerManager = RadioPlayerManager.getInstance(context)
+            lastRemoteIsPlaying = rmc.isPlaying
+            val pos = rmc.approximateStreamPosition
+            if (pos > 0L && isCastingActive() && playerManager.activeMediaType.value != ActiveMediaType.LIVE_RADIO) {
+                lastRemoteStreamPositionMs = pos
+                playerManager.setAudioPositionDirect(pos)
+            }
+            try {
+                val castVol = castSession?.volume?.toFloat() ?: 1.0f
+                com.example.audio.VolumeManager.getInstance(context).updateCastVolume(castVol)
+            } catch (_: Exception) {}
+            val mediaStatus = rmc.mediaStatus
+            if (mediaStatus != null) {
+                if (mediaStatus.playerState == com.google.android.gms.cast.MediaStatus.PLAYER_STATE_IDLE &&
+                    mediaStatus.idleReason == com.google.android.gms.cast.MediaStatus.IDLE_REASON_FINISHED) {
+                    // Item finalizou no Chromecast -> Avançar automaticamente para o próximo da fila
+                    scope.launch(Dispatchers.Main) {
+                        playNext()
+                    }
+                    return
+                }
+            }
             if (rmc.isPlaying) {
                 playerManager.setPlaybackStatusDirect(RadioPlaybackStatus.PLAYING)
             } else if (rmc.isPaused) {
@@ -148,6 +255,11 @@ class AudioRouteManager private constructor(private val context: Context) {
     }
 
     init {
+        try {
+            com.example.audio.VolumeManager.getInstance(context).onCastVolumeChange = { vol ->
+                setCastVolume(vol)
+            }
+        } catch (_: Exception) {}
         try {
             // Inicialização segura do CastContext em Main thread conforme exigido pelo SDK
             scope.launch(Dispatchers.Main) {
@@ -170,16 +282,32 @@ class AudioRouteManager private constructor(private val context: Context) {
         return isCastingActive && castSession?.isConnected == true
     }
 
+    fun getRemoteMediaClient(): com.google.android.gms.cast.framework.media.RemoteMediaClient? {
+        return castSession?.remoteMediaClient
+    }
+
     fun play() {
         try {
             castSession?.remoteMediaClient?.play()
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            android.util.Log.w("AudioRouteManager", "Erro ao executar play no Cast: ${e.message}")
+        }
     }
 
     fun pause() {
         try {
             castSession?.remoteMediaClient?.pause()
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            android.util.Log.w("AudioRouteManager", "Erro ao executar pause no Cast: ${e.message}")
+        }
+    }
+
+    fun seekTo(positionMs: Long) {
+        try {
+            castSession?.remoteMediaClient?.seek(positionMs.coerceAtLeast(0L))
+        } catch (e: Exception) {
+            android.util.Log.w("AudioRouteManager", "Erro ao executar seekTo no Cast: ${e.message}")
+        }
     }
 
     fun togglePlayPause() {
@@ -191,10 +319,48 @@ class AudioRouteManager private constructor(private val context: Context) {
         }
     }
 
-    fun setVolume(volume: Float) {
+    private var lastSeekTime = 0L
+
+    fun setAudioPositionDirect(positionMs: Long) {
+        if (!isCastingActive()) {
+            android.util.Log.w("AUDIO_DEBUG", "Ignorando setAudioPositionDirect - Cast não conectado")
+            return
+        }
+        val playerManager = RadioPlayerManager.getInstance(context)
+        if (playerManager.activeMediaType.value == ActiveMediaType.LIVE_RADIO) {
+            return
+        }
+        val now = System.currentTimeMillis()
+        if (now - lastSeekTime < 500L) {
+            android.util.Log.w("AUDIO_DEBUG", "Seek ignorado por debounce")
+            return
+        }
+        lastSeekTime = now
+        val currentPos = playerManager.getCurrentPosition()
+        if (kotlin.math.abs(positionMs - currentPos) < 2000L) {
+            return
+        }
+        playerManager.seekToPosition(positionMs)
+    }
+
+    fun setCastVolume(volume: Float) {
+        val clamped = volume.coerceIn(0f, 1f)
         try {
-            castSession?.setVolume(volume.toDouble().coerceIn(0.0, 1.0))
-        } catch (_: Exception) {}
+            val session = castSession ?: try {
+                com.google.android.gms.cast.framework.CastContext.getSharedInstance(context).sessionManager.currentCastSession
+            } catch (_: Exception) { null }
+
+            session?.let {
+                it.setVolume(clamped.toDouble())
+                android.util.Log.d("CAST_VOL", "CastSession.setVolume($clamped) enviado com sucesso")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("CAST_VOL", "Falha ao definir volume no Cast", e)
+        }
+    }
+
+    fun setVolume(volume: Float) {
+        setCastVolume(volume)
     }
 
     fun getCastVolume(): Float {
@@ -214,13 +380,23 @@ class AudioRouteManager private constructor(private val context: Context) {
     }
 
     fun playNext() {
-        val playerManager = RadioPlayerManager.getInstance(context)
-        playerManager.playNext()
+        val coordinator = (context.applicationContext as? com.example.RadioApp)?.playbackCoordinator
+        if (coordinator != null && coordinator.state.value.queue.isNotEmpty()) {
+            coordinator.skipToNext()
+        } else {
+            val playerManager = RadioPlayerManager.getInstance(context)
+            playerManager.playNext()
+        }
     }
 
     fun playPrevious() {
-        val playerManager = RadioPlayerManager.getInstance(context)
-        playerManager.playPrevious()
+        val coordinator = (context.applicationContext as? com.example.RadioApp)?.playbackCoordinator
+        if (coordinator != null && coordinator.state.value.queue.isNotEmpty()) {
+            coordinator.skipToPrevious()
+        } else {
+            val playerManager = RadioPlayerManager.getInstance(context)
+            playerManager.playPrevious()
+        }
     }
 
     fun updateCastMedia() {
@@ -459,10 +635,17 @@ class AudioRouteManager private constructor(private val context: Context) {
         } catch (_: Exception) {}
     }
 
-    private fun transferPlaybackToLocal() {
+    fun transferPlaybackToLocal() {
         try {
             val playerManager = RadioPlayerManager.getInstance(context)
-            playerManager.resume()
+            if (playerManager.activeMediaType.value != ActiveMediaType.LIVE_RADIO && lastRemoteStreamPositionMs > 0L) {
+                playerManager.seekToPosition(lastRemoteStreamPositionMs)
+            }
+            if (lastRemoteIsPlaying) {
+                playerManager.resume()
+            } else {
+                playerManager.setPlaybackStatusDirect(RadioPlaybackStatus.PAUSED)
+            }
         } catch (e: Exception) {
             android.util.Log.e("AudioRouteManager", "Error restoring local playback from Cast", e)
         }
@@ -470,7 +653,7 @@ class AudioRouteManager private constructor(private val context: Context) {
 
     fun startDiscovery() {
         try {
-            mediaRouter.addCallback(
+            mediaRouter?.addCallback(
                 routeSelector,
                 routerCallback,
                 MediaRouter.CALLBACK_FLAG_REQUEST_DISCOVERY or MediaRouter.CALLBACK_FLAG_PERFORM_ACTIVE_SCAN
@@ -483,7 +666,7 @@ class AudioRouteManager private constructor(private val context: Context) {
 
     fun stopDiscovery() {
         try {
-            mediaRouter.removeCallback(routerCallback)
+            mediaRouter?.removeCallback(routerCallback)
         } catch (e: Exception) {
             android.util.Log.w("AudioRouteManager", "Failed to stop MediaRouter discovery", e)
         }
@@ -492,7 +675,7 @@ class AudioRouteManager private constructor(private val context: Context) {
     fun updateRoutes() {
         scope.launch(Dispatchers.Main) {
             try {
-                val routes = mediaRouter.routes
+                val routes = mediaRouter?.routes ?: emptyList()
                 val deviceList = mutableListOf<AudioRouteDevice>()
 
                 // Determina o nome do dispositivo Cast ativo (se houver)
@@ -589,7 +772,7 @@ class AudioRouteManager private constructor(private val context: Context) {
                         deviceType = AudioDeviceType.THIS_DEVICE,
                         isSelected = !isCastingActive && _selectedDevice.value == null,
                         isDefault = true,
-                        routeInfo = mediaRouter.defaultRoute
+                        routeInfo = mediaRouter?.defaultRoute
                     )
                     deviceList.add(0, defaultDev)
                 }
@@ -606,9 +789,9 @@ class AudioRouteManager private constructor(private val context: Context) {
     }
 
     fun selectDevice(device: AudioRouteDevice) {
-        val route = device.routeInfo ?: mediaRouter.routes.firstOrNull { it.id == device.id }
+        val route = device.routeInfo ?: mediaRouter?.routes?.firstOrNull { it.id == device.id }
         if (route != null) {
-            mediaRouter.selectRoute(route)
+            mediaRouter?.selectRoute(route)
             _selectedDevice.value = device.copy(isSelected = true)
             if (device.isDefault || device.deviceType == AudioDeviceType.THIS_DEVICE) {
                 if (isCastingActive) {
@@ -630,6 +813,25 @@ class AudioRouteManager private constructor(private val context: Context) {
         } catch (e: Exception) {
             android.util.Log.w("AudioRouteManager", "Could not show native MediaRouteChooserDialog", e)
         }
+    }
+
+    /**
+     * Limpa listeners, callbacks e encerra servidores locais ao encerrar o serviço ou aplicativo.
+     */
+    fun cleanup() {
+        stopDiscovery()
+        stopLocalIconServer()
+        try {
+            val castContext = CastContext.getSharedInstance(context)
+            castContext.sessionManager.removeSessionManagerListener(
+                castSessionListener,
+                com.google.android.gms.cast.framework.CastSession::class.java
+            )
+        } catch (_: Exception) {}
+        castSession?.remoteMediaClient?.unregisterCallback(remoteClientCallback)
+        castSession = null
+        isCastingActive = false
+        _castSessionState.value = CastSessionState.DISCONNECTED
     }
 
     companion object {

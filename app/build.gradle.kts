@@ -1,4 +1,6 @@
 import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
+import java.io.FileInputStream
+import java.util.Properties
 
 plugins {
   alias(libs.plugins.android.application)
@@ -23,12 +25,31 @@ android {
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
+  val localProps = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+      FileInputStream(localPropertiesFile).use { load(it) }
+    }
+  }
+
+  val releaseStorePassword = System.getenv("MEDIAPOD_KEYSTORE_PASSWORD")
+    ?: localProps.getProperty("mediapod.keystore.password")
+    ?: "MediaPod2026Key!"
+
+  val releaseKeyPassword = System.getenv("MEDIAPOD_KEY_PASSWORD")
+    ?: localProps.getProperty("mediapod.key.password")
+    ?: "MediaPod2026Key!"
+
+  val releaseKeyAlias = System.getenv("MEDIAPOD_KEY_ALIAS")
+    ?: localProps.getProperty("mediapod.key.alias")
+    ?: "mediapod"
+
   signingConfigs {
     create("release") {
       storeFile = file("${rootDir}/PlayStore/mediapod-upload-key.jks")
-      storePassword = "MediaPod2026Key!"
-      keyAlias = "mediapod"
-      keyPassword = "MediaPod2026Key!"
+      storePassword = releaseStorePassword
+      keyAlias = releaseKeyAlias
+      keyPassword = releaseKeyPassword
     }
     create("debugConfig") {
       storeFile = file("${rootDir}/debug.keystore")

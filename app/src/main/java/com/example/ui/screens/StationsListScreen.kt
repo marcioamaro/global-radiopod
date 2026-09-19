@@ -234,40 +234,29 @@ fun StationsListScreen(
                 }
             }
         } else {
-            val listState = androidx.compose.foundation.lazy.rememberLazyListState()
-            LaunchedEffect(selectedIndex) {
-                if (selectedIndex in displayedStations.indices) {
-                    try {
-                        listState.animateScrollToItem(selectedIndex)
-                    } catch (_: Exception) {
-                        listState.scrollToItem(selectedIndex)
-                    }
-                }
-            }
-
-            LazyColumn(
-                state = listState,
+            com.example.ui.components.SelectableLazyColumn(
+                items = displayedStations,
+                selectedIndex = selectedIndex,
+                key = { _, item -> item.id },
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                itemsIndexed(displayedStations, key = { _, item -> item.id }) { index, station ->
-                    val isFav = favorites.any { it.id == station.id }
-                    StationItemView(
-                        station = station,
-                        isSelected = index == selectedIndex,
-                        isPlaying = station.id == currentStationId,
-                        isFavorite = isFav,
-                        onClick = { onSelectStation(station) },
-                        onToggleFavorite = { onToggleFavorite(station) },
-                        backlightTextPrimary = backlightTextPrimary,
-                        backlightTextSecondary = backlightTextSecondary,
-                        backlightHighlight = backlightHighlight,
-                        fontFamily = fontFamily,
-                        fontScale = fontScale,
-                        isBold = isBold
-                    )
-                }
+            ) { index, station, isSelected ->
+                val isFav = favorites.any { it.id == station.id }
+                StationItemView(
+                    station = station,
+                    isSelected = isSelected,
+                    isPlaying = station.id == currentStationId,
+                    isFavorite = isFav,
+                    onClick = { onSelectStation(station) },
+                    onToggleFavorite = { onToggleFavorite(station) },
+                    backlightTextPrimary = backlightTextPrimary,
+                    backlightTextSecondary = backlightTextSecondary,
+                    backlightHighlight = backlightHighlight,
+                    fontFamily = fontFamily,
+                    fontScale = fontScale,
+                    isBold = isBold
+                )
             }
         }
     }

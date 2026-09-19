@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -29,6 +30,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
@@ -98,6 +100,8 @@ fun IpodBrickGameScreen(
     val currentPaddlePos by rememberUpdatedState(paddlePositionRatio)
 
     val context = LocalContext.current
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+
     val prefs = remember { IpodPreferencesManager.getInstance(context) }
     var highScores by remember { mutableStateOf(prefs.getBrickHighScores()) }
     var highlightedScoreRank by remember { mutableIntStateOf(-1) }
@@ -108,10 +112,24 @@ fun IpodBrickGameScreen(
     var currentInitialIndex by remember { mutableIntStateOf(0) }
     var lastWheelPosForInitials by remember { mutableFloatStateOf(paddlePositionRatio) }
 
-    var score by remember { mutableIntStateOf(0) }
-    var level by remember { mutableIntStateOf(1) }
-    var lives by remember { mutableIntStateOf(3) }
-    var gameState by remember { mutableStateOf(GameState.READY) }
+    var score by rememberSaveable { mutableIntStateOf(0) }
+    var level by rememberSaveable { mutableIntStateOf(1) }
+    var lives by rememberSaveable { mutableIntStateOf(3) }
+    var gameState by rememberSaveable { mutableStateOf(GameState.READY) }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_PAUSE || event == androidx.lifecycle.Lifecycle.Event.ON_STOP) {
+                if (gameState == GameState.PLAYING) {
+                    gameState = GameState.PAUSED
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     // Dimensões normalizadas unificadas (física e renderização idênticas 1:1)
     val initialPaddleWidth = 0.24f     // 24% da largura da área de jogo (nível 1)
@@ -132,10 +150,10 @@ fun IpodBrickGameScreen(
     val brickLeftMargin = 0.03f
 
     // Estado da bola
-    var ballX by remember { mutableFloatStateOf(0.5f) }
-    var ballY by remember { mutableFloatStateOf(paddleY - ballRadius) }
-    var ballVx by remember { mutableFloatStateOf(0.35f) }
-    var ballVy by remember { mutableFloatStateOf(-0.55f) }
+    var ballX by rememberSaveable { mutableFloatStateOf(0.5f) }
+    var ballY by rememberSaveable { mutableFloatStateOf(paddleY - ballRadius) }
+    var ballVx by rememberSaveable { mutableFloatStateOf(0.35f) }
+    var ballVy by rememberSaveable { mutableFloatStateOf(-0.55f) }
 
     val bricks = remember {
         mutableStateListOf<Brick>().apply {

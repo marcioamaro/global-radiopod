@@ -23,6 +23,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.Switch
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -38,6 +40,9 @@ import androidx.compose.material.icons.filled.SmartDisplay
 import androidx.compose.ui.res.stringResource
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
+import com.example.ui.components.AmbilWarnaColorPickerDialog
+import com.example.ui.components.ColorPickerTarget
+import com.example.ui.theme.IpodColorContrastUtil
 import com.example.util.BackupRestoreManager
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Favorite
@@ -183,10 +188,11 @@ fun IpodClassicScreen(
     val chassisTheme = uiState.chassisTheme
     val backlight = uiState.backlight
 
-    val bodyColor = Color(uiState.customBodyColor)
-    val wheelColor = Color(uiState.customWheelColor)
-    val wheelTextColor = Color(uiState.customWheelTextColor)
-    val centerButtonColor = Color(uiState.customCenterButtonColor)
+    val resolvedPalette = uiState.appearanceSettings.activePalette
+    val bodyColor = Color(resolvedPalette.bodyColor)
+    val wheelColor = Color(resolvedPalette.wheelColor)
+    val wheelTextColor = Color(resolvedPalette.wheelTextColor)
+    val centerButtonColor = Color(resolvedPalette.centerButtonColor)
 
     val fontFamily = uiState.fontType.toFontFamily()
     val fontScale = uiState.fontSizeScale.scale
@@ -305,9 +311,11 @@ fun IpodClassicScreen(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     // Modo Dormir (Sleep Timer) Pill Button
-                    val isSleepActive = sleepTimerMinutes > 0 || sleepTimerSecondsRemaining > 0L
+                    val isSleepActive = sleepTimerMinutes != 0 || sleepTimerSecondsRemaining > 0L
                     val sleepSec = sleepTimerSecondsRemaining
-                    val sleepFormatted = if (sleepSec > 0L) {
+                    val sleepFormatted = if (sleepTimerMinutes == -1) {
+                        "Fim Ep."
+                    } else if (sleepSec > 0L) {
                         val m = sleepSec / 60
                         val s = sleepSec % 60
                         String.format(java.util.Locale.US, "%02d:%02d", m, s)
@@ -333,10 +341,15 @@ fun IpodClassicScreen(
                                     45 -> 60
                                     60 -> 90
                                     90 -> 120
+                                    120 -> -1
                                     else -> 0
                                 }
                                 onSetSleepTimer(nextTimer)
-                                sleepBannerMessage = if (nextTimer > 0) "MODO DORMIR: $nextTimer MIN" else "MODO DORMIR: DESLIGADO"
+                                sleepBannerMessage = when (nextTimer) {
+                                    -1 -> "MODO DORMIR: AO FIM DO EPISÓDIO"
+                                    in 1..Int.MAX_VALUE -> "MODO DORMIR: $nextTimer MIN"
+                                    else -> "MODO DORMIR: DESLIGADO"
+                                }
                                 showSleepBanner = true
                             }
                             .padding(horizontal = 8.dp, vertical = 4.dp),
@@ -1032,80 +1045,79 @@ fun IpodClassicScreen(
                             }
                             IpodScreenDestination.PODCASTS_CATEGORIES -> {
                                 val list = uiState.podcastCategories
-                                LazyColumn(
-                                    state = rememberLazyListState(),
+                                com.example.ui.components.SelectableLazyColumn(
+                                    items = list,
+                                    selectedIndex = uiState.selectedIndex,
+                                    key = { _, cat -> cat.name },
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .background(backlightBg)
                                         .padding(horizontal = 6.dp, vertical = 3.dp),
                                     verticalArrangement = Arrangement.spacedBy(2.dp)
-                                ) {
-                                    itemsIndexed(list) { index, cat ->
-                                        val isSelected = index == uiState.selectedIndex
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clip(RoundedCornerShape(4.dp))
-                                                .background(if (isSelected) backlightHighlight else Color.Transparent)
-                                                .clickable {
-                                                    viewModel?.loadPodcastsByCategory(cat.name)
-                                                    onSelectDestination(IpodScreenDestination.PODCASTS_BY_CATEGORY)
-                                                }
-                                                .padding(horizontal = 8.dp, vertical = 5.dp),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Icon(
-                                                    imageVector = Icons.Default.MusicNote,
-                                                    contentDescription = null,
-                                                    tint = if (isSelected) Color.White else backlightTextPrimary,
-                                                    modifier = Modifier.size(15.dp)
-                                                )
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                Text(
-                                                    text = cat.name,
-                                                    color = if (isSelected) Color.White else backlightTextPrimary,
-                                                    fontSize = (11.5f * fontScale).sp,
-                                                    fontWeight = if (isBold) FontWeight.Bold else FontWeight.Medium,
-                                                    fontFamily = fontFamily
-                                                )
+                                ) { index, cat, isSelected ->
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(if (isSelected) backlightHighlight else Color.Transparent)
+                                            .clickable {
+                                                viewModel?.loadPodcastsByCategory(cat.name)
+                                                onSelectDestination(IpodScreenDestination.PODCASTS_BY_CATEGORY)
                                             }
+                                            .padding(horizontal = 8.dp, vertical = 5.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
                                             Icon(
-                                                imageVector = Icons.Default.ChevronRight,
+                                                imageVector = Icons.Default.MusicNote,
                                                 contentDescription = null,
-                                                tint = if (isSelected) Color.White else backlightTextSecondary,
-                                                modifier = Modifier.size(14.dp)
+                                                tint = if (isSelected) Color.White else backlightTextPrimary,
+                                                modifier = Modifier.size(15.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = cat.name,
+                                                color = if (isSelected) Color.White else backlightTextPrimary,
+                                                fontSize = (11.5f * fontScale).sp,
+                                                fontWeight = if (isBold) FontWeight.Bold else FontWeight.Medium,
+                                                fontFamily = fontFamily
                                             )
                                         }
+                                        Icon(
+                                            imageVector = Icons.Default.ChevronRight,
+                                            contentDescription = null,
+                                            tint = if (isSelected) Color.White else backlightTextSecondary,
+                                            modifier = Modifier.size(14.dp)
+                                        )
                                     }
                                 }
                             }
                             IpodScreenDestination.PODCASTS_COUNTRIES -> {
                                 val list = uiState.podcastCountries
-                                LazyColumn(
-                                    state = rememberLazyListState(),
+                                com.example.ui.components.SelectableLazyColumn(
+                                    items = list,
+                                    selectedIndex = uiState.selectedIndex,
+                                    key = { _, country -> country.code },
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .background(backlightBg)
                                         .padding(horizontal = 6.dp, vertical = 3.dp),
                                     verticalArrangement = Arrangement.spacedBy(2.dp)
-                                ) {
-                                    itemsIndexed(list) { index, country ->
-                                        val isSelected = index == uiState.selectedIndex
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clip(RoundedCornerShape(4.dp))
-                                                .background(if (isSelected) backlightHighlight else Color.Transparent)
-                                                .clickable {
-                                                    viewModel?.loadPodcastsByCountry(country.code, country.name)
-                                                    onSelectDestination(IpodScreenDestination.PODCASTS_BY_COUNTRY)
-                                                }
-                                                .padding(horizontal = 8.dp, vertical = 5.dp),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
+                                ) { index, country, isSelected ->
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(if (isSelected) backlightHighlight else Color.Transparent)
+                                            .clickable {
+                                                viewModel?.loadPodcastsByCountry(country.code, country.name)
+                                                onSelectDestination(IpodScreenDestination.PODCASTS_BY_COUNTRY)
+                                            }
+                                            .padding(horizontal = 8.dp, vertical = 5.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
                                             Row(verticalAlignment = Alignment.CenterVertically) {
                                                 Text(
                                                     text = country.flagEmoji,
@@ -1129,7 +1141,6 @@ fun IpodClassicScreen(
                                         }
                                     }
                                 }
-                            }
                             IpodScreenDestination.PODCAST_EPISODES_LIST -> {
                                 uiState.currentPodcastShow?.let { show ->
                                     IpodPodcastEpisodesScreen(
@@ -1502,25 +1513,16 @@ fun IpodClassicRadioMenuScreen(
         )
     }
 
-    val listState = rememberLazyListState()
-
-    LaunchedEffect(selectedIndex) {
-        if (selectedIndex in menuItems.indices) {
-            listState.animateScrollToItem(selectedIndex)
-        }
-    }
-
-    LazyColumn(
-        state = listState,
+    com.example.ui.components.SelectableLazyColumn(
+        items = menuItems,
+        selectedIndex = selectedIndex,
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 6.dp, vertical = 2.dp),
         verticalArrangement = Arrangement.spacedBy(1.5.dp)
-    ) {
-        itemsIndexed(menuItems) { index, (title, icon) ->
-            val isSelected = index == selectedIndex
-            Row(
-                modifier = Modifier
+    ) { index, (title, icon), isSelected ->
+        Row(
+            modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(4.dp))
                     .background(if (isSelected) backlightHighlight else Color.Transparent)
@@ -1560,7 +1562,6 @@ fun IpodClassicRadioMenuScreen(
             }
         }
     }
-}
 
 @Composable
 private fun IpodMainMenuSplitView(
@@ -1798,14 +1799,17 @@ private fun IpodGenresSplitView(
                 )
             )
 
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                itemsIndexed(genres) { index, genre ->
-                    val isSelected = index == selectedIndex
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(if (isSelected) backlightHighlight else Color.Transparent)
+            com.example.ui.components.SelectableLazyColumn(
+                items = genres,
+                selectedIndex = selectedIndex,
+                key = { _, genre -> genre.name },
+                modifier = Modifier.fillMaxSize()
+            ) { index, genre, isSelected ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(if (isSelected) backlightHighlight else Color.Transparent)
                             .clickable { onSelectGenre(genre) }
                             .padding(horizontal = 8.dp, vertical = 5.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -1841,7 +1845,6 @@ private fun IpodGenresSplitView(
                     }
                 }
             }
-        }
 
         Box(
             modifier = Modifier
@@ -1968,14 +1971,17 @@ private fun IpodCountriesSplitView(
                 )
             )
 
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                itemsIndexed(countries) { index, country ->
-                    val isSelected = index == selectedIndex
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(if (isSelected) backlightHighlight else Color.Transparent)
+            com.example.ui.components.SelectableLazyColumn(
+                items = countries,
+                selectedIndex = selectedIndex,
+                key = { _, country -> country.code },
+                modifier = Modifier.fillMaxSize()
+            ) { index, country, isSelected ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(if (isSelected) backlightHighlight else Color.Transparent)
                             .clickable { onSelectCountry(country) }
                             .padding(horizontal = 8.dp, vertical = 5.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -2030,7 +2036,6 @@ private fun IpodCountriesSplitView(
                     }
                 }
             }
-        }
 
         Box(
             modifier = Modifier
@@ -2130,6 +2135,47 @@ private fun IpodSettingsScreen(
     var backupStatusMessage by remember { mutableStateOf<String?>(null) }
     var isBackupError by remember { mutableStateOf(false) }
     var showBackupRestoreSuccessDialog by remember { mutableStateOf(false) }
+    var activeColorPickerTarget by remember { mutableStateOf<ColorPickerTarget?>(null) }
+
+    val isManualColorEditingEnabled = uiState.appearanceSettings.isManualColorEditingEnabled
+
+    if (activeColorPickerTarget != null && isManualColorEditingEnabled) {
+        val target = activeColorPickerTarget!!
+        val (pickerTitle, initialColor) = when (target) {
+            ColorPickerTarget.CHASSIS -> "Cor da Carcaça (AmbilWarna)" to uiState.customBodyColor
+            ColorPickerTarget.CLICK_WHEEL -> "Cor da Click Wheel (AmbilWarna)" to uiState.customWheelColor
+            ColorPickerTarget.CENTER_BUTTON -> "Cor do Botão Central (AmbilWarna)" to uiState.customCenterButtonColor
+        }
+        AmbilWarnaColorPickerDialog(
+            title = pickerTitle,
+            initialColor = initialColor,
+            target = target,
+            currentPalette = uiState.appearanceSettings.activePalette,
+            onColorSelected = { selectedColor ->
+                when (target) {
+                    ColorPickerTarget.CHASSIS -> {
+                        viewModel?.setCustomBodyColor(selectedColor) ?: onSetCustomBodyColor(selectedColor)
+                    }
+                    ColorPickerTarget.CLICK_WHEEL -> {
+                        if (viewModel != null) {
+                            viewModel.setCustomWheelColor(selectedColor)
+                        } else {
+                            val optText = IpodColorContrastUtil.getOptimalWheelTextColor(selectedColor)
+                            onSetCustomWheelColors(selectedColor, optText, uiState.customCenterButtonColor)
+                        }
+                    }
+                    ColorPickerTarget.CENTER_BUTTON -> {
+                        if (viewModel != null) {
+                            viewModel.setCustomCenterButtonColor(selectedColor)
+                        } else {
+                            onSetCustomWheelColors(uiState.customWheelColor, uiState.customWheelTextColor, selectedColor)
+                        }
+                    }
+                }
+            },
+            onDismissRequest = { activeColorPickerTarget = null }
+        )
+    }
 
     val exportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/octet-stream")
@@ -2296,6 +2342,138 @@ private fun IpodSettingsScreen(
             }
         }
 
+        // --- 1.8. MODO ALEATÓRIO DE CORES DO HARDWARE & BLOQUEIO DERIVADO ---
+        item {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "CORES DO HARDWARE (MODO ALEATÓRIO & MANUAL)",
+                color = backlightTextSecondary,
+                fontSize = (10f * fontScale).sp,
+                fontWeight = FontWeight.Black,
+                fontFamily = fontFamily
+            )
+        }
+        item {
+            val randomEnabled = uiState.appearanceSettings.randomHardwareColorsEnabled
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0x28000000))
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(6.dp))
+                        .clickable {
+                            viewModel?.setRandomHardwareColorsEnabled(!randomEnabled)
+                        }
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Modo Aleatório de Hardware",
+                            color = backlightTextPrimary,
+                            fontSize = (10.5f * fontScale).sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily
+                        )
+                        Text(
+                            text = "Gera uma combinação segura a cada inicialização (Carcaça, Roda e Botão)",
+                            color = backlightTextSecondary,
+                            fontSize = 8.5.sp,
+                            fontFamily = fontFamily
+                        )
+                    }
+                    Switch(
+                        checked = randomEnabled,
+                        onCheckedChange = { checked ->
+                            viewModel?.setRandomHardwareColorsEnabled(checked)
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = backlightHighlight
+                        )
+                    )
+                }
+
+                // Banner de Status / Bloqueio Derivado
+                if (randomEnabled) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color(0x33DC2626))
+                            .border(1.dp, Color(0x66DC2626), RoundedCornerShape(6.dp))
+                            .padding(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "Edição Manual Bloqueada",
+                            tint = Color(0xFFFCA5A5),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Modo Aleatório ativo: Edição manual e seletores AmbilWarna estão bloqueados para preservar a paleta de hardware da sessão.",
+                            color = Color.White,
+                            fontSize = 8.sp,
+                            lineHeight = 11.sp,
+                            fontFamily = fontFamily
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(backlightHighlight)
+                            .clickable { viewModel?.generateNewRandomHardwarePalette() }
+                            .padding(vertical = 6.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "🎲 Sorteio Seguro (Nova Combinação)",
+                            color = Color.White,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily
+                        )
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color(0x2210B981))
+                            .border(1.dp, Color(0x5510B981), RoundedCornerShape(6.dp))
+                            .padding(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.LockOpen,
+                            contentDescription = "Edição Manual Liberada",
+                            tint = Color(0xFF6EE7B7),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Edição Manual liberada: Escolha presets ou use o AmbilWarna Color Picker livremente.",
+                            color = backlightTextPrimary,
+                            fontSize = 8.sp,
+                            lineHeight = 11.sp,
+                            fontFamily = fontFamily
+                        )
+                    }
+                }
+            }
+        }
+
         // --- 2. SLIDECIRCLE CLICK (CORES E SELETORES) ---
         item {
             Spacer(modifier = Modifier.height(4.dp))
@@ -2308,62 +2486,156 @@ private fun IpodSettingsScreen(
             )
         }
 
+        // AmbilWarna Color Pickers para Click Wheel e Botão Central
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .alpha(if (isManualColorEditingEnabled) 1f else 0.45f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                // Botão AmbilWarna Click Wheel
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Color(0x33000000))
+                        .border(1.dp, Color(0x33FFFFFF), RoundedCornerShape(6.dp))
+                        .clickable(enabled = isManualColorEditingEnabled) {
+                            activeColorPickerTarget = ColorPickerTarget.CLICK_WHEEL
+                        }
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(16.dp)
+                                .clip(CircleShape)
+                                .background(Color(uiState.customWheelColor))
+                                .border(1.dp, Color.White, CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "AmbilWarna: Roda do iPod...",
+                            color = backlightTextPrimary,
+                            fontSize = (10.5f * fontScale).sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily
+                        )
+                    }
+                    Text(
+                        text = if (isManualColorEditingEnabled) "AJUSTAR 🎨" else "BLOQUEADO 🔒",
+                        color = if (isManualColorEditingEnabled) backlightHighlight else backlightTextSecondary,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Black,
+                        fontFamily = fontFamily
+                    )
+                }
+
+                // Botão AmbilWarna Botão Central
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Color(0x33000000))
+                        .border(1.dp, Color(0x33FFFFFF), RoundedCornerShape(6.dp))
+                        .clickable(enabled = isManualColorEditingEnabled) {
+                            activeColorPickerTarget = ColorPickerTarget.CENTER_BUTTON
+                        }
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(16.dp)
+                                .clip(CircleShape)
+                                .background(Color(uiState.customCenterButtonColor))
+                                .border(1.dp, Color.White, CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "AmbilWarna: Botão Central...",
+                            color = backlightTextPrimary,
+                            fontSize = (10.5f * fontScale).sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily
+                        )
+                    }
+                    Text(
+                        text = if (isManualColorEditingEnabled) "AJUSTAR 🎨" else "BLOQUEADO 🔒",
+                        color = if (isManualColorEditingEnabled) backlightHighlight else backlightTextSecondary,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Black,
+                        fontFamily = fontFamily
+                    )
+                }
+            }
+        }
+
         // Presets de SlideCircle Click
         item {
-            Text(
-                text = "Presets do SlideCircle Click:",
-                color = backlightTextPrimary,
-                fontSize = (10f * fontScale).sp,
-                fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
-                fontFamily = fontFamily
-            )
-            Spacer(modifier = Modifier.height(3.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                IpodWheelPreset.values().forEach { preset ->
-                    val isSelected = uiState.wheelPreset == preset
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(if (isSelected) backlightHighlight else Color(0x22000000))
-                            .clickable { onSetWheelPreset(preset) }
-                            .padding(horizontal = 8.dp, vertical = 5.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            // Mini Color Dot
-                            Box(
-                                modifier = Modifier
-                                    .size(14.dp)
-                                    .clip(CircleShape)
-                                    .background(Color(preset.wheelColor))
-                                    .border(1.dp, Color(preset.textColor), CircleShape)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = preset.displayName,
-                                color = if (isSelected) Color.White else backlightTextPrimary,
-                                fontSize = (10.5f * fontScale).sp,
-                                fontWeight = if (isSelected || isBold) FontWeight.Bold else FontWeight.Normal,
-                                fontFamily = fontFamily
-                            )
-                        }
-                        if (isSelected) {
-                            Text(
-                                text = "✓ ATIVO",
-                                color = Color.White,
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Black,
-                                fontFamily = fontFamily
-                            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .alpha(if (isManualColorEditingEnabled) 1f else 0.45f)
+            ) {
+                Text(
+                    text = "Presets do SlideCircle Click:",
+                    color = backlightTextPrimary,
+                    fontSize = (10f * fontScale).sp,
+                    fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+                    fontFamily = fontFamily
+                )
+                Spacer(modifier = Modifier.height(3.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                    IpodWheelPreset.values().forEach { preset ->
+                        val isSelected = uiState.wheelPreset == preset
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (isSelected) backlightHighlight else Color(0x22000000))
+                                .clickable(enabled = isManualColorEditingEnabled) { onSetWheelPreset(preset) }
+                                .padding(horizontal = 8.dp, vertical = 5.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                // Mini Color Dot
+                                Box(
+                                    modifier = Modifier
+                                        .size(14.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(preset.wheelColor))
+                                        .border(1.dp, Color(preset.textColor), CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = preset.displayName,
+                                    color = if (isSelected) Color.White else backlightTextPrimary,
+                                    fontSize = (10.5f * fontScale).sp,
+                                    fontWeight = if (isSelected || isBold) FontWeight.Bold else FontWeight.Normal,
+                                    fontFamily = fontFamily
+                                )
+                            }
+                            if (isSelected) {
+                                Text(
+                                    text = "✓ ATIVO",
+                                    color = Color.White,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Black,
+                                    fontFamily = fontFamily
+                                )
+                            }
                         }
                     }
                 }
             }
         }
-
-
 
         // --- 3. COR DA TELA LCD ---
         item {
@@ -2422,54 +2694,103 @@ private fun IpodSettingsScreen(
                 fontFamily = fontFamily
             )
         }
+
+        // AmbilWarna Color Picker para Carcaça (Chassis)
         item {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .alpha(if (isManualColorEditingEnabled) 1f else 0.45f)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0x33000000))
+                    .border(1.dp, Color(0x33FFFFFF), RoundedCornerShape(6.dp))
+                    .clickable(enabled = isManualColorEditingEnabled) {
+                        activeColorPickerTarget = ColorPickerTarget.CHASSIS
+                    }
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                IpodChassisTheme.values().take(3).forEach { theme ->
-                    val isSelected = uiState.chassisTheme == theme
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(if (isSelected) backlightHighlight else Color(0x33000000))
-                            .clickable { onSetChassisTheme(theme) }
-                            .padding(vertical = 8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = theme.displayName.take(10),
-                            color = if (isSelected) Color.White else backlightTextPrimary,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                            .size(16.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(Color(uiState.customBodyColor))
+                            .border(1.dp, Color.White, RoundedCornerShape(3.dp))
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "AmbilWarna: Cor da Carcaça...",
+                        color = backlightTextPrimary,
+                        fontSize = (10.5f * fontScale).sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily
+                    )
                 }
+                Text(
+                    text = if (isManualColorEditingEnabled) "AJUSTAR 🎨" else "BLOQUEADO 🔒",
+                    color = if (isManualColorEditingEnabled) backlightHighlight else backlightTextSecondary,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Black,
+                    fontFamily = fontFamily
+                )
             }
         }
+
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .alpha(if (isManualColorEditingEnabled) 1f else 0.45f),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                IpodChassisTheme.values().drop(3).forEach { theme ->
-                    val isSelected = uiState.chassisTheme == theme
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(if (isSelected) backlightHighlight else Color(0x33000000))
-                            .clickable { onSetChassisTheme(theme) }
-                            .padding(vertical = 8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = theme.displayName.take(12),
-                            color = if (isSelected) Color.White else backlightTextPrimary,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    IpodChassisTheme.values().take(3).forEach { theme ->
+                        val isSelected = uiState.chassisTheme == theme
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (isSelected) backlightHighlight else Color(0x33000000))
+                                .clickable(enabled = isManualColorEditingEnabled) { onSetChassisTheme(theme) }
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = theme.displayName.take(10),
+                                color = if (isSelected) Color.White else backlightTextPrimary,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    IpodChassisTheme.values().drop(3).forEach { theme ->
+                        val isSelected = uiState.chassisTheme == theme
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (isSelected) backlightHighlight else Color(0x33000000))
+                                .clickable(enabled = isManualColorEditingEnabled) { onSetChassisTheme(theme) }
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = theme.displayName.take(12),
+                                color = if (isSelected) Color.White else backlightTextPrimary,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
@@ -2477,63 +2798,305 @@ private fun IpodSettingsScreen(
 
         // Personalizar Cores do Corpo do IPod Class (aplicado diretamente no corpo do aparelho)
         item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .alpha(if (isManualColorEditingEnabled) 1f else 0.45f)
+            ) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Personalizar Cores do Corpo:",
+                    color = backlightTextPrimary,
+                    fontSize = (10.5f * fontScale).sp,
+                    fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+                    fontFamily = fontFamily
+                )
+                Spacer(modifier = Modifier.height(3.dp))
+
+                val bodyColors = listOf(
+                    "Branco" to 0xFFFFFFFF,
+                    "Prata" to 0xFFF1F5F9,
+                    "Cinza" to 0xFFCBD5E1,
+                    "Grafite" to 0xFF334155,
+                    "Preto" to 0xFF0F172A,
+                    "Vermelho" to 0xFFDC2626,
+                    "Dourado" to 0xFFD4AF37,
+                    "Azul" to 0xFF0284C7,
+                    "Verde" to 0xFF059669,
+                    "Roxo" to 0xFF7C3AED,
+                    "Laranja" to 0xFFEA580C,
+                    "Rosa" to 0xFFDB2777
+                )
+
+                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                    bodyColors.chunked(4).forEach { rowColors ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            rowColors.forEach { (name, colorVal) ->
+                                val isSel = uiState.customBodyColor == colorVal
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(Color(colorVal))
+                                        .border(
+                                            width = if (isSel) 2.5.dp else 1.dp,
+                                            color = if (isSel) backlightHighlight else Color(0x66888888),
+                                            shape = RoundedCornerShape(6.dp)
+                                        )
+                                        .clickable(enabled = isManualColorEditingEnabled) {
+                                            onSetCustomBodyColor(colorVal)
+                                        }
+                                        .padding(vertical = 6.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = if (isSel) "✓ $name" else name,
+                                        color = if (colorVal == 0xFFFFFFFF || colorVal == 0xFFF1F5F9 || colorVal == 0xFFCBD5E1 || colorVal == 0xFFD4AF37) Color.Black else Color.White,
+                                        fontSize = 8.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- 4.5. VELOCIDADE DA CLICK WHEEL & TESTE INTERATIVO ---
+        item {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Personalizar Cores do Corpo:",
-                color = backlightTextPrimary,
-                fontSize = (10.5f * fontScale).sp,
-                fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+                text = "CLICK WHEEL (VELOCIDADE & NAVEGAÇÃO)",
+                color = backlightTextSecondary,
+                fontSize = (10f * fontScale).sp,
+                fontWeight = FontWeight.Black,
                 fontFamily = fontFamily
             )
-            Spacer(modifier = Modifier.height(3.dp))
+        }
+        item {
+            val clickWheelPrefs by (viewModel?.clickWheelPreferences ?: remember {
+                kotlinx.coroutines.flow.MutableStateFlow(com.example.data.prefs.ClickWheelPreferences())
+            }).collectAsState()
 
-            val bodyColors = listOf(
-                "Branco" to 0xFFFFFFFF,
-                "Prata" to 0xFFF1F5F9,
-                "Cinza" to 0xFFCBD5E1,
-                "Grafite" to 0xFF334155,
-                "Preto" to 0xFF0F172A,
-                "Vermelho" to 0xFFDC2626,
-                "Dourado" to 0xFFD4AF37,
-                "Azul" to 0xFF0284C7,
-                "Verde" to 0xFF059669,
-                "Roxo" to 0xFF7C3AED,
-                "Laranja" to 0xFFEA580C,
-                "Rosa" to 0xFFDB2777
-            )
+            var testIndex by remember { androidx.compose.runtime.mutableIntStateOf(0) }
+            val testItems = remember { (1..50).map { "Item de teste #$it" } }
 
-            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                bodyColors.chunked(4).forEach { rowColors ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        rowColors.forEach { (name, colorVal) ->
-                            val isSel = uiState.customBodyColor == colorVal
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(Color(colorVal))
-                                    .border(
-                                        width = if (isSel) 2.5.dp else 1.dp,
-                                        color = if (isSel) backlightHighlight else Color(0x66888888),
-                                        shape = RoundedCornerShape(6.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0x28000000))
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = "Modo de Velocidade:",
+                    color = backlightTextPrimary,
+                    fontSize = (10.5f * fontScale).sp,
+                    fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+                    fontFamily = fontFamily
+                )
+
+                // Modo Progressiva
+                val isProgressive = clickWheelPrefs.mode == com.example.data.prefs.ClickWheelMode.PROGRESSIVE
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(if (isProgressive) backlightHighlight.copy(alpha = 0.85f) else Color(0x22000000))
+                        .clickable { viewModel?.setClickWheelMode(com.example.data.prefs.ClickWheelMode.PROGRESSIVE) }
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (isProgressive) "●" else "○",
+                        color = if (isProgressive) Color.White else backlightTextSecondary,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Progressiva (Estilo Clássico)",
+                            color = if (isProgressive) Color.White else backlightTextPrimary,
+                            fontSize = (10.5f * fontScale).sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily
+                        )
+                        Text(
+                            text = "Acelera conforme a velocidade do seu giro (1x → 2x → 3x)",
+                            color = if (isProgressive) Color.White.copy(alpha = 0.85f) else backlightTextSecondary,
+                            fontSize = (8.5f * fontScale).sp,
+                            fontFamily = fontFamily
+                        )
+                    }
+                }
+
+                // Modo Fixa
+                val isFixed = clickWheelPrefs.mode == com.example.data.prefs.ClickWheelMode.FIXED
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(if (isFixed) backlightHighlight.copy(alpha = 0.85f) else Color(0x22000000))
+                        .clickable { viewModel?.setClickWheelMode(com.example.data.prefs.ClickWheelMode.FIXED) }
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (isFixed) "●" else "○",
+                        color = if (isFixed) Color.White else backlightTextSecondary,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Fixa",
+                            color = if (isFixed) Color.White else backlightTextPrimary,
+                            fontSize = (10.5f * fontScale).sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily
+                        )
+                        Text(
+                            text = "Velocidade constante em 3 níveis (Lenta, Padrão ou Rápida)",
+                            color = if (isFixed) Color.White.copy(alpha = 0.85f) else backlightTextSecondary,
+                            fontSize = (8.5f * fontScale).sp,
+                            fontFamily = fontFamily
+                        )
+                    }
+                }
+
+                // Níveis de velocidade fixa
+                AnimatedVisibility(visible = isFixed) {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            text = "Velocidade Fixa:",
+                            color = backlightTextPrimary,
+                            fontSize = (10f * fontScale).sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            com.example.data.prefs.FixedSpeed.values().forEach { speed ->
+                                val isSpeedSelected = clickWheelPrefs.fixedSpeed == speed
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(if (isSpeedSelected) backlightHighlight else Color(0x22000000))
+                                        .border(
+                                            1.dp,
+                                            if (isSpeedSelected) Color.White.copy(alpha = 0.5f) else Color.Transparent,
+                                            RoundedCornerShape(6.dp)
+                                        )
+                                        .clickable { viewModel?.setFixedSpeed(speed) }
+                                        .padding(vertical = 6.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "${speed.displayName()} (${speed.multiplier}x)",
+                                        color = if (isSpeedSelected) Color.White else backlightTextPrimary,
+                                        fontSize = (9.5f * fontScale).sp,
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = fontFamily
                                     )
-                                    .clickable {
-                                        onSetCustomBodyColor(colorVal)
-                                    }
-                                    .padding(vertical = 6.dp),
-                                contentAlignment = Alignment.Center
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // Área de Teste Interativa
+                Text(
+                    text = "Área de Teste Interativa (Gire a mini Click Wheel):",
+                    color = backlightTextPrimary,
+                    fontSize = (10.5f * fontScale).sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = fontFamily
+                )
+
+                Row(
+                    modifier = Modifier
+                        .height(170.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(backlightBg.copy(alpha = 0.9f))
+                        .border(1.2.dp, backlightHighlight.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
+                        .padding(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Lista interativa no lado esquerdo com SelectableLazyColumn
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color(0x18000000))
+                            .padding(2.dp)
+                    ) {
+                        com.example.ui.components.SelectableLazyColumn(
+                            items = testItems,
+                            selectedIndex = testIndex,
+                            onSelectedIndexChange = { testIndex = it },
+                            modifier = Modifier.fillMaxSize()
+                        ) { index, item, isSelected ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(3.dp))
+                                    .background(if (isSelected) backlightHighlight else Color.Transparent)
+                                    .padding(horizontal = 6.dp, vertical = 3.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = if (isSel) "✓ $name" else name,
-                                    color = if (colorVal == 0xFFFFFFFF || colorVal == 0xFFF1F5F9 || colorVal == 0xFFCBD5E1 || colorVal == 0xFFD4AF37) Color.Black else Color.White,
-                                    fontSize = 8.sp,
-                                    fontWeight = FontWeight.Bold
+                                    text = item,
+                                    color = if (isSelected) Color.White else backlightTextPrimary,
+                                    fontSize = 10.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    fontFamily = fontFamily
                                 )
                             }
                         }
+                    }
+
+                    // Mini Click Wheel funcional no lado direito
+                    Box(
+                        modifier = Modifier.size(130.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        com.example.ui.components.ClickWheel(
+                            onRotaryScroll = { steps ->
+                                testIndex = (testIndex + steps).coerceIn(0, testItems.lastIndex)
+                            },
+                            onCenterClick = {
+                                testIndex = 0
+                            },
+                            onMenuClick = {
+                                testIndex = 0
+                            },
+                            onPlayPauseClick = {
+                                testIndex = testItems.lastIndex
+                            },
+                            onPrevClick = {
+                                testIndex = (testIndex - 1).coerceAtLeast(0)
+                            },
+                            onNextClick = {
+                                testIndex = (testIndex + 1).coerceAtMost(testItems.lastIndex)
+                            },
+                            wheelColor = Color(uiState.customWheelColor),
+                            textColor = Color(uiState.customWheelTextColor),
+                            centerButtonColor = Color(uiState.customCenterButtonColor),
+                            wheelSize = 125.dp
+                        )
                     }
                 }
             }
@@ -2739,6 +3302,7 @@ private fun IpodSettingsScreen(
                             15 -> 30
                             30 -> 45
                             45 -> 60
+                            60 -> -1
                             else -> 0
                         }
                         onSetSleepTimer(next)
@@ -2755,7 +3319,11 @@ private fun IpodSettingsScreen(
                     fontFamily = fontFamily
                 )
                 Text(
-                    text = if (sleepTimerMinutes > 0) "$sleepTimerMinutes min" else "Desativado",
+                    text = when (sleepTimerMinutes) {
+                        -1 -> "Fim do Episódio"
+                        in 1..Int.MAX_VALUE -> "$sleepTimerMinutes min"
+                        else -> "Desativado"
+                    },
                     color = backlightHighlight,
                     fontSize = (10.5f * fontScale).sp,
                     fontWeight = FontWeight.Bold,
@@ -3156,7 +3724,7 @@ private fun IpodAboutScreen(
 
             // Data da versão aaaa.mm.dd e número da versão
             Text(
-                text = "2026.09.11 - Versão 0.2",
+                text = "2026.09.19 - Versão 0.2 (v82dw01)",
                 color = backlightTextSecondary,
                 fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Bold,
@@ -3570,28 +4138,28 @@ fun IpodSearchScreen(
                     }
                 }
             } else {
-                LazyColumn(
+                com.example.ui.components.SelectableLazyColumn(
+                    items = displayedStations,
+                    selectedIndex = selectedIndex,
+                    key = { _, st -> st.id },
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(3.dp),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 2.dp)
-                ) {
-                    itemsIndexed(displayedStations, key = { _, st -> st.id }) { index, station ->
-                        val isSelected = index == selectedIndex
-                        val isPlayingThis = station.id == currentStationId
-                        val isFav = favorites.any { it.id == station.id }
+                ) { index, station, isSelected ->
+                    val isPlayingThis = station.id == currentStationId
+                    val isFav = favorites.any { it.id == station.id }
 
-                        com.example.ui.components.StationItemView(
-                            station = station,
-                            isSelected = isSelected,
-                            isPlaying = isPlayingThis,
-                            isFavorite = isFav,
-                            onClick = { onSelectStation(station) },
-                            onToggleFavorite = { onToggleFavorite(station) },
-                            backlightTextPrimary = backlightTextPrimary,
-                            backlightTextSecondary = backlightTextSecondary,
-                            backlightHighlight = backlightHighlight
-                        )
-                    }
+                    com.example.ui.components.StationItemView(
+                        station = station,
+                        isSelected = isSelected,
+                        isPlaying = isPlayingThis,
+                        isFavorite = isFav,
+                        onClick = { onSelectStation(station) },
+                        onToggleFavorite = { onToggleFavorite(station) },
+                        backlightTextPrimary = backlightTextPrimary,
+                        backlightTextSecondary = backlightTextSecondary,
+                        backlightHighlight = backlightHighlight
+                    )
                 }
             }
         }

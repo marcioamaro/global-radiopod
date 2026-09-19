@@ -22,6 +22,15 @@ class RadioApp : Application() {
     val playerManager: RadioPlayerManager
         get() = RadioPlayerManager.getInstance(this)
 
+    val playbackCoordinator: com.example.player.coordinator.PlaybackCoordinator
+        get() = com.example.player.coordinator.DefaultPlaybackCoordinator.getInstance(this)
+
+    val downloadManager: com.example.data.download.PodcastDownloadManager
+        get() = com.example.data.download.PodcastDownloadManager.getInstance(this)
+
+    val streamRecorder: com.example.player.recorder.RadioStreamRecorder
+        get() = com.example.player.recorder.RadioStreamRecorder.getInstance(this)
+
     lateinit var soundAndHaptics: IpodSoundAndHaptics
         private set
 
@@ -29,6 +38,12 @@ class RadioApp : Application() {
         private set
 
     lateinit var podcastRepository: com.example.data.repository.PodcastRepository
+        private set
+
+    lateinit var clickWheelRepository: com.example.data.prefs.ClickWheelPreferencesRepository
+        private set
+
+    lateinit var clickWheelEngine: com.example.ui.components.ClickWheelEngine
         private set
 
     override fun attachBaseContext(base: android.content.Context?) {
@@ -42,6 +57,11 @@ class RadioApp : Application() {
         localMediaRepository = com.example.data.repository.LocalMediaRepository(this)
         podcastRepository = com.example.data.repository.PodcastRepository.getInstance(this)
         soundAndHaptics = IpodSoundAndHaptics.getInstance(this)
+        clickWheelRepository = com.example.data.prefs.ClickWheelPreferencesRepository.getInstance(this)
+        clickWheelEngine = com.example.ui.components.ClickWheelEngine(
+            settingsFlow = clickWheelRepository.clickWheelPreferences,
+            scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Default + kotlinx.coroutines.SupervisorJob())
+        )
 
         // Strict lightweight memory and disk limits for image loading to prevent phone heating & GC pauses
         val imageLoader = ImageLoader.Builder(this)

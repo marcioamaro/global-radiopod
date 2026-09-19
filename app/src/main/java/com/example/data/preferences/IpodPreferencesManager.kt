@@ -85,6 +85,7 @@ class IpodPreferencesManager private constructor(context: Context) {
         private const val KEY_CHASSIS_BACK_ANIMATION_ENABLED = "key_chassis_back_animation_enabled"
         private const val KEY_BRICK_HIGH_SCORES_JSON = "key_brick_high_scores_json"
         private const val KEY_PURE_AUDIO_MODE = "key_pure_audio_mode"
+        private const val KEY_RANDOM_HARDWARE_COLORS_ENABLED = "key_random_hardware_colors_enabled"
         private const val MAX_RECENTS = 20
 
         @Volatile
@@ -459,6 +460,11 @@ class IpodPreferencesManager private constructor(context: Context) {
     var customCenterButtonColor: Long
         get() = prefs.getLong(KEY_CUSTOM_CENTER_BUTTON_COLOR, IpodWheelPreset.CLASSIC_GREY.centerButtonColor)
         set(value) = prefs.edit().putLong(KEY_CUSTOM_CENTER_BUTTON_COLOR, value).apply()
+
+    // Modo Aleatório de Cores do Hardware (Carcaça, Click Wheel e Botão Central)
+    var randomHardwareColorsEnabled: Boolean
+        get() = prefs.getBoolean(KEY_RANDOM_HARDWARE_COLORS_ENABLED, false)
+        set(value) = prefs.edit().putBoolean(KEY_RANDOM_HARDWARE_COLORS_ENABLED, value).apply()
 
     // Typography customization
     var fontType: IpodFontType

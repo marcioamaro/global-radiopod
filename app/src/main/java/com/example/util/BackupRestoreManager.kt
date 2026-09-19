@@ -48,6 +48,7 @@ object BackupRestoreManager {
             put("isFontBold", prefs.isFontBold)
             put("dockClockScale", prefs.dockClockScale.name)
             put("dockShowSeconds", prefs.dockShowSeconds)
+            put("randomHardwareColorsEnabled", prefs.randomHardwareColorsEnabled)
         }
         root.put("visualPreferences", visualObj)
 
@@ -254,6 +255,9 @@ object BackupRestoreManager {
                 } catch (_: Exception) {}
                 if (v.has("dockShowSeconds")) {
                     prefs.dockShowSeconds = v.getBoolean("dockShowSeconds")
+                }
+                if (v.has("randomHardwareColorsEnabled")) {
+                    prefs.randomHardwareColorsEnabled = v.getBoolean("randomHardwareColorsEnabled")
                 }
             }
 

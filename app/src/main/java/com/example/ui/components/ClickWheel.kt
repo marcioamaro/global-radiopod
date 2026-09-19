@@ -22,9 +22,12 @@ import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,8 +60,14 @@ fun ClickWheel(
     textColor: Color = Color.White,
     centerButtonColor: Color = Color.White,
     wheelSize: Dp = 240.dp,
+    engine: ClickWheelEngine? = null,
     modifier: Modifier = Modifier
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val effectiveEngine = engine ?: remember(context) {
+        (context.applicationContext as? com.example.RadioApp)?.clickWheelEngine ?: ClickWheelEngine()
+    }
+
     BoxWithConstraints(
         modifier = modifier,
         contentAlignment = Alignment.Center
@@ -75,6 +84,7 @@ fun ClickWheel(
         var previousAngle by remember { mutableFloatStateOf(0f) }
         var accumulatedDelta by remember { mutableFloatStateOf(0f) }
         var wheelCenter by remember { mutableStateOf(Offset.Zero) }
+        var lastDragTimeMs by remember { mutableLongStateOf(0L) }
 
         val ROTATION_THRESHOLD_RADIANS = (PI / 9).toFloat() // ~20 degrees per step
 
@@ -103,9 +113,12 @@ fun ClickWheel(
                         val dy = offset.y - wheelCenter.y
                         previousAngle = atan2(dy, dx)
                         accumulatedDelta = 0f
+                        lastDragTimeMs = System.currentTimeMillis()
                     },
                     onDrag = { change, _ ->
                         change.consume()
+                        val now = System.currentTimeMillis()
+                        val timeDiff = (now - lastDragTimeMs).coerceAtLeast(1L)
                         val dx = change.position.x - wheelCenter.x
                         val dy = change.position.y - wheelCenter.y
                         val currentAngle = atan2(dy, dx)
@@ -117,15 +130,22 @@ fun ClickWheel(
 
                         accumulatedDelta += diff
                         previousAngle = currentAngle
+                        lastDragTimeMs = now
+
+                        // Calculate angular speed (rad/sec) and get steps via centralized ClickWheelEngine
+                        val angularSpeed = kotlin.math.abs(diff) / (timeDiff / 1000f)
+                        val speedMultiplier = effectiveEngine.calculateSteps(angularSpeed)
 
                         if (accumulatedDelta >= ROTATION_THRESHOLD_RADIANS) {
-                            val steps = (accumulatedDelta / ROTATION_THRESHOLD_RADIANS).toInt()
+                            val baseSteps = (accumulatedDelta / ROTATION_THRESHOLD_RADIANS).toInt()
+                            val steps = baseSteps * speedMultiplier
                             onRotaryScroll(steps)
-                            accumulatedDelta -= steps * ROTATION_THRESHOLD_RADIANS
+                            accumulatedDelta -= baseSteps * ROTATION_THRESHOLD_RADIANS
                         } else if (accumulatedDelta <= -ROTATION_THRESHOLD_RADIANS) {
-                            val steps = (accumulatedDelta / ROTATION_THRESHOLD_RADIANS).toInt()
+                            val baseSteps = (accumulatedDelta / ROTATION_THRESHOLD_RADIANS).toInt()
+                            val steps = baseSteps * speedMultiplier
                             onRotaryScroll(steps)
-                            accumulatedDelta -= steps * ROTATION_THRESHOLD_RADIANS
+                            accumulatedDelta -= baseSteps * ROTATION_THRESHOLD_RADIANS
                         }
                     }
                 )
@@ -145,6 +165,7 @@ fun ClickWheel(
                     onClick = onMenuClick
                 )
                 .padding(horizontal = 16.dp, vertical = 8.dp)
+                .clearAndSetSemantics { contentDescription = "Menu ou Voltar" }
                 .testTag("click_wheel_menu_button"),
             contentAlignment = Alignment.Center
         ) {
@@ -170,6 +191,7 @@ fun ClickWheel(
                     onClick = onPlayPauseClick
                 )
                 .padding(horizontal = 16.dp, vertical = 8.dp)
+                .clearAndSetSemantics { contentDescription = "Reproduzir ou Pausar" }
                 .testTag("click_wheel_play_pause_button"),
             contentAlignment = Alignment.Center
         ) {
@@ -194,6 +216,7 @@ fun ClickWheel(
                     onClick = onPrevClick
                 )
                 .padding(horizontal = 8.dp, vertical = 16.dp)
+                .clearAndSetSemantics { contentDescription = "Faixa anterior ou retroceder" }
                 .testTag("click_wheel_prev_button"),
             contentAlignment = Alignment.Center
         ) {
@@ -218,6 +241,7 @@ fun ClickWheel(
                     onClick = onNextClick
                 )
                 .padding(horizontal = 8.dp, vertical = 16.dp)
+                .clearAndSetSemantics { contentDescription = "Próxima faixa ou avançar" }
                 .testTag("click_wheel_next_button"),
             contentAlignment = Alignment.Center
         ) {
@@ -243,12 +267,13 @@ fun ClickWheel(
                     indication = ripple(bounded = true, radius = 40.dp),
                     onClick = onCenterClick
                 )
+                .clearAndSetSemantics { contentDescription = "Selecionar ou Confirmar" }
                 .testTag("click_wheel_center_button"),
             contentAlignment = Alignment.Center
         ) {
             androidx.compose.foundation.Image(
                 painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.ic_pear_logo),
-                contentDescription = "Botão Central Pera",
+                contentDescription = null,
                 colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(textColor.copy(alpha = 0.42f)),
                 contentScale = androidx.compose.ui.layout.ContentScale.Fit,
                 modifier = Modifier.size(width = centerSize * 0.32f, height = centerSize * 0.45f)

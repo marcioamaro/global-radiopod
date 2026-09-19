@@ -227,15 +227,15 @@ fun IpodHeader(
                     Spacer(modifier = Modifier.width(3.dp))
                 }
 
-                if (sleepTimerMinutes > 0) {
+                if (sleepTimerMinutes != 0) {
                     Icon(
                         imageVector = Icons.Default.Timer,
-                        contentDescription = "Timer $sleepTimerMinutes min",
+                        contentDescription = if (sleepTimerMinutes == -1) "Timer ao Fim do Episódio" else "Timer $sleepTimerMinutes min",
                         tint = backlightTextPrimary,
                         modifier = Modifier.size(12.dp)
                     )
                     Text(
-                        text = "${sleepTimerMinutes}m",
+                        text = if (sleepTimerMinutes == -1) "Fim" else "${sleepTimerMinutes}m",
                         color = backlightTextPrimary,
                         fontSize = (10 * fontScale).sp,
                         fontWeight = FontWeight.Bold,

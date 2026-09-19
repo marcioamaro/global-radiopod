@@ -12,12 +12,20 @@ import com.example.data.preferences.IpodWheelPreset
 import com.example.data.repository.CountryCategory
 import com.example.data.repository.CuratedData
 import com.example.data.repository.GenreCategory
+import com.example.data.repository.RadioRankingRepository
 import com.example.data.repository.RadioRepository
 import com.example.player.ActiveMediaType
 import com.example.player.RadioPlaybackStatus
 import com.example.player.RadioPlayerManager
 import com.example.player.RdsInfo
 import com.example.player.NowPlayingMetadata
+import com.example.player.context.NavigationContext
+import com.example.player.context.QueueSource
+import com.example.player.coordinator.toPlaybackQueueItem
+import com.example.data.model.IpodAppearanceSettings
+import com.example.data.model.IpodPalette
+import com.example.ui.theme.IpodColorContrastUtil
+import com.example.ui.theme.SafeIpodColorGenerator
 import com.example.util.IpodSoundAndHaptics
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -114,6 +122,7 @@ data class UiState(
     val dockColorTheme: DockColorTheme = DockColorTheme.ELECTRIC_BLUE,
     val carModeSource: CarModeSource = CarModeSource.RADIO,
     val chassisTheme: IpodChassisTheme = IpodChassisTheme.CLASSIC_SILVER,
+    val appearanceSettings: IpodAppearanceSettings = IpodAppearanceSettings(),
     val customBodyColor: Long = 0xFFF1F5F9,
     val backlight: LcdBacklight = LcdBacklight.RETRO_IPOD_LCD,
     val wheelPreset: IpodWheelPreset = IpodWheelPreset.CLASSIC_GREY,
@@ -241,13 +250,30 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     val rdsInfo: StateFlow<RdsInfo> = playerManager.rdsInfo
     val nowPlaying: StateFlow<NowPlayingMetadata> = playerManager.nowPlaying
     val visualizerAmplitudes: StateFlow<List<Float>> = playerManager.visualizerAmplitudes
-    val volume: StateFlow<Float> = playerManager.volume
+    val volume: StateFlow<Float> = radioApp.playbackCoordinator.activeVolume
     val sleepTimerMinutes: StateFlow<Int> = playerManager.sleepTimerMinutes
     val sleepTimerSecondsRemaining: StateFlow<Long> = playerManager.sleepTimerSecondsRemaining
     val errorMessage: StateFlow<String?> = playerManager.errorMessage
 
     private val _brickGameCenterAction = MutableStateFlow(0L)
     val brickGameCenterAction: StateFlow<Long> = _brickGameCenterAction.asStateFlow()
+
+    val clickWheelPreferences: StateFlow<com.example.data.prefs.ClickWheelPreferences> = radioApp.clickWheelRepository.clickWheelPreferences
+        .stateIn(viewModelScope, SharingStarted.Eagerly, com.example.data.prefs.ClickWheelPreferences())
+
+    fun setClickWheelMode(mode: com.example.data.prefs.ClickWheelMode) {
+        viewModelScope.launch {
+            radioApp.clickWheelRepository.updateClickWheelMode(mode)
+        }
+        soundAndHaptics.performClickHaptic()
+    }
+
+    fun setFixedSpeed(speed: com.example.data.prefs.FixedSpeed) {
+        viewModelScope.launch {
+            radioApp.clickWheelRepository.updateFixedSpeed(speed)
+        }
+        soundAndHaptics.performClickHaptic()
+    }
 
     // Audio Output Switcher & MediaRouter
     val audioRouteManager = com.example.player.AudioRouteManager.getInstance(application)
@@ -561,23 +587,57 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         navigateTo(IpodScreenDestination.PODCAST_NOW_PLAYING)
     }
 
-    private val _uiState = MutableStateFlow(
-        UiState(
-            chassisTheme = prefs.chassisTheme,
-            customBodyColor = prefs.customBodyColor,
-            backlight = prefs.lcdBacklight,
-            wheelPreset = prefs.wheelPreset,
-            customWheelColor = prefs.customWheelColor,
-            customWheelTextColor = prefs.customWheelTextColor,
-            customCenterButtonColor = prefs.customCenterButtonColor,
-            fontType = prefs.fontType,
-            fontSizeScale = prefs.fontSizeScale,
-            isFontBold = prefs.isFontBold,
-            autoPlayOnLaunch = prefs.isAutoPlayOnLaunch,
-            dockClockScale = prefs.dockClockScale,
-            dockShowSeconds = prefs.dockShowSeconds,
-            recentsList = prefs.getRecentStations()
+    private fun createInitialAppearanceSettings(): IpodAppearanceSettings {
+        val manualPalette = IpodPalette(
+            bodyColor = prefs.customBodyColor,
+            wheelColor = prefs.customWheelColor,
+            wheelTextColor = prefs.customWheelTextColor,
+            centerButtonColor = prefs.customCenterButtonColor
         )
+        val isRandom = prefs.randomHardwareColorsEnabled
+        return if (isRandom) {
+            val sessionPalette = SafeIpodColorGenerator.generateSafePalette()
+            IpodAppearanceSettings(
+                randomHardwareColorsEnabled = true,
+                manualPalette = manualPalette,
+                activePalette = sessionPalette,
+                lastValidPalette = sessionPalette,
+                lastGenerationId = System.currentTimeMillis()
+            )
+        } else {
+            IpodAppearanceSettings(
+                randomHardwareColorsEnabled = false,
+                manualPalette = manualPalette,
+                activePalette = manualPalette,
+                lastValidPalette = manualPalette,
+                lastGenerationId = 0L
+            )
+        }
+    }
+
+    private val initialAppearanceSettings by lazy { createInitialAppearanceSettings() }
+
+    private val _uiState = MutableStateFlow(
+        run {
+            val appearance = createInitialAppearanceSettings()
+            UiState(
+                chassisTheme = prefs.chassisTheme,
+                appearanceSettings = appearance,
+                customBodyColor = appearance.activePalette.bodyColor,
+                backlight = prefs.lcdBacklight,
+                wheelPreset = prefs.wheelPreset,
+                customWheelColor = appearance.activePalette.wheelColor,
+                customWheelTextColor = appearance.activePalette.wheelTextColor,
+                customCenterButtonColor = appearance.activePalette.centerButtonColor,
+                fontType = prefs.fontType,
+                fontSizeScale = prefs.fontSizeScale,
+                isFontBold = prefs.isFontBold,
+                autoPlayOnLaunch = prefs.isAutoPlayOnLaunch,
+                dockClockScale = prefs.dockClockScale,
+                dockShowSeconds = prefs.dockShowSeconds,
+                recentsList = prefs.getRecentStations()
+            )
+        }
     )
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
@@ -696,10 +756,49 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         playerManager.setUiActive(active)
     }
 
+    fun setRandomHardwareColorsEnabled(enabled: Boolean) {
+        prefs.randomHardwareColorsEnabled = enabled
+        val currentSettings = _uiState.value.appearanceSettings
+
+        val newSettings = if (enabled) {
+            val newPalette = SafeIpodColorGenerator.generateSafePalette()
+            currentSettings.copy(
+                randomHardwareColorsEnabled = true,
+                activePalette = newPalette,
+                lastValidPalette = newPalette,
+                lastGenerationId = System.currentTimeMillis()
+            )
+        } else {
+            val manual = currentSettings.manualPalette
+            currentSettings.copy(
+                randomHardwareColorsEnabled = false,
+                activePalette = manual
+            )
+        }
+
+        _uiState.value = _uiState.value.copy(
+            appearanceSettings = newSettings,
+            customBodyColor = newSettings.activePalette.bodyColor,
+            customWheelColor = newSettings.activePalette.wheelColor,
+            customWheelTextColor = newSettings.activePalette.wheelTextColor,
+            customCenterButtonColor = newSettings.activePalette.centerButtonColor
+        )
+        soundAndHaptics.performClickHaptic()
+    }
+
     fun setChassisTheme(theme: IpodChassisTheme) {
+        if (!_uiState.value.appearanceSettings.isManualColorEditingEnabled) return
+        val currentSettings = _uiState.value.appearanceSettings
+        val updatedManual = currentSettings.manualPalette.copy(bodyColor = theme.bodyColor)
+        val updatedSettings = currentSettings.copy(
+            manualPalette = updatedManual,
+            activePalette = updatedManual,
+            lastValidPalette = updatedManual
+        )
         _uiState.value = _uiState.value.copy(
             chassisTheme = theme,
-            customBodyColor = theme.bodyColor
+            customBodyColor = theme.bodyColor,
+            appearanceSettings = updatedSettings
         )
         prefs.chassisTheme = theme
         prefs.customBodyColor = theme.bodyColor
@@ -707,7 +806,18 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setCustomBodyColor(color: Long) {
-        _uiState.value = _uiState.value.copy(customBodyColor = color)
+        if (!_uiState.value.appearanceSettings.isManualColorEditingEnabled) return
+        val currentSettings = _uiState.value.appearanceSettings
+        val updatedManual = currentSettings.manualPalette.copy(bodyColor = color)
+        val updatedSettings = currentSettings.copy(
+            manualPalette = updatedManual,
+            activePalette = updatedManual,
+            lastValidPalette = updatedManual
+        )
+        _uiState.value = _uiState.value.copy(
+            customBodyColor = color,
+            appearanceSettings = updatedSettings
+        )
         prefs.customBodyColor = color
         soundAndHaptics.performClickHaptic()
     }
@@ -719,11 +829,24 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setWheelPreset(preset: IpodWheelPreset) {
+        if (!_uiState.value.appearanceSettings.isManualColorEditingEnabled) return
+        val currentSettings = _uiState.value.appearanceSettings
+        val updatedManual = currentSettings.manualPalette.copy(
+            wheelColor = preset.wheelColor,
+            wheelTextColor = preset.textColor,
+            centerButtonColor = preset.centerButtonColor
+        )
+        val updatedSettings = currentSettings.copy(
+            manualPalette = updatedManual,
+            activePalette = updatedManual,
+            lastValidPalette = updatedManual
+        )
         _uiState.value = _uiState.value.copy(
             wheelPreset = preset,
             customWheelColor = preset.wheelColor,
             customWheelTextColor = preset.textColor,
-            customCenterButtonColor = preset.centerButtonColor
+            customCenterButtonColor = preset.centerButtonColor,
+            appearanceSettings = updatedSettings
         )
         prefs.wheelPreset = preset
         prefs.customWheelColor = preset.wheelColor
@@ -733,16 +856,63 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setCustomWheelColors(wheel: Long, text: Long, center: Long) {
+        if (!_uiState.value.appearanceSettings.isManualColorEditingEnabled) return
+        val currentSettings = _uiState.value.appearanceSettings
+        val updatedManual = currentSettings.manualPalette.copy(
+            wheelColor = wheel,
+            wheelTextColor = text,
+            centerButtonColor = center
+        )
+        val updatedSettings = currentSettings.copy(
+            manualPalette = updatedManual,
+            activePalette = updatedManual,
+            lastValidPalette = updatedManual
+        )
         _uiState.value = _uiState.value.copy(
             wheelPreset = IpodWheelPreset.CUSTOM,
             customWheelColor = wheel,
             customWheelTextColor = text,
-            customCenterButtonColor = center
+            customCenterButtonColor = center,
+            appearanceSettings = updatedSettings
         )
         prefs.wheelPreset = IpodWheelPreset.CUSTOM
         prefs.customWheelColor = wheel
         prefs.customWheelTextColor = text
         prefs.customCenterButtonColor = center
+        soundAndHaptics.performClickHaptic()
+    }
+
+    fun setCustomWheelColor(wheelColor: Long) {
+        if (!_uiState.value.appearanceSettings.isManualColorEditingEnabled) return
+        val optimalText = IpodColorContrastUtil.getOptimalWheelTextColor(wheelColor)
+        val currentCenter = _uiState.value.appearanceSettings.manualPalette.centerButtonColor
+        setCustomWheelColors(wheel = wheelColor, text = optimalText, center = currentCenter)
+    }
+
+    fun setCustomCenterButtonColor(centerButtonColor: Long) {
+        if (!_uiState.value.appearanceSettings.isManualColorEditingEnabled) return
+        val currentWheel = _uiState.value.appearanceSettings.manualPalette.wheelColor
+        val currentText = _uiState.value.appearanceSettings.manualPalette.wheelTextColor
+        setCustomWheelColors(wheel = currentWheel, text = currentText, center = centerButtonColor)
+    }
+
+    fun generateNewRandomHardwarePalette() {
+        val currentSettings = _uiState.value.appearanceSettings
+        if (!currentSettings.randomHardwareColorsEnabled) return
+
+        val newPalette = SafeIpodColorGenerator.generateSafePalette()
+        val newSettings = currentSettings.copy(
+            activePalette = newPalette,
+            lastValidPalette = newPalette,
+            lastGenerationId = System.currentTimeMillis()
+        )
+        _uiState.value = _uiState.value.copy(
+            appearanceSettings = newSettings,
+            customBodyColor = newPalette.bodyColor,
+            customWheelColor = newPalette.wheelColor,
+            customWheelTextColor = newPalette.wheelTextColor,
+            customCenterButtonColor = newPalette.centerButtonColor
+        )
         soundAndHaptics.performClickHaptic()
     }
 
@@ -796,6 +966,16 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     fun setSleepTimer(minutes: Int) {
         playerManager.setSleepTimer(minutes)
         soundAndHaptics.performHeavyHaptic()
+    }
+
+    fun skipToNextChapter() {
+        playerManager.skipToNextChapter()
+        soundAndHaptics.performClickHaptic()
+    }
+
+    fun skipToPreviousChapter() {
+        playerManager.skipToPreviousChapter()
+        soundAndHaptics.performClickHaptic()
     }
 
     fun navigateTo(screen: IpodScreenDestination) {
@@ -978,7 +1158,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                     val customIdx = index - 1
                     val list = _uiState.value.customStations
                     if (customIdx in list.indices) {
-                        playStation(list[customIdx])
+                        onRadioClicked(list[customIdx], QueueSource.GLOBAL, list)
                         navigateTo(IpodScreenDestination.NOW_PLAYING_RDS)
                     }
                 }
@@ -1099,27 +1279,24 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
             IpodScreenDestination.FAVORITES -> {
                 val list = favorites.value
                 if (index in list.indices) {
-                    playbackQueue = list
                     _uiState.value = _uiState.value.copy(activeCategoryName = "Favoritos")
-                    playStation(list[index])
+                    onRadioClicked(list[index], QueueSource.FAVORITES, list)
                     navigateTo(IpodScreenDestination.NOW_PLAYING_RDS)
                 }
             }
             IpodScreenDestination.RECENTS -> {
                 val list = _uiState.value.recentsList
                 if (index in list.indices) {
-                    playbackQueue = list
                     _uiState.value = _uiState.value.copy(activeCategoryName = "Recentes")
-                    playStation(list[index])
+                    onRadioClicked(list[index], QueueSource.RECENTS, list)
                     navigateTo(IpodScreenDestination.NOW_PLAYING_RDS)
                 }
             }
             IpodScreenDestination.TOP_BRAZIL -> {
                 val list = _uiState.value.stationsList
                 if (index in list.indices) {
-                    playbackQueue = list
                     _uiState.value = _uiState.value.copy(activeCategoryName = "Top Brasil")
-                    playStation(list[index])
+                    onRadioClicked(list[index], QueueSource.RANKING, list)
                     navigateTo(IpodScreenDestination.NOW_PLAYING_RDS)
                 }
             }
@@ -1145,36 +1322,32 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
             IpodScreenDestination.TOP_WORLD -> {
                 val list = _uiState.value.stationsList
                 if (index in list.indices) {
-                    playbackQueue = list
                     _uiState.value = _uiState.value.copy(activeCategoryName = "Top Mundial")
-                    playStation(list[index])
+                    onRadioClicked(list[index], QueueSource.RANKING, list)
                     navigateTo(IpodScreenDestination.NOW_PLAYING_RDS)
                 }
             }
             IpodScreenDestination.STATIONS_BY_GENRE -> {
                 val list = _uiState.value.stationsList
                 if (index in list.indices) {
-                    playbackQueue = list
                     _uiState.value = _uiState.value.copy(activeCategoryName = _uiState.value.activeGenre?.name ?: "Gênero")
-                    playStation(list[index])
+                    onRadioClicked(list[index], QueueSource.CATEGORY, list)
                     navigateTo(IpodScreenDestination.NOW_PLAYING_RDS)
                 }
             }
             IpodScreenDestination.STATIONS_BY_COUNTRY -> {
                 val list = _uiState.value.stationsList
                 if (index in list.indices) {
-                    playbackQueue = list
                     _uiState.value = _uiState.value.copy(activeCategoryName = _uiState.value.activeCountry?.name ?: "País")
-                    playStation(list[index])
+                    onRadioClicked(list[index], QueueSource.CATEGORY, list)
                     navigateTo(IpodScreenDestination.NOW_PLAYING_RDS)
                 }
             }
             IpodScreenDestination.SEARCH -> {
                 val list = _uiState.value.stationsList
                 if (index in list.indices) {
-                    playbackQueue = list
                     _uiState.value = _uiState.value.copy(activeCategoryName = "Busca")
-                    playStation(list[index])
+                    onRadioClicked(list[index], QueueSource.SEARCH, list)
                     navigateTo(IpodScreenDestination.NOW_PLAYING_RDS)
                 }
             }
@@ -1261,28 +1434,24 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                 nextVideoWithFolderWrap()
             }
             ActiveMediaType.PODCAST_EPISODE -> {
-                val episodes = _uiState.value.podcastEpisodes
-                val current = currentPodcastEpisode.value
-                val idx = episodes.indexOfFirst { it.id == current?.id }
-                if (idx in 0 until episodes.size - 1) {
-                    playPodcastEpisode(episodes[idx + 1])
+                if (currentScreen == IpodScreenDestination.PODCAST_CHAPTERS && playerManager.currentPodcastChapters.value.isNotEmpty()) {
+                    playerManager.skipToNextChapter()
                 } else {
-                    playerManager.nextPodcastEpisode()
+                    val episodes = _uiState.value.podcastEpisodes
+                    val current = currentPodcastEpisode.value
+                    val idx = episodes.indexOfFirst { it.id == current?.id }
+                    if (idx in 0 until episodes.size - 1) {
+                        playPodcastEpisode(episodes[idx + 1])
+                    } else {
+                        playerManager.nextPodcastEpisode()
+                    }
                 }
             }
             ActiveMediaType.LOCAL_AUDIO -> {
                 nextLocalTrackWithFolderWrap()
             }
             ActiveMediaType.LIVE_RADIO -> {
-                val list = getActiveStationList()
-                if (list.isNotEmpty()) {
-                    val current = currentStation.value
-                    val currentIndex = list.indexOfFirst { it.id == current?.id }
-                    val nextIndex = if (currentIndex >= 0) (currentIndex + 1) % list.size else 0
-                    playStation(list[nextIndex])
-                } else {
-                    playerManager.playNextStation()
-                }
+                radioApp.playbackCoordinator.skipToNext()
             }
         }
     }
@@ -1309,7 +1478,9 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                 prevVideoWithFolderWrap()
             }
             ActiveMediaType.PODCAST_EPISODE -> {
-                if (audioPositionMs.value > 3000L) {
+                if (currentScreen == IpodScreenDestination.PODCAST_CHAPTERS && playerManager.currentPodcastChapters.value.isNotEmpty()) {
+                    playerManager.skipToPreviousChapter()
+                } else if (audioPositionMs.value > 3000L) {
                     playerManager.seekToPosition(0L)
                 } else {
                     val episodes = _uiState.value.podcastEpisodes
@@ -1330,15 +1501,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
             ActiveMediaType.LIVE_RADIO -> {
-                val list = getActiveStationList()
-                if (list.isNotEmpty()) {
-                    val current = currentStation.value
-                    val currentIndex = list.indexOfFirst { it.id == current?.id }
-                    val prevIndex = if (currentIndex > 0) currentIndex - 1 else list.size - 1
-                    playStation(list[prevIndex])
-                } else {
-                    playerManager.playPreviousStation()
-                }
+                radioApp.playbackCoordinator.skipToPrevious()
             }
         }
     }
@@ -1443,29 +1606,56 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun playStation(station: RadioStation) {
-        // Persist last played station for startup
-        prefs.saveLastPlayedStation(station)
-        prefs.addRecentStation(station)
+    fun onRadioClicked(radio: RadioStation, source: QueueSource, fullList: List<RadioStation>) {
+        // 1. Atualiza o contexto ANTES de iniciar a reprodução
+        val context = NavigationContext(
+            source = source,
+            queryId = when (source) {
+                QueueSource.SEARCH -> _uiState.value.searchQuery
+                QueueSource.CATEGORY -> _uiState.value.activeGenre?.name ?: _uiState.value.activeCountry?.name
+                QueueSource.RANKING -> _uiState.value.activeCategoryName
+                else -> source.name
+            },
+            items = fullList.map { it.toPlaybackQueueItem() }
+        )
+        radioApp.playbackCoordinator.setNavigationContext(context)
+        playbackQueue = fullList
+        playerManager.updatePlaylist(fullList)
+
+        prefs.saveLastPlayedStation(radio)
+        prefs.addRecentStation(radio)
         _uiState.value = _uiState.value.copy(
             recentsList = prefs.getRecentStations(),
             currentYouTubeVideo = null
         )
 
-        // If station was played directly, ensure it's in the queue
-        if (playbackQueue.none { it.id == station.id }) {
-            playbackQueue = if (_uiState.value.stationsList.any { it.id == station.id }) {
-                _uiState.value.stationsList
-            } else if (favorites.value.any { it.id == station.id }) {
-                favorites.value
-            } else if (_uiState.value.recentsList.any { it.id == station.id }) {
-                _uiState.value.recentsList
-            } else {
-                listOf(station) + CuratedData.CURATED_GLOBAL_STATIONS
-            }
+        // 2. Inicia a reprodução
+        radioApp.playbackCoordinator.play(radio.toPlaybackQueueItem())
+    }
+
+    fun playStation(station: RadioStation) {
+        val fullList = if (playbackQueue.any { it.id == station.id }) {
+            playbackQueue
+        } else if (_uiState.value.stationsList.any { it.id == station.id }) {
+            _uiState.value.stationsList
+        } else if (favorites.value.any { it.id == station.id }) {
+            favorites.value
+        } else if (_uiState.value.recentsList.any { it.id == station.id }) {
+            _uiState.value.recentsList
+        } else {
+            listOf(station) + CuratedData.CURATED_GLOBAL_STATIONS
         }
-        playerManager.updatePlaylist(playbackQueue)
-        playerManager.playStation(station)
+
+        val source = when {
+            favorites.value.any { it.id == station.id } && _uiState.value.stationsList == favorites.value -> QueueSource.FAVORITES
+            _uiState.value.recentsList.any { it.id == station.id } && _uiState.value.stationsList == _uiState.value.recentsList -> QueueSource.RECENTS
+            _uiState.value.searchQuery.isNotBlank() -> QueueSource.SEARCH
+            _uiState.value.activeCategoryName.contains("Top", ignoreCase = true) -> QueueSource.RANKING
+            _uiState.value.activeGenre != null || _uiState.value.activeCountry != null -> QueueSource.CATEGORY
+            else -> QueueSource.GLOBAL
+        }
+
+        onRadioClicked(station, source, fullList)
     }
 
     fun loadRecents() {
@@ -1653,14 +1843,15 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     fun loadTopBrazilStations() {
         val brazil = CuratedData.COUNTRIES.firstOrNull { it.code.equals("BR", ignoreCase = true) }
             ?: CountryCategory("BR", "Brasil", "🇧🇷", "América do Sul")
+        val brCount = CuratedData.CURATED_GLOBAL_STATIONS.count { it.countryCode == "BR" }
         _uiState.value = _uiState.value.copy(
             activeCountry = brazil,
-            activeCategoryName = "Top Brasil (1.321 Emissoras)",
+            activeCategoryName = "Top Brasil ($brCount Emissoras)",
             isLoadingList = true,
             stationsList = emptyList()
         )
         viewModelScope.launch {
-            val stations = repository.getStationsByCountry("BR")
+            val stations = RadioRankingRepository.getInstance().getTopBrazil(limit = 100)
             _uiState.value = _uiState.value.copy(
                 isLoadingList = false,
                 stationsList = stations
@@ -1722,17 +1913,21 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun adjustVolume(delta: Float) {
-        playerManager.adjustVolumeDelta(delta)
-        prefs.volumeLevel = playerManager.volume.value
+        val current = radioApp.playbackCoordinator.activeVolume.value
+        val target = (current + delta).coerceIn(0f, 1f)
+        radioApp.playbackCoordinator.setActiveVolume(target)
+        prefs.volumeLevel = target
     }
 
     fun setVolume(vol: Float) {
-        playerManager.setVolumeLevel(vol)
-        prefs.volumeLevel = vol
+        val target = vol.coerceIn(0f, 1f)
+        radioApp.playbackCoordinator.setActiveVolume(target)
+        prefs.volumeLevel = target
     }
 
     fun syncVolumeFromSystem() {
-        playerManager.syncVolumeFromNativeStream()
+        val vm = com.example.audio.VolumeManager.getInstance(radioApp)
+        vm.setSystemVolume(vm.getSystemVolume())
     }
 
     fun stepVolumeUp() {
@@ -1771,11 +1966,14 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
 
     fun cycleSleepTimer() {
         val current = sleepTimerMinutes.value
+        val isTrackOrEpisode = playerManager.activeMediaType.value != ActiveMediaType.LIVE_RADIO
         val next = when (current) {
             0 -> 15
             15 -> 30
             30 -> 45
             45 -> 60
+            60 -> if (isTrackOrEpisode) -1 else 0
+            -1 -> 0
             else -> 0
         }
         setSleepTimer(next)
