@@ -541,6 +541,7 @@ fun IpodClassicScreen(
                                             }
                                             5 -> onSelectDestination(IpodScreenDestination.GENRES_LIST)
                                             6 -> {
+                                                viewModel?.resetSearchFiltersToDefault()
                                                 viewModel?.executeSearch()
                                                 onSelectDestination(IpodScreenDestination.SEARCH)
                                             }
@@ -2376,7 +2377,7 @@ private fun IpodSettingsScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Modo Aleatório de Hardware",
+                            text = "Modo Aleatório de Cores",
                             color = backlightTextPrimary,
                             fontSize = (10.5f * fontScale).sp,
                             fontWeight = FontWeight.Bold,

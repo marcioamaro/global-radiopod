@@ -23,6 +23,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,6 +51,7 @@ fun StationItemView(
     onClick: () -> Unit,
     onToggleFavorite: () -> Unit,
     isFavorite: Boolean = station.isFavorite,
+    showLogo: Boolean = false,
     backlightTextPrimary: Color,
     backlightTextSecondary: Color,
     backlightHighlight: Color,
@@ -76,7 +81,9 @@ fun StationItemView(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        // Standard compact logo (40dp) with monochrome styling
+        // Compact logo (40dp) - LCD Monocromático ou ícone clássico
+        val darkTone = if (isSelected) Color.White else backlightTextPrimary
+        val favicon = station.favicon.trim()
         Box(
             modifier = Modifier
                 .size(40.dp)
@@ -85,12 +92,48 @@ fun StationItemView(
                 .border(1.2.dp, if (isPlaying) backlightTextPrimary else backlightTextPrimary.copy(alpha = 0.45f), RoundedCornerShape(6.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.Radio,
-                contentDescription = "Rádio",
-                tint = if (isSelected) Color.White else backlightTextPrimary,
-                modifier = Modifier.size(24.dp)
-            )
+            if (showLogo && favicon.isNotBlank()) {
+                var loadFailed by remember(favicon, isSelected) { mutableStateOf(false) }
+                if (!loadFailed) {
+                    val imageRequest = remember(favicon, darkTone) {
+                        ImageRequest.Builder(context)
+                            .data(favicon)
+                            .transformations(
+                                LcdMonochromeTransformation(
+                                    darkColor = darkTone,
+                                    lightColor = Color.Transparent,
+                                    dither = true,
+                                    targetResolution = 64
+                                )
+                            )
+                            .crossfade(false)
+                            .build()
+                    }
+                    AsyncImage(
+                        model = imageRequest,
+                        contentDescription = station.name,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(2.dp),
+                        contentScale = ContentScale.Fit,
+                        onError = { loadFailed = true }
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Radio,
+                        contentDescription = "Rádio",
+                        tint = darkTone,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Radio,
+                    contentDescription = "Rádio",
+                    tint = darkTone,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.width(8.dp))

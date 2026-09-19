@@ -140,7 +140,7 @@ data class UiState(
     val isHoldLocked: Boolean = false,
     val isLoadingList: Boolean = false,
     val searchQuery: String = "",
-    val searchCountryCode: String = "BR",
+    val searchCountryCode: String = "ALL",
     val searchGenreTag: String = "ALL",
     val searchStateCode: String = "ALL",
     val searchCity: String = "ALL",
@@ -1119,6 +1119,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                     }
                     5 -> navigateTo(IpodScreenDestination.GENRES_LIST)
                     6 -> {
+                        resetSearchFiltersToDefault()
                         executeSearch()
                         navigateTo(IpodScreenDestination.SEARCH)
                     }
@@ -1772,6 +1773,18 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun resetSearchFiltersToDefault() {
+        _uiState.value = _uiState.value.copy(
+            searchQuery = "",
+            searchCountryCode = "ALL",
+            searchGenreTag = "ALL",
+            searchStateCode = "ALL",
+            searchCity = "ALL",
+            availableCities = emptyList(),
+            isLoadingCities = false
+        )
+    }
+
     fun onSearchQueryChanged(query: String) {
         _uiState.value = _uiState.value.copy(searchQuery = query)
         executeSearch()
@@ -1796,7 +1809,8 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun onSearchGenreChanged(genreTag: String) {
-        _uiState.value = _uiState.value.copy(searchGenreTag = genreTag)
+        val cleanGenre = if (genreTag.isBlank()) "ALL" else genreTag
+        _uiState.value = _uiState.value.copy(searchGenreTag = cleanGenre)
         executeSearch()
     }
 

@@ -243,11 +243,13 @@ fun StationsListScreen(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) { index, station, isSelected ->
                 val isFav = favorites.any { it.id == station.id }
+                val isRecents = title.contains("Recentes", ignoreCase = true)
                 StationItemView(
                     station = station,
                     isSelected = isSelected,
                     isPlaying = station.id == currentStationId,
                     isFavorite = isFav,
+                    showLogo = isRecents,
                     onClick = { onSelectStation(station) },
                     onToggleFavorite = { onToggleFavorite(station) },
                     backlightTextPrimary = backlightTextPrimary,

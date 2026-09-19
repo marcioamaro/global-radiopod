@@ -35,6 +35,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -118,7 +121,7 @@ fun StationLargeCard(
                 .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Extra-Large Icon/Logo (72dp) - Padrão Flat Monocromático LCD puro
+            // Extra-Large Icon/Logo (72dp) - LCD Monocromático adaptado ao backlight
             Box(
                 modifier = Modifier
                     .size(72.dp)
@@ -127,12 +130,49 @@ fun StationLargeCard(
                     .border(1.5.dp, backlightTextPrimary, RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Radio,
-                    contentDescription = "Logotipo Rádio",
-                    tint = backlightTextPrimary,
-                    modifier = Modifier.size(44.dp)
-                )
+                val favicon = station.favicon.trim()
+                if (favicon.isNotBlank()) {
+                    var loadFailed by remember(favicon) { mutableStateOf(false) }
+                    if (!loadFailed) {
+                        val imageRequest = remember(favicon, backlightTextPrimary) {
+                            ImageRequest.Builder(context)
+                                .data(favicon)
+                                .transformations(
+                                    LcdMonochromeTransformation(
+                                        darkColor = backlightTextPrimary,
+                                        lightColor = Color.Transparent,
+                                        dither = true,
+                                        targetResolution = 128
+                                    )
+                                )
+                                .crossfade(false)
+                                .build()
+                        }
+                        AsyncImage(
+                            model = imageRequest,
+                            contentDescription = station.name,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(4.dp),
+                            contentScale = ContentScale.Fit,
+                            onError = { loadFailed = true }
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Radio,
+                            contentDescription = "Logotipo Rádio",
+                            tint = backlightTextPrimary,
+                            modifier = Modifier.size(44.dp)
+                        )
+                    }
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Radio,
+                        contentDescription = "Logotipo Rádio",
+                        tint = backlightTextPrimary,
+                        modifier = Modifier.size(44.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(12.dp))
