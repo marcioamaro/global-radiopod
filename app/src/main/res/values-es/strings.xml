@@ -90,4 +90,46 @@
     <string name="btn_cancel">Cancelar</string>
     <string name="btn_close">Cerrar</string>
     <string name="btn_ok">Aceptar</string>
+
+    <!-- Onboarding Wizard -->
+    <string name="onboarding_title">Bienvenido a Global RadioPod</string>
+    <string name="onboarding_subtitle">Configura tu experiencia auditiva personalizada</string>
+    <string name="onboarding_step_language_title">Idioma</string>
+    <string name="onboarding_step_language_desc">Selecciona tu idioma preferido. La interfaz se actualizará inmediatamente.</string>
+    <string name="onboarding_step_clock_title">Formato de Hora</string>
+    <string name="onboarding_step_clock_desc">Elige el formato de reloj para la barra de estado y el modo dock.</string>
+    <string name="onboarding_clock_24h">24 Horas (ej. 14:30)</string>
+    <string name="onboarding_clock_12h">12 Horas (ej. 2:30 PM)</string>
+    <string name="onboarding_clock_preview_label">Ahora son</string>
+    <string name="onboarding_step_theme_title">Chasis e Iluminación</string>
+    <string name="onboarding_step_theme_desc">Selecciona el acabado del chasis retro y el color de fondo LCD.</string>
+    <string name="onboarding_theme_chassis">Acabado del Chasis</string>
+    <string name="onboarding_theme_backlight">Iluminación LCD</string>
+    <string name="onboarding_step_a11y_title">Tipografía y Accesibilidad</string>
+    <string name="onboarding_step_a11y_desc">Ajusta la escala de fuente y contraste para máxima legibilidad (WCAG 1.4.3).</string>
+    <string name="onboarding_font_size_label">Tamaño de Fuente</string>
+    <string name="onboarding_high_contrast_label">Modo Alto Contraste</string>
+    <string name="onboarding_high_contrast_desc">Mejora la nitidez del texto y eleva la relación de contraste a más de 4.5:1.</string>
+    <string name="onboarding_step_wheel_title">Calibración de la Click Wheel</string>
+    <string name="onboarding_step_wheel_desc">Ajusta la sensibilidad de rotación y prueba la rueda en el espacio interactivo.</string>
+    <string name="onboarding_wheel_sensitivity">Sensibilidad</string>
+    <string name="onboarding_wheel_mode_progressive">Inercia Progresiva</string>
+    <string name="onboarding_wheel_mode_fixed">Velocidad Fija</string>
+    <string name="onboarding_wheel_sandbox_tip">¡Gira la Click Wheel abajo para probar la respuesta!</string>
+    <string name="onboarding_wheel_ticks_counter">Pulsos registrados: %1$d</string>
+    <string name="onboarding_wheel_speed_label">Velocidad: %1$s</string>
+    <string name="onboarding_step_summary_title">¡Todo Listo!</string>
+    <string name="onboarding_step_summary_desc">Tu RadioPod está configurado. Siempre puedes cambiar los ajustes más tarde.</string>
+    <string name="onboarding_summary_language">Idioma: %1$s</string>
+    <string name="onboarding_summary_clock">Reloj: %1$s</string>
+    <string name="onboarding_summary_chassis">Chasis: %1$s</string>
+    <string name="onboarding_summary_backlight">Iluminación: %1$s</string>
+    <string name="onboarding_summary_contrast">Alto Contraste: %1$s</string>
+    <string name="onboarding_summary_wheel">Click Wheel: %1$s</string>
+    <string name="onboarding_btn_next">Siguiente</string>
+    <string name="onboarding_btn_back">Atrás</string>
+    <string name="onboarding_btn_finish">Comenzar a Escuchar</string>
+    <string name="onboarding_btn_skip">Configurar después</string>
+    <string name="settings_rerun_wizard">Asistente de Configuración</string>
+    <string name="settings_rerun_wizard_summary">Calibrar idioma, tema, accesibilidad y Click Wheel</string>
 </resources>

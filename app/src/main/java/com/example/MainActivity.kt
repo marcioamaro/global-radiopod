@@ -152,6 +152,29 @@ fun MainScreen(viewModel: RadioViewModel) {
 
     val context = LocalContext.current
 
+    val onboardingRepo = remember { com.example.data.prefs.OnboardingPreferencesRepository.getInstance(context) }
+    val onboardingConfig by onboardingRepo.onboardingConfig.collectAsState(initial = null)
+
+    if (onboardingConfig == null) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF070B12))
+        )
+        return
+    }
+
+    if (!onboardingConfig!!.isOnboardingCompleted) {
+        val onboardingViewModel: com.example.ui.onboarding.OnboardingWizardViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+        com.example.ui.onboarding.OnboardingWizardScreen(
+            viewModel = onboardingViewModel,
+            onFinish = {
+                viewModel.reloadPreferencesFromStorage()
+            }
+        )
+        return
+    }
+
     // Easter Egg: Virar o celular com a tela para baixo mostra a traseira de aço inox do iPod
     var isChassisBackShowing by remember { mutableStateOf(false) }
     val isChassisAnimEnabled by viewModel.isChassisBackAnimationEnabled.collectAsState()

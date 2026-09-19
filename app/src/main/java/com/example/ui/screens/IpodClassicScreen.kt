@@ -3631,6 +3631,58 @@ private fun IpodSettingsScreen(
                 }
             }
         }
+
+        // --- ASSISTENTE DE CONFIGURAÇÃO (WIZARD) ---
+        item {
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = "ASSISTENTE DE CONFIGURAÇÃO",
+                color = backlightTextSecondary,
+                fontSize = (10f * fontScale).sp,
+                fontWeight = FontWeight.Black,
+                fontFamily = fontFamily
+            )
+        }
+
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0x28000000))
+                    .clickable {
+                        coroutineScope.launch {
+                            com.example.data.prefs.OnboardingPreferencesRepository.getInstance(context).resetOnboarding()
+                        }
+                    }
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(id = com.example.R.string.settings_rerun_wizard),
+                        color = backlightTextPrimary,
+                        fontSize = (10.5f * fontScale).sp,
+                        fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+                        fontFamily = fontFamily
+                    )
+                    Text(
+                        text = stringResource(id = com.example.R.string.settings_rerun_wizard_summary),
+                        color = backlightTextSecondary,
+                        fontSize = 9.sp,
+                        fontFamily = fontFamily
+                    )
+                }
+                Text(
+                    text = "EXECUTAR ⚙️",
+                    color = backlightHighlight,
+                    fontSize = 9.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = fontFamily
+                )
+            }
+        }
     }
 
     if (showBackupRestoreSuccessDialog) {

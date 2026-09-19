@@ -946,6 +946,15 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         soundAndHaptics.performClickHaptic()
     }
 
+    fun reloadPreferencesFromStorage() {
+        _uiState.value = _uiState.value.copy(
+            chassisTheme = prefs.chassisTheme,
+            backlight = prefs.lcdBacklight,
+            fontSizeScale = prefs.fontSizeScale,
+            isFontBold = prefs.isFontBold
+        )
+    }
+
     fun cycleWheelPreset() {
         val presets = IpodWheelPreset.values()
         val next = (uiState.value.wheelPreset.ordinal + 1) % presets.size
