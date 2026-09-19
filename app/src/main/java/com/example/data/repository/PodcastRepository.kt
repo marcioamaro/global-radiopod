@@ -72,26 +72,24 @@ class PodcastRepository private constructor(private val context: Context) {
     )
 
     suspend fun getTopPodcasts(countryCode: String, limit: Int = 500): List<PodcastShow> = withContext(Dispatchers.IO) {
-        val favIds = _favoritesFlow.value.map { it.id }.toSet()
-        val local = if (countryCode.equals("GLOBAL", ignoreCase = true)) {
-            _curatedShows.filter { !it.country.equals("BR", ignoreCase = true) }
+        val rankingRepo = PodcastRankingRepository.getInstance(context)
+        val isBrazil = countryCode.equals("BR", ignoreCase = true)
+        val isGlobal = countryCode.equals("GLOBAL", ignoreCase = true) || countryCode.equals("ALL", ignoreCase = true)
+
+        if (isBrazil) {
+            rankingRepo.getTopPodcastsBrazil(limit)
+        } else if (isGlobal) {
+            rankingRepo.getTopPodcastsWorld(limit)
         } else {
-            _curatedShows.filter { it.country.equals(countryCode, ignoreCase = true) }
+            val favIds = _favoritesFlow.value.map { it.id }.toSet()
+            val filtered = _curatedShows.filter { it.country.equals(countryCode, ignoreCase = true) }
+            val sorted = filtered
+                .distinctBy { it.feedUrl.lowercase() }
+                .filter { it.feedUrl.isNotBlank() && it.episodeCount > 0 }
+                .sortedByDescending { it.episodeCount }
+                .map { it.copy(isFavorite = favIds.contains(it.id)) }
+            if (limit > 0) sorted.take(limit) else sorted
         }
-
-        val online = try {
-            val queryCountry = if (countryCode.equals("GLOBAL", ignoreCase = true)) "US" else countryCode
-            PodcastApiClient.fetchTopShowsByCountry(queryCountry)
-        } catch (_: Exception) {
-            emptyList()
-        }
-
-        val combined = (local + online)
-            .distinctBy { it.feedUrl.lowercase() }
-            .filter { it.feedUrl.isNotBlank() && it.episodeCount > 0 }
-            .map { it.copy(isFavorite = favIds.contains(it.id)) }
-
-        if (limit > 0) combined.take(limit) else combined
     }
 
     suspend fun getPodcastsByCategory(categoryKeyword: String): List<PodcastShow> = withContext(Dispatchers.IO) {

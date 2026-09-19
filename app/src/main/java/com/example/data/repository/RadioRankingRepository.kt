@@ -34,7 +34,7 @@ class RadioRankingRepository(
         }
 
         if (!onlineList.isNullOrEmpty()) {
-            return@withContext onlineList.take(limit)
+            return@withContext onlineList.sortedByDescending { it.votes }.take(limit)
         }
 
         // Fallback local curado ordenado por votos e popularidade
@@ -47,7 +47,13 @@ class RadioRankingRepository(
         val onlineList = try {
             withTimeoutOrNull(6000L) {
                 val api = apiClient.getService()
-                val dtos = api.getStationsByCountryCode(countryCode = "BR", limit = limit, hideBroken = true)
+                val dtos = api.getStationsByCountryCode(
+                    countryCode = "BR",
+                    limit = limit,
+                    hideBroken = true,
+                    order = "votes",
+                    reverse = true
+                )
                 dtos.mapNotNull { dto ->
                     val url = dto.urlResolved?.ifBlank { null } ?: dto.url
                     if (!url.isNullOrBlank() && !dto.name.isNullOrBlank()) {
@@ -61,10 +67,10 @@ class RadioRankingRepository(
         }
 
         if (!onlineList.isNullOrEmpty()) {
-            return@withContext onlineList.take(limit)
+            return@withContext onlineList.sortedByDescending { it.votes }.take(limit)
         }
 
-        // Fallback local de 2.763 emissoras brasileiras ordenadas por votos
+        // Fallback local de emissoras brasileiras ordenadas rigorosamente por votos
         CuratedData.CURATED_GLOBAL_STATIONS
             .filter { it.countryCode.equals("BR", ignoreCase = true) || it.country.contains("Brasil", ignoreCase = true) }
             .sortedByDescending { it.votes }

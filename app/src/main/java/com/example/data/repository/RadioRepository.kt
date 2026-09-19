@@ -73,7 +73,7 @@ class RadioRepository(
         val stations = ensureDatabaseSeeded()
         stations
             .map { it.copy(isFavorite = favIds.contains(it.id)) }
-            .sortedBy { it.name.trim().lowercase() }
+            .sortedByDescending { it.votes }
     }
 
     suspend fun getStationsByGenre(tag: String): List<RadioStation> = withContext(Dispatchers.IO) {
@@ -255,7 +255,7 @@ class RadioRepository(
         } catch (_: Exception) {}
     }
 
-    private suspend fun getFavoriteIdsSet(): Set<String> {
+    suspend fun getFavoriteIdsSet(): Set<String> {
         return try {
             favoriteDao.getAllFavorites().firstOrNull()?.map { it.id }?.toSet() ?: emptySet()
         } catch (_: Exception) {

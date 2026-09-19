@@ -685,7 +685,7 @@ fun CarModeScreen(
                         // -----------------------------------------------------------------
                         // ZONE D: ACTIVE TAB STATIONS CAROUSEL (~35% height)
                         // -----------------------------------------------------------------
-                        val allBrazilStations = remember { CuratedData.CURATED_GLOBAL_STATIONS.filter { it.countryCode == "BR" } }
+                        val allBrazilStations = remember { CuratedData.CURATED_GLOBAL_STATIONS.filter { it.countryCode == "BR" }.sortedByDescending { it.votes } }
                         val currentTabStations: List<RadioStation> = when (selectedTab) {
                             CarTab.FAVORITES -> favorites
                             CarTab.BRAZIL -> {
@@ -701,7 +701,7 @@ fun CarModeScreen(
                                     }
                                 }
                             }
-                            CarTab.TOP_WORLD -> CuratedData.CURATED_GLOBAL_STATIONS
+                            CarTab.TOP_WORLD -> CuratedData.CURATED_GLOBAL_STATIONS.sortedByDescending { it.votes }
                             CarTab.GENRES -> {
                                 if (selectedGenreTag == null || selectedGenreTag.equals("ALL", ignoreCase = true)) {
                                     allBrazilStations

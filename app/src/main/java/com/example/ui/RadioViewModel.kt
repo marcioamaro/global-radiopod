@@ -12,6 +12,7 @@ import com.example.data.preferences.IpodWheelPreset
 import com.example.data.repository.CountryCategory
 import com.example.data.repository.CuratedData
 import com.example.data.repository.GenreCategory
+import com.example.data.repository.PodcastRankingRepository
 import com.example.data.repository.RadioRankingRepository
 import com.example.data.repository.RadioRepository
 import com.example.player.ActiveMediaType
@@ -430,7 +431,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     fun loadPodcastTopBrazil() {
         _uiState.value = _uiState.value.copy(isPodcastLoading = true)
         viewModelScope.launch {
-            val shows = podcastRepo.getTopPodcasts("BR", 500)
+            val shows = PodcastRankingRepository.getInstance(radioApp).getTopPodcastsBrazil(100)
             _uiState.value = _uiState.value.copy(
                 podcastShows = shows,
                 activeCategoryName = "Top Podcasts Brasil",
@@ -442,7 +443,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     fun loadPodcastTopWorld() {
         _uiState.value = _uiState.value.copy(isPodcastLoading = true)
         viewModelScope.launch {
-            val shows = podcastRepo.getTopPodcasts("GLOBAL", 500)
+            val shows = PodcastRankingRepository.getInstance(radioApp).getTopPodcastsWorld(100)
             _uiState.value = _uiState.value.copy(
                 podcastShows = shows,
                 activeCategoryName = "Top Podcasts Mundial",
@@ -1760,12 +1761,14 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
             activeCategoryName = "Top Mundial"
         )
         viewModelScope.launch {
-            val stations = repository.getTopStations()
+            val stations = RadioRankingRepository.getInstance().getTopWorld(limit = 100)
+            val favIds = repository.getFavoriteIdsSet()
+            val mapped = stations.map { it.copy(isFavorite = favIds.contains(it.id)) }
             _uiState.value = _uiState.value.copy(
                 isLoadingList = false,
-                stationsList = stations
+                stationsList = mapped
             )
-            playbackQueue = stations
+            playbackQueue = mapped
         }
     }
 
@@ -1843,20 +1846,21 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     fun loadTopBrazilStations() {
         val brazil = CuratedData.COUNTRIES.firstOrNull { it.code.equals("BR", ignoreCase = true) }
             ?: CountryCategory("BR", "Brasil", "🇧🇷", "América do Sul")
-        val brCount = CuratedData.CURATED_GLOBAL_STATIONS.count { it.countryCode == "BR" }
         _uiState.value = _uiState.value.copy(
             activeCountry = brazil,
-            activeCategoryName = "Top Brasil ($brCount Emissoras)",
+            activeCategoryName = "Top Brasil (100 Melhores)",
             isLoadingList = true,
             stationsList = emptyList()
         )
         viewModelScope.launch {
             val stations = RadioRankingRepository.getInstance().getTopBrazil(limit = 100)
+            val favIds = repository.getFavoriteIdsSet()
+            val mapped = stations.map { it.copy(isFavorite = favIds.contains(it.id)) }
             _uiState.value = _uiState.value.copy(
                 isLoadingList = false,
-                stationsList = stations
+                stationsList = mapped
             )
-            playbackQueue = stations
+            playbackQueue = mapped
         }
     }
 
@@ -1885,7 +1889,13 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
             } else if (query.isBlank() && currentScreen == IpodScreenDestination.STATIONS_BY_GENRE && _uiState.value.activeGenre != null) {
                 repository.getStationsByGenre(_uiState.value.activeGenre!!.tag)
             } else if (query.isBlank() && currentScreen == IpodScreenDestination.TOP_BRAZIL) {
-                repository.getStationsByCountry("BR")
+                val stations = RadioRankingRepository.getInstance().getTopBrazil(limit = 100)
+                val favIds = repository.getFavoriteIdsSet()
+                stations.map { it.copy(isFavorite = favIds.contains(it.id)) }
+            } else if (query.isBlank() && currentScreen == IpodScreenDestination.TOP_WORLD) {
+                val stations = RadioRankingRepository.getInstance().getTopWorld(limit = 100)
+                val favIds = repository.getFavoriteIdsSet()
+                stations.map { it.copy(isFavorite = favIds.contains(it.id)) }
             } else {
                 repository.searchStations(
                     query = query,
@@ -1899,7 +1909,8 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
             val categoryName = when (currentScreen) {
                 IpodScreenDestination.STATIONS_BY_COUNTRY -> _uiState.value.activeCountry?.name ?: "País"
                 IpodScreenDestination.STATIONS_BY_GENRE -> _uiState.value.activeGenre?.name ?: "Gênero"
-                IpodScreenDestination.TOP_BRAZIL -> "Top Brasil (1.321 Emissoras)"
+                IpodScreenDestination.TOP_BRAZIL -> "Top Brasil (100 Melhores)"
+                IpodScreenDestination.TOP_WORLD -> "Top Mundial (100 Melhores)"
                 else -> if (query.isNotBlank()) "Busca: $query" else "Busca"
             }
 
