@@ -1,11 +1,14 @@
 package com.example.ui.components
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import com.example.ui.theme.IpodColorContrastUtil
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -255,6 +258,15 @@ fun ClickWheel(
         }
 
         // Center SELECT Button (White/custom disc with bitten pear silhouette)
+        val targetPearColor = remember(centerButtonColor) {
+            IpodColorContrastUtil.getAdaptivePearLogoColor(centerButtonColor)
+        }
+        val animatedPearColor by animateColorAsState(
+            targetValue = targetPearColor,
+            animationSpec = tween(durationMillis = 150),
+            label = "bitten_pear_contrast_fade"
+        )
+
         Box(
             modifier = Modifier
                 .size(centerSize)
@@ -273,8 +285,8 @@ fun ClickWheel(
         ) {
             androidx.compose.foundation.Image(
                 painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.ic_pear_logo),
-                contentDescription = null,
-                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(textColor.copy(alpha = 0.42f)),
+                contentDescription = "Logotipo MediaPod Pera Mordida",
+                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(animatedPearColor),
                 contentScale = androidx.compose.ui.layout.ContentScale.Fit,
                 modifier = Modifier.size(width = centerSize * 0.32f, height = centerSize * 0.45f)
             )

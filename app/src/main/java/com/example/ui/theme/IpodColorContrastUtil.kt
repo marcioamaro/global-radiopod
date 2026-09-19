@@ -1,5 +1,6 @@
 package com.example.ui.theme
 
+import androidx.compose.ui.graphics.Color
 import com.example.data.model.IpodPalette
 import kotlin.math.max
 import kotlin.math.min
@@ -16,6 +17,13 @@ object IpodColorContrastUtil {
     const val COLOR_WHITE: Long = 0xFFFFFFFF
     const val COLOR_BLACK: Long = 0xFF0F172A
     const val COLOR_DARK_GREY: Long = 0xFF1E293B
+
+    // Constantes monocromáticas exclusivas para o logotipo central (Pera Mordida) - WCAG 1.4.11 (3:1)
+    const val LOGO_LIGHT_GRAY_HEX: Long = 0xFFE0E0E0L
+    const val LOGO_DARK_GRAY_HEX: Long = 0xFF4A4A4AL
+
+    val LOGO_LIGHT_GRAY: Color = Color(LOGO_LIGHT_GRAY_HEX)
+    val LOGO_DARK_GRAY: Color = Color(LOGO_DARK_GRAY_HEX)
 
     /**
      * Calcula a luminância relativa de uma cor ARGB no padrão WCAG 2.2.
@@ -34,6 +42,19 @@ object IpodColorContrastUtil {
     }
 
     /**
+     * Calcula a luminância relativa baseada na fórmula W3C/WCAG 2.0 (sRGB linearizado):
+     * L = 0.2126 * R + 0.7152 * G + 0.0722 * B
+     */
+    fun calculateRelativeLuminance(colorLong: Long): Double = calculateLuminance(colorLong)
+
+    fun calculateRelativeLuminance(color: Color): Double {
+        val rLinear = if (color.red <= 0.04045f) color.red / 12.92 else ((color.red + 0.055f) / 1.055f).toDouble().pow(2.4)
+        val gLinear = if (color.green <= 0.04045f) color.green / 12.92 else ((color.green + 0.055f) / 1.055f).toDouble().pow(2.4)
+        val bLinear = if (color.blue <= 0.04045f) color.blue / 12.92 else ((color.blue + 0.055f) / 1.055f).toDouble().pow(2.4)
+        return 0.2126 * rLinear + 0.7152 * gLinear + 0.0722 * bLinear
+    }
+
+    /**
      * Calcula a taxa de contraste (Contrast Ratio) entre duas cores (entre 1.0 e 21.0).
      */
     fun calculateContrastRatio(color1: Long, color2: Long): Double {
@@ -42,6 +63,48 @@ object IpodColorContrastUtil {
         val lighter = max(l1, l2)
         val darker = min(l1, l2)
         return (lighter + 0.05) / (darker + 0.05)
+    }
+
+    /**
+     * Retorna a razão matemática (L1 + 0.05) / (L2 + 0.05) no padrão W3C.
+     */
+    fun getContrastRatio(color1: Color, color2: Color): Double {
+        val l1 = calculateRelativeLuminance(color1)
+        val l2 = calculateRelativeLuminance(color2)
+        val lighter = max(l1, l2)
+        val darker = min(l1, l2)
+        return (lighter + 0.05) / (darker + 0.05)
+    }
+
+    fun getContrastRatio(color1: Long, color2: Long): Double = calculateContrastRatio(color1, color2)
+
+    /**
+     * Alterna o logotipo central (Pera Mordida) estritamente entre LOGO_LIGHT_GRAY e LOGO_DARK_GRAY
+     * garantindo o Contraste Mínimo de 3:1 (WCAG 1.4.11).
+     */
+    fun getAdaptivePearLogoColor(adjacentColor: Color?): Color {
+        if (adjacentColor == null) return LOGO_LIGHT_GRAY
+        val ratioLight = getContrastRatio(adjacentColor, LOGO_LIGHT_GRAY)
+        if (ratioLight >= 3.0) {
+            return LOGO_LIGHT_GRAY
+        }
+        val ratioDark = getContrastRatio(adjacentColor, LOGO_DARK_GRAY)
+        if (ratioDark >= 3.0) {
+            return LOGO_DARK_GRAY
+        }
+        return if (ratioLight >= ratioDark) LOGO_LIGHT_GRAY else LOGO_DARK_GRAY
+    }
+
+    fun getAdaptivePearLogoColor(adjacentColor: Long): Long {
+        val ratioLight = getContrastRatio(adjacentColor, LOGO_LIGHT_GRAY_HEX)
+        if (ratioLight >= 3.0) {
+            return LOGO_LIGHT_GRAY_HEX
+        }
+        val ratioDark = getContrastRatio(adjacentColor, LOGO_DARK_GRAY_HEX)
+        if (ratioDark >= 3.0) {
+            return LOGO_DARK_GRAY_HEX
+        }
+        return if (ratioLight >= ratioDark) LOGO_LIGHT_GRAY_HEX else LOGO_DARK_GRAY_HEX
     }
 
     /**

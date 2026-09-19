@@ -59,8 +59,10 @@ fun IpodChassisBackScreen(
     val metalDark = Color(0xFF9BA6B2)
     val metalDeepShadow = Color(0xFF5E6874)
 
-    // Tinta de gravação a laser no metal
-    val laserTextColor = Color(0xFF444C55)
+    // Tinta de gravação a laser no metal (WCAG 1.4.11 adaptativo monocromático)
+    val laserTextColor = remember(metalMid) {
+        com.example.ui.theme.IpodColorContrastUtil.getAdaptivePearLogoColor(metalMid)
+    }
     val laserHighlightColor = Color(0x66FFFFFF)
 
     val freeSpaceGb = remember {
