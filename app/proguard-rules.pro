@@ -39,3 +39,11 @@
 
 # Keep service and receiver declarations
 -keep class com.example.service.RadioMediaService { *; }
+
+# ViewModels and Lifecycle reflection/factory compatibility
+-keep class * extends androidx.lifecycle.ViewModel {
+    <init>(...);
+    <init>(android.app.Application);
+}
+-keep class com.example.ui.onboarding.** { *; }
+

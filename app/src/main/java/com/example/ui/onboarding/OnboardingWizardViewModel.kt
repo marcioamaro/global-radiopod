@@ -41,7 +41,7 @@ data class OnboardingUiState(
     val isReady: Boolean = false
 )
 
-class OnboardingWizardViewModel(
+class OnboardingWizardViewModel @JvmOverloads constructor(
     application: Application,
     coroutineScope: kotlinx.coroutines.CoroutineScope? = null
 ) : AndroidViewModel(application) {
@@ -249,5 +249,15 @@ class OnboardingWizardViewModel(
         val pattern = if (_uiState.value.is24HourClock) "HH:mm:ss" else "hh:mm:ss a"
         val sdf = SimpleDateFormat(pattern, Locale.getDefault())
         return sdf.format(Date())
+    }
+
+    companion object {
+        fun provideFactory(application: Application): androidx.lifecycle.ViewModelProvider.Factory =
+            object : androidx.lifecycle.ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                    return OnboardingWizardViewModel(application) as T
+                }
+            }
     }
 }

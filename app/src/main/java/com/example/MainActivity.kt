@@ -165,7 +165,10 @@ fun MainScreen(viewModel: RadioViewModel) {
     }
 
     if (!onboardingConfig!!.isOnboardingCompleted) {
-        val onboardingViewModel: com.example.ui.onboarding.OnboardingWizardViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+        val app = context.applicationContext as android.app.Application
+        val onboardingViewModel: com.example.ui.onboarding.OnboardingWizardViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+            factory = com.example.ui.onboarding.OnboardingWizardViewModel.provideFactory(app)
+        )
         com.example.ui.onboarding.OnboardingWizardScreen(
             viewModel = onboardingViewModel,
             onFinish = {
