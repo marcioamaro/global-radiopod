@@ -86,6 +86,7 @@ class IpodPreferencesManager private constructor(context: Context) {
         private const val KEY_BRICK_HIGH_SCORES_JSON = "key_brick_high_scores_json"
         private const val KEY_PURE_AUDIO_MODE = "key_pure_audio_mode"
         private const val KEY_RANDOM_HARDWARE_COLORS_ENABLED = "key_random_hardware_colors_enabled"
+        private const val KEY_IS_24H_CLOCK = "key_is_24h_clock"
         private const val MAX_RECENTS = 20
 
         @Volatile
@@ -261,6 +262,30 @@ class IpodPreferencesManager private constructor(context: Context) {
 
             val array = org.json.JSONArray()
             for (st in trimmed) {
+                val obj = JSONObject().apply {
+                    put("id", st.id)
+                    put("name", st.name)
+                    put("streamUrl", st.streamUrl)
+                    put("favicon", st.favicon)
+                    put("country", st.country)
+                    put("countryCode", st.countryCode)
+                    put("state", st.state)
+                    put("city", st.city)
+                    put("tags", st.tags)
+                    put("bitrate", st.bitrate)
+                    put("codec", st.codec)
+                    put("votes", st.votes)
+                }
+                array.put(obj)
+            }
+            prefs.edit().putString(KEY_RECENTS_JSON, array.toString()).apply()
+        } catch (_: Exception) {}
+    }
+
+    fun setRecentStations(stations: List<RadioStation>) {
+        try {
+            val array = org.json.JSONArray()
+            for (st in stations.take(MAX_RECENTS)) {
                 val obj = JSONObject().apply {
                     put("id", st.id)
                     put("name", st.name)
@@ -465,6 +490,11 @@ class IpodPreferencesManager private constructor(context: Context) {
     var randomHardwareColorsEnabled: Boolean
         get() = prefs.getBoolean(KEY_RANDOM_HARDWARE_COLORS_ENABLED, false)
         set(value) = prefs.edit().putBoolean(KEY_RANDOM_HARDWARE_COLORS_ENABLED, value).apply()
+
+    // Formato de Relógio 24h ou 12h AM/PM
+    var is24HourClock: Boolean
+        get() = prefs.getBoolean(KEY_IS_24H_CLOCK, true)
+        set(value) = prefs.edit().putBoolean(KEY_IS_24H_CLOCK, value).apply()
 
     // Typography customization
     var fontType: IpodFontType

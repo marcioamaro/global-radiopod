@@ -71,12 +71,13 @@ fun IpodHeader(
     onNowPlayingClick: (() -> Unit)? = null,
     playbackSpeed: Float = 1.0f,
     nowPlayingTicker: String? = null,
+    is24HourClock: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    var currentTime by remember {
+    var currentTime by remember(is24HourClock) {
         mutableStateOf(
-            if (DateFormat.is24HourFormat(context)) {
+            if (is24HourClock) {
                 SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
             } else {
                 SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date())
@@ -84,12 +85,12 @@ fun IpodHeader(
         )
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(is24HourClock) {
         while (isActive) {
             val now = System.currentTimeMillis()
             val nextMinute = 60_000L - (now % 60_000L)
             delay(nextMinute.coerceAtLeast(1000L))
-            currentTime = if (DateFormat.is24HourFormat(context)) {
+            currentTime = if (is24HourClock) {
                 SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
             } else {
                 SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date())

@@ -49,6 +49,7 @@ object BackupRestoreManager {
             put("dockClockScale", prefs.dockClockScale.name)
             put("dockShowSeconds", prefs.dockShowSeconds)
             put("randomHardwareColorsEnabled", prefs.randomHardwareColorsEnabled)
+            put("is24HourClock", prefs.is24HourClock)
         }
         root.put("visualPreferences", visualObj)
 
@@ -259,6 +260,9 @@ object BackupRestoreManager {
                 if (v.has("randomHardwareColorsEnabled")) {
                     prefs.randomHardwareColorsEnabled = v.getBoolean("randomHardwareColorsEnabled")
                 }
+                if (v.has("is24HourClock")) {
+                    prefs.is24HourClock = v.getBoolean("is24HourClock")
+                }
             }
 
             // Restore Audio Preferences
@@ -292,6 +296,29 @@ object BackupRestoreManager {
                         )
                         db.favoriteStationDao().insertFavorite(entity)
                     }
+                }
+
+                if (r.has("recents")) {
+                    val recents = r.getJSONArray("recents")
+                    val recentList = mutableListOf<RadioStation>()
+                    for (i in 0 until recents.length()) {
+                        val rc = recents.getJSONObject(i)
+                        val station = RadioStation(
+                            id = rc.optString("id"),
+                            name = rc.optString("name"),
+                            streamUrl = rc.optString("streamUrl"),
+                            favicon = rc.optString("favicon"),
+                            homepage = rc.optString("homepage"),
+                            tags = rc.optString("tags"),
+                            country = rc.optString("country"),
+                            countryCode = rc.optString("countryCode"),
+                            codec = rc.optString("codec", "MP3"),
+                            bitrate = rc.optInt("bitrate", 128),
+                            votes = rc.optInt("votes", 0)
+                        )
+                        recentList.add(station)
+                    }
+                    prefs.setRecentStations(recentList)
                 }
 
                 if (r.has("customStations")) {

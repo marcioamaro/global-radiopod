@@ -110,13 +110,6 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.syncVolumeFromSystem()
-
-        // Verificação de Otimização de Bateria e Xiaomi/MIUI para manter o áudio ativo
-        val prefs = getSharedPreferences("app_battery_prefs", Context.MODE_PRIVATE)
-        if (!prefs.getBoolean("battery_opt_checked", false)) {
-            com.example.util.BatteryOptimizationHelper.checkAndRequest(this, this)
-            prefs.edit().putBoolean("battery_opt_checked", true).apply()
-        }
     }
 
     override fun onDestroy() {
@@ -164,19 +157,49 @@ fun MainScreen(viewModel: RadioViewModel) {
         return
     }
 
-    if (!onboardingConfig!!.isOnboardingCompleted) {
-        val app = context.applicationContext as android.app.Application
-        val onboardingViewModel: com.example.ui.onboarding.OnboardingWizardViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-            factory = com.example.ui.onboarding.OnboardingWizardViewModel.provideFactory(app)
-        )
-        com.example.ui.onboarding.OnboardingWizardScreen(
-            viewModel = onboardingViewModel,
-            onFinish = {
-                viewModel.reloadPreferencesFromStorage()
-            }
-        )
-        return
+    val currentLanguageTag = onboardingConfig?.languageTag?.takeIf { it.isNotBlank() }
+        ?: com.example.util.AppLocaleManager.getCurrentLanguageTag()
+
+    val localizedContext = remember(currentLanguageTag, context) {
+        val locale = if (currentLanguageTag.contains("-")) {
+            val parts = currentLanguageTag.split("-")
+            java.util.Locale(parts[0], parts[1])
+        } else {
+            java.util.Locale(currentLanguageTag)
+        }
+        val config = android.content.res.Configuration(context.resources.configuration)
+        config.setLocale(locale)
+        context.createConfigurationContext(config)
     }
+    val localizedConfig = remember(localizedContext) {
+        localizedContext.resources.configuration
+    }
+
+    val activityResultOwner = androidx.activity.compose.LocalActivityResultRegistryOwner.current
+        ?: (context as? androidx.activity.result.ActivityResultRegistryOwner)
+
+    val providers = remember(localizedContext, localizedConfig, activityResultOwner) {
+        listOfNotNull(
+            androidx.compose.ui.platform.LocalContext provides localizedContext,
+            androidx.compose.ui.platform.LocalConfiguration provides localizedConfig,
+            activityResultOwner?.let { androidx.activity.compose.LocalActivityResultRegistryOwner provides it }
+        ).toTypedArray()
+    }
+
+    androidx.compose.runtime.CompositionLocalProvider(*providers) {
+        if (!onboardingConfig!!.isOnboardingCompleted) {
+            val app = context.applicationContext as android.app.Application
+            val onboardingViewModel: com.example.ui.onboarding.OnboardingWizardViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+                factory = com.example.ui.onboarding.OnboardingWizardViewModel.provideFactory(app)
+            )
+            com.example.ui.onboarding.OnboardingWizardScreen(
+                viewModel = onboardingViewModel,
+                onFinish = {
+                    viewModel.reloadPreferencesFromStorage()
+                }
+            )
+            return@CompositionLocalProvider
+        }
 
     // Easter Egg: Virar o celular com a tela para baixo mostra a traseira de aço inox do iPod
     var isChassisBackShowing by remember { mutableStateOf(false) }
@@ -553,5 +576,6 @@ fun MainScreen(viewModel: RadioViewModel) {
             }
         }
     }
+}
 }
 }

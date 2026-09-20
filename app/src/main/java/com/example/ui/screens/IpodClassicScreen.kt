@@ -470,6 +470,7 @@ fun IpodClassicScreen(
                         isBold = isBold,
                         playbackSpeed = headerSpeed,
                         nowPlayingTicker = computedTicker,
+                        is24HourClock = uiState.is24HourClock,
                         showAudioOutputIcon = uiState.currentScreen in listOf(
                             IpodScreenDestination.NOW_PLAYING_RDS,
                             IpodScreenDestination.MP3_NOW_PLAYING,
@@ -2135,7 +2136,6 @@ private fun IpodSettingsScreen(
     val coroutineScope = rememberCoroutineScope()
     var backupStatusMessage by remember { mutableStateOf<String?>(null) }
     var isBackupError by remember { mutableStateOf(false) }
-    var showBackupRestoreSuccessDialog by remember { mutableStateOf(false) }
     var activeColorPickerTarget by remember { mutableStateOf<ColorPickerTarget?>(null) }
 
     val isManualColorEditingEnabled = uiState.appearanceSettings.isManualColorEditingEnabled
@@ -2185,10 +2185,10 @@ private fun IpodSettingsScreen(
             coroutineScope.launch {
                 val success = BackupRestoreManager.exportBackupToUri(context, uri)
                 if (success) {
-                    backupStatusMessage = "Backup criptografado exportado com sucesso!"
+                    backupStatusMessage = context.getString(R.string.settings_backup_export_success_msg)
                     isBackupError = false
                 } else {
-                    backupStatusMessage = "Erro ao exportar arquivo de backup."
+                    backupStatusMessage = context.getString(R.string.settings_backup_error_msg)
                     isBackupError = true
                 }
             }
@@ -2203,8 +2203,8 @@ private fun IpodSettingsScreen(
                 val result = BackupRestoreManager.restoreBackupFromUri(context, uri)
                 when (result) {
                     is BackupRestoreManager.RestoreResult.Success -> {
-                        showBackupRestoreSuccessDialog = true
-                        backupStatusMessage = null
+                        viewModel?.reloadPreferencesFromStorage()
+                        backupStatusMessage = context.getString(R.string.settings_backup_success_msg)
                         isBackupError = false
                     }
                     is BackupRestoreManager.RestoreResult.Error -> {
@@ -2222,12 +2222,67 @@ private fun IpodSettingsScreen(
             .padding(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // --- 1. FONTE DO MODO IPOD (ESTILO, TAMANHO, NEGRITO) ---
+        // --- 0. ASSISTENTE DE CONFIGURAÇÃO (WIZARD) ---
         item {
             Text(
-                text = "FONTES DO MODO IPOD",
+                text = stringResource(R.string.settings_group_wizard),
                 color = backlightTextSecondary,
-                fontSize = (10f * fontScale).sp,
+                fontSize = (12f * fontScale).sp,
+                fontWeight = FontWeight.Black,
+                fontFamily = fontFamily
+            )
+        }
+
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0x28000000))
+                    .clickable {
+                        coroutineScope.launch {
+                            com.example.data.prefs.OnboardingPreferencesRepository.getInstance(context).resetOnboarding()
+                        }
+                    }
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(id = com.example.R.string.settings_rerun_wizard),
+                        color = backlightTextPrimary,
+                        fontSize = (12f * fontScale).sp,
+                        fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+                        fontFamily = fontFamily
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = stringResource(id = com.example.R.string.settings_rerun_wizard_summary),
+                        color = backlightTextSecondary,
+                        fontSize = (11f * fontScale).sp,
+                        lineHeight = (15f * fontScale).sp,
+                        fontFamily = fontFamily
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.settings_wizard_run_btn),
+                    color = backlightHighlight,
+                    fontSize = (11f * fontScale).sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = fontFamily
+                )
+            }
+        }
+
+        // --- 1. FONTE DO MODO IPOD (ESTILO, TAMANHO, NEGRITO) ---
+        item {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = stringResource(R.string.settings_group_fonts),
+                color = backlightTextSecondary,
+                fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Black,
                 fontFamily = fontFamily
             )
@@ -2236,14 +2291,14 @@ private fun IpodSettingsScreen(
         // Estilo da Fonte
         item {
             Text(
-                text = "Estilo da Tipografia:",
+                text = stringResource(R.string.settings_font_style_label),
                 color = backlightTextPrimary,
-                fontSize = (10f * fontScale).sp,
+                fontSize = (11.5f * fontScale).sp,
                 fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
                 fontFamily = fontFamily
             )
-            Spacer(modifier = Modifier.height(3.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 IpodFontType.values().forEach { type ->
                     val isSelected = uiState.fontType == type
                     Row(
@@ -2252,22 +2307,23 @@ private fun IpodSettingsScreen(
                             .clip(RoundedCornerShape(6.dp))
                             .background(if (isSelected) backlightHighlight else Color(0x22000000))
                             .clickable { onSetFontType(type) }
-                            .padding(horizontal = 8.dp, vertical = 5.dp),
+                            .padding(horizontal = 10.dp, vertical = 7.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = type.displayName,
                             color = if (isSelected) Color.White else backlightTextPrimary,
-                            fontSize = (10.5f * fontScale).sp,
+                            fontSize = (11.5f * fontScale).sp,
                             fontWeight = if (isSelected || isBold) FontWeight.Bold else FontWeight.Normal,
-                            fontFamily = type.toFontFamily()
+                            fontFamily = type.toFontFamily(),
+                            modifier = Modifier.weight(1f)
                         )
                         if (isSelected) {
                             Text(
-                                text = "✓ ATIVO",
+                                text = stringResource(R.string.onboarding_active_tag),
                                 color = Color.White,
-                                fontSize = 9.sp,
+                                fontSize = (11f * fontScale).sp,
                                 fontWeight = FontWeight.Black,
                                 fontFamily = fontFamily
                             )
@@ -2280,13 +2336,13 @@ private fun IpodSettingsScreen(
         // Tamanho da Fonte
         item {
             Text(
-                text = "Tamanho do Texto:",
+                text = stringResource(R.string.settings_font_size_label),
                 color = backlightTextPrimary,
-                fontSize = (10f * fontScale).sp,
+                fontSize = (11.5f * fontScale).sp,
                 fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
                 fontFamily = fontFamily
             )
-            Spacer(modifier = Modifier.height(3.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -2299,13 +2355,13 @@ private fun IpodSettingsScreen(
                             .clip(RoundedCornerShape(6.dp))
                             .background(if (isSelected) backlightHighlight else Color(0x22000000))
                             .clickable { onSetFontSizeScale(scale) }
-                            .padding(vertical = 6.dp),
+                            .padding(vertical = 7.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = scale.displayName,
                             color = if (isSelected) Color.White else backlightTextPrimary,
-                            fontSize = 10.5.sp,
+                            fontSize = (11f * fontScale).sp,
                             fontWeight = if (isSelected || isBold) FontWeight.Black else FontWeight.Bold,
                             fontFamily = fontFamily
                         )
@@ -2322,34 +2378,35 @@ private fun IpodSettingsScreen(
                     .clip(RoundedCornerShape(6.dp))
                     .background(Color(0x22000000))
                     .clickable { onSetFontBold(!uiState.isFontBold) }
-                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                    .padding(horizontal = 10.dp, vertical = 7.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Texto em Negrito (Bold)",
+                    text = stringResource(R.string.settings_font_bold_label),
                     color = backlightTextPrimary,
-                    fontSize = (10.5f * fontScale).sp,
+                    fontSize = (11.5f * fontScale).sp,
                     fontWeight = if (uiState.isFontBold) FontWeight.Black else FontWeight.Normal,
-                    fontFamily = fontFamily
+                    fontFamily = fontFamily,
+                    modifier = Modifier.weight(1f)
                 )
                 Text(
-                    text = if (uiState.isFontBold) "✓ NEGRITO" else "NORMAL",
+                    text = if (uiState.isFontBold) stringResource(R.string.settings_font_bold_active) else stringResource(R.string.settings_font_bold_normal),
                     color = if (uiState.isFontBold) Color.White else backlightTextSecondary,
-                    fontSize = 9.5.sp,
+                    fontSize = (11f * fontScale).sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = fontFamily
                 )
             }
         }
 
-        // --- 1.8. MODO ALEATÓRIO DE CORES DO HARDWARE & BLOQUEIO DERIVADO ---
+        // --- 1. MODO ALEATÓRIO DE CORES ---
         item {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "CORES DO HARDWARE (MODO ALEATÓRIO & MANUAL)",
+                text = stringResource(R.string.settings_group_random_colors),
                 color = backlightTextSecondary,
-                fontSize = (10f * fontScale).sp,
+                fontSize = (11.5f * fontScale).sp,
                 fontWeight = FontWeight.Black,
                 fontFamily = fontFamily
             )
@@ -2361,8 +2418,8 @@ private fun IpodSettingsScreen(
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp))
                     .background(Color(0x28000000))
-                    .padding(8.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                    .padding(10.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Row(
                     modifier = Modifier
@@ -2377,19 +2434,22 @@ private fun IpodSettingsScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Modo Aleatório de Cores",
+                            text = stringResource(R.string.settings_group_random_colors),
                             color = backlightTextPrimary,
-                            fontSize = (10.5f * fontScale).sp,
+                            fontSize = (12f * fontScale).sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = fontFamily
                         )
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "Gera uma combinação segura a cada inicialização (Carcaça, Roda e Botão)",
+                            text = stringResource(R.string.settings_random_colors_desc),
                             color = backlightTextSecondary,
-                            fontSize = 8.5.sp,
+                            fontSize = (11f * fontScale).sp,
+                            lineHeight = (15f * fontScale).sp,
                             fontFamily = fontFamily
                         )
                     }
+                    Spacer(modifier = Modifier.width(8.dp))
                     Switch(
                         checked = randomEnabled,
                         onCheckedChange = { checked ->
@@ -2402,7 +2462,7 @@ private fun IpodSettingsScreen(
                     )
                 }
 
-                // Banner de Status / Bloqueio Derivado
+                // Banner de Status / Bloqueio
                 if (randomEnabled) {
                     Row(
                         modifier = Modifier
@@ -2410,38 +2470,39 @@ private fun IpodSettingsScreen(
                             .clip(RoundedCornerShape(6.dp))
                             .background(Color(0x33DC2626))
                             .border(1.dp, Color(0x66DC2626), RoundedCornerShape(6.dp))
-                            .padding(6.dp),
+                            .padding(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             imageVector = Icons.Default.Lock,
-                            contentDescription = "Edição Manual Bloqueada",
+                            contentDescription = null,
                             tint = Color(0xFFFCA5A5),
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(18.dp)
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Modo Aleatório ativo: Edição manual e seletores de Cor Personalizada estão bloqueados para preservar a paleta de hardware da sessão.",
+                            text = stringResource(R.string.settings_manual_edit_locked),
                             color = Color.White,
-                            fontSize = 8.sp,
-                            lineHeight = 11.sp,
-                            fontFamily = fontFamily
+                            fontSize = (11f * fontScale).sp,
+                            lineHeight = (15f * fontScale).sp,
+                            fontFamily = fontFamily,
+                            modifier = Modifier.weight(1f)
                         )
                     }
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(6.dp))
                             .background(backlightHighlight)
                             .clickable { viewModel?.generateNewRandomHardwarePalette() }
-                            .padding(vertical = 6.dp),
+                            .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "🎲 Sorteio Seguro (Nova Combinação)",
+                            text = stringResource(R.string.settings_random_reroll_btn),
                             color = Color.White,
-                            fontSize = 9.sp,
+                            fontSize = (12f * fontScale).sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = fontFamily
                         )
@@ -2453,49 +2514,94 @@ private fun IpodSettingsScreen(
                             .clip(RoundedCornerShape(6.dp))
                             .background(Color(0x2210B981))
                             .border(1.dp, Color(0x5510B981), RoundedCornerShape(6.dp))
-                            .padding(6.dp),
+                            .padding(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             imageVector = Icons.Default.LockOpen,
-                            contentDescription = "Edição Manual Liberada",
+                            contentDescription = null,
                             tint = Color(0xFF6EE7B7),
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(18.dp)
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Edição Manual liberada: Escolha presets ou use o seletor de Cor Personalizada livremente.",
+                            text = stringResource(R.string.settings_manual_edit_unlocked),
                             color = backlightTextPrimary,
-                            fontSize = 8.sp,
-                            lineHeight = 11.sp,
-                            fontFamily = fontFamily
+                            fontSize = (11f * fontScale).sp,
+                            lineHeight = (15f * fontScale).sp,
+                            fontFamily = fontFamily,
+                            modifier = Modifier.weight(1f)
                         )
                     }
                 }
             }
         }
 
-        // --- 2. SLIDECIRCLE CLICK (CORES E SELETORES) ---
+        // --- 2. PERSONALIZE AO SEU GOSTO (CORES PERSONALIZADAS) ---
         item {
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = "SLIDECIRCLE CLICK (CORES E SELETORES)",
+                text = stringResource(R.string.settings_group_custom_colors),
                 color = backlightTextSecondary,
-                fontSize = (10f * fontScale).sp,
+                fontSize = (11.5f * fontScale).sp,
                 fontWeight = FontWeight.Black,
                 fontFamily = fontFamily
             )
         }
-
-        // AmbilWarna Color Pickers para Click Wheel e Botão Central
         item {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .alpha(if (isManualColorEditingEnabled) 1f else 0.45f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                    .alpha(if (isManualColorEditingEnabled) 1f else 0.45f)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0x28000000))
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                // Botão AmbilWarna Click Wheel
+                // A. Cor da Carcaça
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Color(0x33000000))
+                        .border(1.dp, Color(0x33FFFFFF), RoundedCornerShape(6.dp))
+                        .clickable(enabled = isManualColorEditingEnabled) {
+                            activeColorPickerTarget = ColorPickerTarget.CHASSIS
+                        }
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(20.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Color(uiState.customBodyColor))
+                                .border(1.2.dp, Color.White, RoundedCornerShape(4.dp))
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = stringResource(R.string.settings_custom_chassis_btn),
+                            color = backlightTextPrimary,
+                            fontSize = (12f * fontScale).sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily
+                        )
+                    }
+                    Text(
+                        text = if (isManualColorEditingEnabled) stringResource(R.string.settings_color_adjust) else stringResource(R.string.settings_color_locked),
+                        color = if (isManualColorEditingEnabled) backlightHighlight else backlightTextSecondary,
+                        fontSize = (11f * fontScale).sp,
+                        fontWeight = FontWeight.Black,
+                        fontFamily = fontFamily
+                    )
+                }
+
+                // B. Cor da Roda
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -2505,37 +2611,40 @@ private fun IpodSettingsScreen(
                         .clickable(enabled = isManualColorEditingEnabled) {
                             activeColorPickerTarget = ColorPickerTarget.CLICK_WHEEL
                         }
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Box(
                             modifier = Modifier
-                                .size(16.dp)
+                                .size(20.dp)
                                 .clip(CircleShape)
                                 .background(Color(uiState.customWheelColor))
-                                .border(1.dp, Color.White, CircleShape)
+                                .border(1.2.dp, Color.White, CircleShape)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = "Cor Personalizada: Roda do iPod...",
+                            text = stringResource(R.string.settings_custom_wheel_btn),
                             color = backlightTextPrimary,
-                            fontSize = (10.5f * fontScale).sp,
+                            fontSize = (12f * fontScale).sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = fontFamily
                         )
                     }
                     Text(
-                        text = if (isManualColorEditingEnabled) "AJUSTAR 🎨" else "BLOQUEADO 🔒",
+                        text = if (isManualColorEditingEnabled) stringResource(R.string.settings_color_adjust) else stringResource(R.string.settings_color_locked),
                         color = if (isManualColorEditingEnabled) backlightHighlight else backlightTextSecondary,
-                        fontSize = 9.sp,
+                        fontSize = (11f * fontScale).sp,
                         fontWeight = FontWeight.Black,
                         fontFamily = fontFamily
                     )
                 }
 
-                // Botão AmbilWarna Botão Central
+                // C. Cor do Botão Central
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -2545,31 +2654,34 @@ private fun IpodSettingsScreen(
                         .clickable(enabled = isManualColorEditingEnabled) {
                             activeColorPickerTarget = ColorPickerTarget.CENTER_BUTTON
                         }
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Box(
                             modifier = Modifier
-                                .size(16.dp)
+                                .size(20.dp)
                                 .clip(CircleShape)
                                 .background(Color(uiState.customCenterButtonColor))
-                                .border(1.dp, Color.White, CircleShape)
+                                .border(1.2.dp, Color.White, CircleShape)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = "Cor Personalizada: Botão Central...",
+                            text = stringResource(R.string.settings_custom_center_button_btn),
                             color = backlightTextPrimary,
-                            fontSize = (10.5f * fontScale).sp,
+                            fontSize = (12f * fontScale).sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = fontFamily
                         )
                     }
                     Text(
-                        text = if (isManualColorEditingEnabled) "AJUSTAR 🎨" else "BLOQUEADO 🔒",
+                        text = if (isManualColorEditingEnabled) stringResource(R.string.settings_color_adjust) else stringResource(R.string.settings_color_locked),
                         color = if (isManualColorEditingEnabled) backlightHighlight else backlightTextSecondary,
-                        fontSize = 9.sp,
+                        fontSize = (11f * fontScale).sp,
                         fontWeight = FontWeight.Black,
                         fontFamily = fontFamily
                     )
@@ -2577,7 +2689,19 @@ private fun IpodSettingsScreen(
             }
         }
 
-        // Presets de SlideCircle Click
+        // --- 3. CORES E TEMAS PREDEFINIDOS ---
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.settings_group_presets),
+                color = backlightTextSecondary,
+                fontSize = (11.5f * fontScale).sp,
+                fontWeight = FontWeight.Black,
+                fontFamily = fontFamily
+            )
+        }
+
+        // 3A. Temas da Carcaça
         item {
             Column(
                 modifier = Modifier
@@ -2585,219 +2709,69 @@ private fun IpodSettingsScreen(
                     .alpha(if (isManualColorEditingEnabled) 1f else 0.45f)
             ) {
                 Text(
-                    text = "Presets do SlideCircle Click:",
+                    text = stringResource(R.string.settings_chassis_presets) + ":",
                     color = backlightTextPrimary,
-                    fontSize = (10f * fontScale).sp,
-                    fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+                    fontSize = (11.5f * fontScale).sp,
+                    fontWeight = FontWeight.Bold,
                     fontFamily = fontFamily
                 )
-                Spacer(modifier = Modifier.height(3.dp))
-                Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                    IpodWheelPreset.values().forEach { preset ->
-                        val isSelected = uiState.wheelPreset == preset
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(if (isSelected) backlightHighlight else Color(0x22000000))
-                                .clickable(enabled = isManualColorEditingEnabled) { onSetWheelPreset(preset) }
-                                .padding(horizontal = 8.dp, vertical = 5.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                // Mini Color Dot
-                                Box(
-                                    modifier = Modifier
-                                        .size(14.dp)
-                                        .clip(CircleShape)
-                                        .background(Color(preset.wheelColor))
-                                        .border(1.dp, Color(preset.textColor), CircleShape)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = preset.displayName,
-                                    color = if (isSelected) Color.White else backlightTextPrimary,
-                                    fontSize = (10.5f * fontScale).sp,
-                                    fontWeight = if (isSelected || isBold) FontWeight.Bold else FontWeight.Normal,
-                                    fontFamily = fontFamily
-                                )
-                            }
-                            if (isSelected) {
-                                Text(
-                                    text = "✓ ATIVO",
-                                    color = Color.White,
-                                    fontSize = 9.sp,
-                                    fontWeight = FontWeight.Black,
-                                    fontFamily = fontFamily
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // --- 3. COR DA TELA LCD ---
-        item {
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "COR DA TELA LCD",
-                color = backlightTextSecondary,
-                fontSize = (10f * fontScale).sp,
-                fontWeight = FontWeight.Black,
-                fontFamily = fontFamily
-            )
-        }
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                LcdBacklight.values().forEach { bl ->
-                    val isSelected = uiState.backlight == bl
+                Spacer(modifier = Modifier.height(4.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(if (isSelected) backlightHighlight else Color(0x22000000))
-                            .clickable { onSetBacklight(bl) }
-                            .padding(horizontal = 8.dp, vertical = 5.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Text(
-                            text = bl.displayName,
-                            color = if (isSelected) Color.White else backlightTextPrimary,
-                            fontSize = (10.5f * fontScale).sp,
-                            fontWeight = if (isSelected || isBold) FontWeight.Bold else FontWeight.Normal,
-                            fontFamily = fontFamily
-                        )
-                        if (isSelected) {
-                            Text(
-                                text = "✓ ATIVO",
-                                color = Color.White,
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Black,
-                                fontFamily = fontFamily
-                            )
+                        IpodChassisTheme.values().take(3).forEach { theme ->
+                            val isSelected = uiState.chassisTheme == theme
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(if (isSelected) backlightHighlight else Color(0x33000000))
+                                    .clickable(enabled = isManualColorEditingEnabled) { onSetChassisTheme(theme) }
+                                    .padding(vertical = 8.dp, horizontal = 4.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = theme.displayName.take(12),
+                                    color = if (isSelected) Color.White else backlightTextPrimary,
+                                    fontSize = (11f * fontScale).sp,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        IpodChassisTheme.values().drop(3).forEach { theme ->
+                            val isSelected = uiState.chassisTheme == theme
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(if (isSelected) backlightHighlight else Color(0x33000000))
+                                    .clickable(enabled = isManualColorEditingEnabled) { onSetChassisTheme(theme) }
+                                    .padding(vertical = 8.dp, horizontal = 4.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = theme.displayName.take(12),
+                                    color = if (isSelected) Color.White else backlightTextPrimary,
+                                    fontSize = (11f * fontScale).sp,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                )
+                            }
                         }
                     }
                 }
             }
         }
 
-        // --- 4. CORPO DO IPOD CLASS (CHASSIS) ---
-        item {
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "CORPO DO IPOD CLASS (CHASSIS)",
-                color = backlightTextSecondary,
-                fontSize = (10f * fontScale).sp,
-                fontWeight = FontWeight.Black,
-                fontFamily = fontFamily
-            )
-        }
-
-        // AmbilWarna Color Picker para Carcaça (Chassis)
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .alpha(if (isManualColorEditingEnabled) 1f else 0.45f)
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(Color(0x33000000))
-                    .border(1.dp, Color(0x33FFFFFF), RoundedCornerShape(6.dp))
-                    .clickable(enabled = isManualColorEditingEnabled) {
-                        activeColorPickerTarget = ColorPickerTarget.CHASSIS
-                    }
-                    .padding(horizontal = 8.dp, vertical = 6.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(16.dp)
-                            .clip(RoundedCornerShape(3.dp))
-                            .background(Color(uiState.customBodyColor))
-                            .border(1.dp, Color.White, RoundedCornerShape(3.dp))
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Cor Personalizada: Cor da Carcaça...",
-                        color = backlightTextPrimary,
-                        fontSize = (10.5f * fontScale).sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = fontFamily
-                    )
-                }
-                Text(
-                    text = if (isManualColorEditingEnabled) "AJUSTAR 🎨" else "BLOQUEADO 🔒",
-                    color = if (isManualColorEditingEnabled) backlightHighlight else backlightTextSecondary,
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Black,
-                    fontFamily = fontFamily
-                )
-            }
-        }
-
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .alpha(if (isManualColorEditingEnabled) 1f else 0.45f),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    IpodChassisTheme.values().take(3).forEach { theme ->
-                        val isSelected = uiState.chassisTheme == theme
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(if (isSelected) backlightHighlight else Color(0x33000000))
-                                .clickable(enabled = isManualColorEditingEnabled) { onSetChassisTheme(theme) }
-                                .padding(vertical = 8.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = theme.displayName.take(10),
-                                color = if (isSelected) Color.White else backlightTextPrimary,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    IpodChassisTheme.values().drop(3).forEach { theme ->
-                        val isSelected = uiState.chassisTheme == theme
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(if (isSelected) backlightHighlight else Color(0x33000000))
-                                .clickable(enabled = isManualColorEditingEnabled) { onSetChassisTheme(theme) }
-                                .padding(vertical = 8.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = theme.displayName.take(12),
-                                color = if (isSelected) Color.White else backlightTextPrimary,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // Personalizar Cores do Corpo do IPod Class (aplicado diretamente no corpo do aparelho)
+        // Paleta de Cores do Corpo
         item {
             Column(
                 modifier = Modifier
@@ -2805,15 +2779,6 @@ private fun IpodSettingsScreen(
                     .alpha(if (isManualColorEditingEnabled) 1f else 0.45f)
             ) {
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Personalizar Cores do Corpo:",
-                    color = backlightTextPrimary,
-                    fontSize = (10.5f * fontScale).sp,
-                    fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
-                    fontFamily = fontFamily
-                )
-                Spacer(modifier = Modifier.height(3.dp))
-
                 val bodyColors = listOf(
                     "Branco" to 0xFFFFFFFF,
                     "Prata" to 0xFFF1F5F9,
@@ -2850,13 +2815,13 @@ private fun IpodSettingsScreen(
                                         .clickable(enabled = isManualColorEditingEnabled) {
                                             onSetCustomBodyColor(colorVal)
                                         }
-                                        .padding(vertical = 6.dp),
+                                        .padding(vertical = 7.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
                                         text = if (isSel) "✓ $name" else name,
                                         color = if (colorVal == 0xFFFFFFFF || colorVal == 0xFFF1F5F9 || colorVal == 0xFFCBD5E1 || colorVal == 0xFFD4AF37) Color.Black else Color.White,
-                                        fontSize = 8.sp,
+                                        fontSize = (11f * fontScale).sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
@@ -2867,13 +2832,136 @@ private fun IpodSettingsScreen(
             }
         }
 
+        // 3B. Estilos da Roda (Presets Click Wheel)
+        item {
+            Spacer(modifier = Modifier.height(6.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .alpha(if (isManualColorEditingEnabled) 1f else 0.45f)
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_wheel_presets) + ":",
+                    color = backlightTextPrimary,
+                    fontSize = (11.5f * fontScale).sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = fontFamily
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    IpodWheelPreset.values().forEach { preset ->
+                        val isSelected = uiState.wheelPreset == preset
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (isSelected) backlightHighlight else Color(0x22000000))
+                                .clickable(enabled = isManualColorEditingEnabled) { onSetWheelPreset(preset) }
+                                .padding(horizontal = 10.dp, vertical = 7.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                modifier = Modifier.weight(1f),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(16.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(preset.wheelColor))
+                                        .border(1.dp, Color(preset.textColor), CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = preset.displayName,
+                                    color = if (isSelected) Color.White else backlightTextPrimary,
+                                    fontSize = (11.5f * fontScale).sp,
+                                    fontWeight = if (isSelected || isBold) FontWeight.Bold else FontWeight.Normal,
+                                    fontFamily = fontFamily
+                                )
+                            }
+                            if (isSelected) {
+                                Text(
+                                    text = "✓ " + stringResource(R.string.onboarding_active_tag).replace("✓", "").trim(),
+                                    color = Color.White,
+                                    fontSize = (10.5f * fontScale).sp,
+                                    fontWeight = FontWeight.Black,
+                                    fontFamily = fontFamily
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3C. Iluminação da Tela LCD
+        item {
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = stringResource(R.string.settings_lcd_presets) + ":",
+                color = backlightTextPrimary,
+                fontSize = (11.5f * fontScale).sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = fontFamily
+            )
+        }
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                LcdBacklight.values().forEach { bl ->
+                    val isSelected = uiState.backlight == bl
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(if (isSelected) backlightHighlight else Color(0x22000000))
+                            .clickable { onSetBacklight(bl) }
+                            .padding(horizontal = 10.dp, vertical = 7.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(16.dp)
+                                    .clip(RoundedCornerShape(3.dp))
+                                    .background(Color(bl.background))
+                                    .border(1.dp, Color(bl.highlight), RoundedCornerShape(3.dp))
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = bl.displayName,
+                                color = if (isSelected) Color.White else backlightTextPrimary,
+                                fontSize = (11.5f * fontScale).sp,
+                                fontWeight = if (isSelected || isBold) FontWeight.Bold else FontWeight.Normal,
+                                fontFamily = fontFamily
+                            )
+                        }
+                        if (isSelected) {
+                            Text(
+                                text = "✓ " + stringResource(R.string.onboarding_active_tag).replace("✓", "").trim(),
+                                color = Color.White,
+                                fontSize = (10.5f * fontScale).sp,
+                                fontWeight = FontWeight.Black,
+                                fontFamily = fontFamily
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         // --- 4.5. VELOCIDADE DA CLICK WHEEL & TESTE INTERATIVO ---
         item {
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = "CLICK WHEEL (VELOCIDADE & NAVEGAÇÃO)",
+                text = stringResource(R.string.onboarding_step_wheel_title),
                 color = backlightTextSecondary,
-                fontSize = (10f * fontScale).sp,
+                fontSize = (11.5f * fontScale).sp,
                 fontWeight = FontWeight.Black,
                 fontFamily = fontFamily
             )
@@ -2884,20 +2972,20 @@ private fun IpodSettingsScreen(
             }).collectAsState()
 
             var testIndex by remember { androidx.compose.runtime.mutableIntStateOf(0) }
-            val testItems = remember { (1..50).map { "Item de teste #$it" } }
+            val testItems = remember { (1..50).map { context.getString(R.string.settings_wheel_test_item_prefix, it) } }
 
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(6.dp))
+                    .clip(RoundedCornerShape(8.dp))
                     .background(Color(0x28000000))
-                    .padding(8.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                    .padding(10.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = "Modo de Velocidade:",
+                    text = stringResource(R.string.onboarding_wheel_fixed_speed_label),
                     color = backlightTextPrimary,
-                    fontSize = (10.5f * fontScale).sp,
+                    fontSize = (12f * fontScale).sp,
                     fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
                     fontFamily = fontFamily
                 )
@@ -2910,27 +2998,29 @@ private fun IpodSettingsScreen(
                         .clip(RoundedCornerShape(6.dp))
                         .background(if (isProgressive) backlightHighlight.copy(alpha = 0.85f) else Color(0x22000000))
                         .clickable { viewModel?.setClickWheelMode(com.example.data.prefs.ClickWheelMode.PROGRESSIVE) }
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = if (isProgressive) "●" else "○",
                         color = if (isProgressive) Color.White else backlightTextSecondary,
-                        fontSize = 12.sp,
+                        fontSize = (14f * fontScale).sp,
                         modifier = Modifier.padding(end = 8.dp)
                     )
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Progressiva (Estilo Clássico)",
+                            text = stringResource(R.string.onboarding_wheel_mode_progressive),
                             color = if (isProgressive) Color.White else backlightTextPrimary,
-                            fontSize = (10.5f * fontScale).sp,
+                            fontSize = (12f * fontScale).sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = fontFamily
                         )
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "Acelera conforme a velocidade do seu giro (1x → 2x → 3x)",
-                            color = if (isProgressive) Color.White.copy(alpha = 0.85f) else backlightTextSecondary,
-                            fontSize = (8.5f * fontScale).sp,
+                            text = stringResource(R.string.onboarding_wheel_progressive_desc),
+                            color = if (isProgressive) Color.White.copy(alpha = 0.9f) else backlightTextSecondary,
+                            fontSize = (11f * fontScale).sp,
+                            lineHeight = (15f * fontScale).sp,
                             fontFamily = fontFamily
                         )
                     }
@@ -2944,27 +3034,29 @@ private fun IpodSettingsScreen(
                         .clip(RoundedCornerShape(6.dp))
                         .background(if (isFixed) backlightHighlight.copy(alpha = 0.85f) else Color(0x22000000))
                         .clickable { viewModel?.setClickWheelMode(com.example.data.prefs.ClickWheelMode.FIXED) }
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = if (isFixed) "●" else "○",
                         color = if (isFixed) Color.White else backlightTextSecondary,
-                        fontSize = 12.sp,
+                        fontSize = (14f * fontScale).sp,
                         modifier = Modifier.padding(end = 8.dp)
                     )
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Fixa",
+                            text = stringResource(R.string.onboarding_wheel_mode_fixed),
                             color = if (isFixed) Color.White else backlightTextPrimary,
-                            fontSize = (10.5f * fontScale).sp,
+                            fontSize = (12f * fontScale).sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = fontFamily
                         )
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "Velocidade constante em 3 níveis (Lenta, Padrão ou Rápida)",
-                            color = if (isFixed) Color.White.copy(alpha = 0.85f) else backlightTextSecondary,
-                            fontSize = (8.5f * fontScale).sp,
+                            text = stringResource(R.string.onboarding_wheel_fixed_desc),
+                            color = if (isFixed) Color.White.copy(alpha = 0.9f) else backlightTextSecondary,
+                            fontSize = (11f * fontScale).sp,
+                            lineHeight = (15f * fontScale).sp,
                             fontFamily = fontFamily
                         )
                     }
@@ -2972,11 +3064,11 @@ private fun IpodSettingsScreen(
 
                 // Níveis de velocidade fixa
                 AnimatedVisibility(visible = isFixed) {
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(
-                            text = "Velocidade Fixa:",
+                            text = stringResource(R.string.onboarding_wheel_fixed_speed_label),
                             color = backlightTextPrimary,
-                            fontSize = (10f * fontScale).sp,
+                            fontSize = (11.5f * fontScale).sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = fontFamily
                         )
@@ -2986,6 +3078,11 @@ private fun IpodSettingsScreen(
                         ) {
                             com.example.data.prefs.FixedSpeed.values().forEach { speed ->
                                 val isSpeedSelected = clickWheelPrefs.fixedSpeed == speed
+                                val speedLabel = when (speed) {
+                                    com.example.data.prefs.FixedSpeed.SLOW -> stringResource(R.string.onboarding_speed_slow)
+                                    com.example.data.prefs.FixedSpeed.STANDARD -> stringResource(R.string.onboarding_speed_standard)
+                                    com.example.data.prefs.FixedSpeed.FAST -> stringResource(R.string.onboarding_speed_fast)
+                                }
                                 Box(
                                     modifier = Modifier
                                         .weight(1f)
@@ -2997,13 +3094,13 @@ private fun IpodSettingsScreen(
                                             RoundedCornerShape(6.dp)
                                         )
                                         .clickable { viewModel?.setFixedSpeed(speed) }
-                                        .padding(vertical = 6.dp),
+                                        .padding(vertical = 8.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = "${speed.displayName()} (${speed.multiplier}x)",
+                                        text = speedLabel,
                                         color = if (isSpeedSelected) Color.White else backlightTextPrimary,
-                                        fontSize = (9.5f * fontScale).sp,
+                                        fontSize = (11f * fontScale).sp,
                                         fontWeight = FontWeight.Bold,
                                         fontFamily = fontFamily
                                     )
@@ -3017,9 +3114,9 @@ private fun IpodSettingsScreen(
 
                 // Área de Teste Interativa
                 Text(
-                    text = "Área de Teste Interativa (Gire a mini Click Wheel):",
+                    text = stringResource(R.string.settings_wheel_test_title),
                     color = backlightTextPrimary,
-                    fontSize = (10.5f * fontScale).sp,
+                    fontSize = (11.5f * fontScale).sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = fontFamily
                 )
@@ -3061,7 +3158,7 @@ private fun IpodSettingsScreen(
                                 Text(
                                     text = item,
                                     color = if (isSelected) Color.White else backlightTextPrimary,
-                                    fontSize = 10.sp,
+                                    fontSize = (11f * fontScale).sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                     fontFamily = fontFamily
                                 )
@@ -3107,9 +3204,9 @@ private fun IpodSettingsScreen(
         item {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "INICIALIZAÇÃO & PREFERÊNCIAS",
+                text = stringResource(R.string.settings_group_startup_prefs),
                 color = backlightTextSecondary,
-                fontSize = (10f * fontScale).sp,
+                fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Black,
                 fontFamily = fontFamily
             )
@@ -3127,23 +3224,26 @@ private fun IpodSettingsScreen(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Sempre abrir com última rádio",
+                        text = stringResource(R.string.settings_startup_autoplay_title),
                         color = backlightTextPrimary,
-                        fontSize = (10.5f * fontScale).sp,
+                        fontSize = (12f * fontScale).sp,
                         fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
                         fontFamily = fontFamily
                     )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Salva preferências e inicia tocando automaticamente",
+                        text = stringResource(R.string.settings_startup_autoplay_desc),
                         color = backlightTextSecondary,
-                        fontSize = 9.sp,
+                        fontSize = (11f * fontScale).sp,
+                        lineHeight = (15f * fontScale).sp,
                         fontFamily = fontFamily
                     )
                 }
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = if (uiState.autoPlayOnLaunch) "✓ ATIVO" else "DESATIVADO",
+                    text = if (uiState.autoPlayOnLaunch) stringResource(R.string.settings_tag_enabled) else stringResource(R.string.settings_tag_disabled),
                     color = if (uiState.autoPlayOnLaunch) backlightHighlight else backlightTextSecondary,
-                    fontSize = 9.5.sp,
+                    fontSize = (11f * fontScale).sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = fontFamily
                 )
@@ -3165,23 +3265,26 @@ private fun IpodSettingsScreen(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Animação da Traseira do MediaPod",
+                        text = stringResource(R.string.settings_chassis_anim_title),
                         color = backlightTextPrimary,
-                        fontSize = (10.5f * fontScale).sp,
+                        fontSize = (12f * fontScale).sp,
                         fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
                         fontFamily = fontFamily
                     )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Exibir chassi metálico 3D ao tocar no logotipo Sobre",
+                        text = stringResource(R.string.settings_chassis_anim_desc),
                         color = backlightTextSecondary,
-                        fontSize = 9.sp,
+                        fontSize = (11f * fontScale).sp,
+                        lineHeight = (15f * fontScale).sp,
                         fontFamily = fontFamily
                     )
                 }
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = if (isChassisAnimEnabled) "✓ ATIVO" else "DESATIVADO",
+                    text = if (isChassisAnimEnabled) stringResource(R.string.settings_tag_enabled) else stringResource(R.string.settings_tag_disabled),
                     color = if (isChassisAnimEnabled) backlightHighlight else backlightTextSecondary,
-                    fontSize = 9.5.sp,
+                    fontSize = (11f * fontScale).sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = fontFamily
                 )
@@ -3192,9 +3295,9 @@ private fun IpodSettingsScreen(
         item {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "ESTABILIDADE & TRANSMISSÃO",
+                text = stringResource(R.string.settings_group_streaming_stability),
                 color = backlightTextSecondary,
-                fontSize = (10f * fontScale).sp,
+                fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Black,
                 fontFamily = fontFamily
             )
@@ -3213,23 +3316,26 @@ private fun IpodSettingsScreen(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Modo Streaming Puro (Apenas Áudio)",
+                        text = stringResource(R.string.settings_pure_audio_title),
                         color = backlightTextPrimary,
-                        fontSize = (10.5f * fontScale).sp,
+                        fontSize = (12f * fontScale).sp,
                         fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
                         fontFamily = fontFamily
                     )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Desativa leitura de títulos/artistas do stream para eliminar travamentos e sobrecargas no servidor",
+                        text = stringResource(R.string.settings_pure_audio_desc),
                         color = backlightTextSecondary,
-                        fontSize = 9.sp,
+                        fontSize = (11f * fontScale).sp,
+                        lineHeight = (15f * fontScale).sp,
                         fontFamily = fontFamily
                     )
                 }
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = if (isPureAudio) "✓ ATIVO 🔊" else "DESATIVADO",
+                    text = if (isPureAudio) stringResource(R.string.settings_tag_enabled) else stringResource(R.string.settings_tag_disabled),
                     color = if (isPureAudio) backlightHighlight else backlightTextSecondary,
-                    fontSize = 9.5.sp,
+                    fontSize = (11f * fontScale).sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = fontFamily
                 )
@@ -3240,9 +3346,9 @@ private fun IpodSettingsScreen(
         item {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "SEGUNDO PLANO E BATERIA",
+                text = stringResource(R.string.settings_group_battery_bg),
                 color = backlightTextSecondary,
-                fontSize = (10f * fontScale).sp,
+                fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Black,
                 fontFamily = fontFamily
             )
@@ -3266,30 +3372,33 @@ private fun IpodSettingsScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Tocar em 2º Plano sem Interrupção",
+                        text = stringResource(R.string.settings_battery_bg_title),
                         color = backlightTextPrimary,
-                        fontSize = (10.5f * fontScale).sp,
+                        fontSize = (12f * fontScale).sp,
                         fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
-                        fontFamily = fontFamily
+                        fontFamily = fontFamily,
+                        modifier = Modifier.weight(1f)
                     )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (isExempted) "✓ ATIVADO" else "CONFIGURAR",
+                        text = if (isExempted) stringResource(R.string.settings_tag_enabled) else stringResource(R.string.settings_tag_configure),
                         color = if (isExempted) backlightHighlight else backlightTextSecondary,
-                        fontSize = 9.5.sp,
+                        fontSize = (11f * fontScale).sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = fontFamily
                     )
                 }
                 Text(
-                    text = "Evita que o Android pause a rádio quando a tela estiver desligada, bloqueada ou economizando energia.",
+                    text = stringResource(R.string.settings_battery_bg_desc),
                     color = backlightTextSecondary,
-                    fontSize = 9.sp,
+                    fontSize = (11f * fontScale).sp,
+                    lineHeight = (15f * fontScale).sp,
                     fontFamily = fontFamily
                 )
             }
         }
 
-        // --- 7. TIMER DE DESLIGAMENTO ---
+        // --- 8. TIMER DE DESLIGAMENTO ---
         item {
             Spacer(modifier = Modifier.height(4.dp))
             Row(
@@ -3313,33 +3422,35 @@ private fun IpodSettingsScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "TIMER DE DESLIGAMENTO",
+                    text = stringResource(R.string.settings_group_sleep_timer),
                     color = backlightTextPrimary,
-                    fontSize = (10.5f * fontScale).sp,
+                    fontSize = (12f * fontScale).sp,
                     fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
-                    fontFamily = fontFamily
+                    fontFamily = fontFamily,
+                    modifier = Modifier.weight(1f)
                 )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = when (sleepTimerMinutes) {
-                        -1 -> "Fim do Episódio"
-                        in 1..Int.MAX_VALUE -> "$sleepTimerMinutes min"
-                        else -> "Desativado"
+                        -1 -> stringResource(R.string.settings_sleep_timer_end_of_track)
+                        in 1..Int.MAX_VALUE -> stringResource(R.string.settings_sleep_timer_min_format, sleepTimerMinutes)
+                        else -> stringResource(R.string.settings_sleep_timer_off)
                     },
                     color = backlightHighlight,
-                    fontSize = (10.5f * fontScale).sp,
+                    fontSize = (11.5f * fontScale).sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = fontFamily
                 )
             }
         }
 
-        // --- 8. MODO DOCK (CABECEIRA / NIGHTSTAND) ---
+        // --- 9. MODO DOCK (CABECEIRA / NIGHTSTAND) ---
         item {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "MODO DOCK (CABECEIRA / NIGHTSTAND)",
+                text = stringResource(R.string.settings_group_dock_mode),
                 color = backlightTextSecondary,
-                fontSize = (10f * fontScale).sp,
+                fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Black,
                 fontFamily = fontFamily
             )
@@ -3350,13 +3461,13 @@ private fun IpodSettingsScreen(
             val prefs = remember { com.example.data.preferences.IpodPreferencesManager.getInstance(context) }
             val currentScale = uiState.dockClockScale
             Text(
-                text = "Tamanho da Fonte da Hora:",
+                text = stringResource(R.string.settings_dock_clock_size_label),
                 color = backlightTextPrimary,
-                fontSize = (10f * fontScale).sp,
+                fontSize = (11.5f * fontScale).sp,
                 fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
                 fontFamily = fontFamily
             )
-            Spacer(modifier = Modifier.height(3.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -3372,13 +3483,13 @@ private fun IpodSettingsScreen(
                                 prefs.dockClockScale = scale
                                 viewModel?.setDockClockScale(scale)
                             }
-                            .padding(vertical = 6.dp),
+                            .padding(vertical = 7.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = scale.displayName.replace(" (Padrão)", ""),
                             color = if (isSelected) Color.White else backlightTextPrimary,
-                            fontSize = 10.sp,
+                            fontSize = (11f * fontScale).sp,
                             fontWeight = if (isSelected || isBold) FontWeight.Black else FontWeight.Bold,
                             fontFamily = fontFamily
                         )
@@ -3407,36 +3518,39 @@ private fun IpodSettingsScreen(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Exibir Segundos (:ss)",
+                        text = stringResource(R.string.settings_dock_show_seconds_title),
                         color = backlightTextPrimary,
-                        fontSize = (10.5f * fontScale).sp,
+                        fontSize = (12f * fontScale).sp,
                         fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
                         fontFamily = fontFamily
                     )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Exibe contagem contínua a 50% da altura da hora",
+                        text = stringResource(R.string.settings_dock_show_seconds_desc),
                         color = backlightTextSecondary,
-                        fontSize = 9.sp,
+                        fontSize = (11f * fontScale).sp,
+                        lineHeight = (15f * fontScale).sp,
                         fontFamily = fontFamily
                     )
                 }
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = if (showSecs) "✓ ATIVADO" else "DESATIVADO",
+                    text = if (showSecs) stringResource(R.string.settings_tag_enabled) else stringResource(R.string.settings_tag_disabled),
                     color = if (showSecs) backlightHighlight else backlightTextSecondary,
-                    fontSize = 9.5.sp,
+                    fontSize = (11f * fontScale).sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = fontFamily
                 )
             }
         }
 
-        // --- BACKUP & RESTAURAÇÃO CRIPTOGRAFADOS (AES-256-GCM) ---
+        // --- 10. CÓPIA DE SEGURANÇA (BACKUP) ---
         item {
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = "BACKUP CRIPTOGRAFADO (AES-256-GCM)",
+                text = stringResource(R.string.settings_group_backup_title),
                 color = backlightTextSecondary,
-                fontSize = (10f * fontScale).sp,
+                fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Black,
                 fontFamily = fontFamily
             )
@@ -3452,9 +3566,10 @@ private fun IpodSettingsScreen(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = "Exporte ou restaure todas as suas preferências, favoritos, histórico recente, podcasts e configurações do dock em um arquivo com criptografia de ponta a ponta (AES-256-GCM) exclusivo do app.",
+                    text = stringResource(R.string.settings_backup_desc),
                     color = backlightTextPrimary,
-                    fontSize = (9f * fontScale).sp,
+                    fontSize = (11f * fontScale).sp,
+                    lineHeight = (15f * fontScale).sp,
                     fontFamily = fontFamily
                 )
 
@@ -3476,9 +3591,9 @@ private fun IpodSettingsScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Exportar Backup",
+                            text = stringResource(R.string.settings_backup_export_btn),
                             color = Color.White,
-                            fontSize = (9.5f * fontScale).sp,
+                            fontSize = (11.5f * fontScale).sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = fontFamily
                         )
@@ -3497,9 +3612,9 @@ private fun IpodSettingsScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Restaurar Backup",
+                            text = stringResource(R.string.settings_backup_restore_btn),
                             color = backlightTextPrimary,
-                            fontSize = (9.5f * fontScale).sp,
+                            fontSize = (11.5f * fontScale).sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = fontFamily
                         )
@@ -3510,7 +3625,7 @@ private fun IpodSettingsScreen(
                     Text(
                         text = backupStatusMessage!!,
                         color = if (isBackupError) Color(0xFFDC2626) else backlightHighlight,
-                        fontSize = (9f * fontScale).sp,
+                        fontSize = (11f * fontScale).sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = fontFamily
                     )
@@ -3518,13 +3633,13 @@ private fun IpodSettingsScreen(
             }
         }
 
-        // --- GERENCIAMENTO DE HISTÓRICO (LIMPAR RECENTES) ---
+        // --- 11. GERENCIAMENTO DE HISTÓRICO (LIMPAR RECENTES) ---
         item {
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = "GERENCIAMENTO DE HISTÓRICO",
+                text = stringResource(R.string.settings_group_history),
                 color = backlightTextSecondary,
-                fontSize = (10f * fontScale).sp,
+                fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Black,
                 fontFamily = fontFamily
             )
@@ -3532,6 +3647,9 @@ private fun IpodSettingsScreen(
 
         item {
             var clearHistoryMsg by remember { mutableStateOf<String?>(null) }
+            val radiosClearedText = stringResource(R.string.settings_history_radios_cleared)
+            val podcastsClearedText = stringResource(R.string.settings_history_podcasts_cleared)
+            val allClearedText = stringResource(R.string.settings_history_all_cleared)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -3541,9 +3659,10 @@ private fun IpodSettingsScreen(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = "Limpe seu histórico de emissoras e episódios escutados recentemente para liberar memória e manter sua lista organizada.",
+                    text = stringResource(R.string.settings_history_desc),
                     color = backlightTextPrimary,
-                    fontSize = (9f * fontScale).sp,
+                    fontSize = (11f * fontScale).sp,
+                    lineHeight = (15f * fontScale).sp,
                     fontFamily = fontFamily
                 )
 
@@ -3560,15 +3679,15 @@ private fun IpodSettingsScreen(
                             .border(0.8.dp, backlightHighlight.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
                             .clickable {
                                 viewModel?.clearRecentStations()
-                                clearHistoryMsg = "Rádios recentes limpas com sucesso!"
+                                clearHistoryMsg = radiosClearedText
                             }
-                            .padding(vertical = 7.dp),
+                            .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Limpar Rádios",
+                            text = stringResource(R.string.settings_history_clear_radios),
                             color = backlightTextPrimary,
-                            fontSize = (9f * fontScale).sp,
+                            fontSize = (11f * fontScale).sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = fontFamily
                         )
@@ -3583,15 +3702,15 @@ private fun IpodSettingsScreen(
                             .border(0.8.dp, backlightHighlight.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
                             .clickable {
                                 viewModel?.clearRecentPodcasts()
-                                clearHistoryMsg = "Podcasts recentes limpos com sucesso!"
+                                clearHistoryMsg = podcastsClearedText
                             }
-                            .padding(vertical = 7.dp),
+                            .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Limpar Podcasts",
+                            text = stringResource(R.string.settings_history_clear_podcasts),
                             color = backlightTextPrimary,
-                            fontSize = (9f * fontScale).sp,
+                            fontSize = (11f * fontScale).sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = fontFamily
                         )
@@ -3606,15 +3725,15 @@ private fun IpodSettingsScreen(
                         .background(backlightHighlight.copy(alpha = 0.75f))
                         .clickable {
                             viewModel?.clearAllRecents()
-                            clearHistoryMsg = "Todo o histórico de recentes foi limpo!"
+                            clearHistoryMsg = allClearedText
                         }
                         .padding(vertical = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Limpar Todos os Recentes",
+                        text = stringResource(R.string.settings_history_clear_all),
                         color = Color.White,
-                        fontSize = (9.5f * fontScale).sp,
+                        fontSize = (11.5f * fontScale).sp,
                         fontWeight = FontWeight.Black,
                         fontFamily = fontFamily
                     )
@@ -3624,7 +3743,7 @@ private fun IpodSettingsScreen(
                     Text(
                         text = clearHistoryMsg!!,
                         color = backlightHighlight,
-                        fontSize = (9f * fontScale).sp,
+                        fontSize = (11f * fontScale).sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = fontFamily
                     )
@@ -3632,94 +3751,6 @@ private fun IpodSettingsScreen(
             }
         }
 
-        // --- ASSISTENTE DE CONFIGURAÇÃO (WIZARD) ---
-        item {
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = "ASSISTENTE DE CONFIGURAÇÃO",
-                color = backlightTextSecondary,
-                fontSize = (10f * fontScale).sp,
-                fontWeight = FontWeight.Black,
-                fontFamily = fontFamily
-            )
-        }
-
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(Color(0x28000000))
-                    .clickable {
-                        coroutineScope.launch {
-                            com.example.data.prefs.OnboardingPreferencesRepository.getInstance(context).resetOnboarding()
-                        }
-                    }
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(id = com.example.R.string.settings_rerun_wizard),
-                        color = backlightTextPrimary,
-                        fontSize = (10.5f * fontScale).sp,
-                        fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
-                        fontFamily = fontFamily
-                    )
-                    Text(
-                        text = stringResource(id = com.example.R.string.settings_rerun_wizard_summary),
-                        color = backlightTextSecondary,
-                        fontSize = 9.sp,
-                        fontFamily = fontFamily
-                    )
-                }
-                Text(
-                    text = "EXECUTAR ⚙️",
-                    color = backlightHighlight,
-                    fontSize = 9.5.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = fontFamily
-                )
-            }
-        }
-    }
-
-    if (showBackupRestoreSuccessDialog) {
-        AlertDialog(
-            onDismissRequest = { /* Não fecha sem reiniciar */ },
-            title = {
-                Text(
-                    text = stringResource(R.string.dialog_restart_title),
-                    color = backlightTextPrimary,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = fontFamily
-                )
-            },
-            text = {
-                Text(
-                    text = stringResource(R.string.dialog_backup_success_msg),
-                    color = backlightTextSecondary,
-                    fontFamily = fontFamily,
-                    fontSize = 12.sp
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    showBackupRestoreSuccessDialog = false
-                    com.example.util.AppRestartHelper.restartApp(context)
-                }) {
-                    Text(
-                        text = stringResource(R.string.btn_ok),
-                        color = backlightHighlight,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = fontFamily
-                    )
-                }
-            },
-            containerColor = backlightBg,
-            shape = RoundedCornerShape(8.dp)
-        )
     }
 }
 
@@ -3777,7 +3808,7 @@ private fun IpodAboutScreen(
 
             // Data da versão aaaa.mm.dd e número da versão
             Text(
-                text = "2026.09.19 - Versão 0.3 (v82dw01)",
+                text = "2026.09.20 - Versão 0.3.1 (83 Inl-PRA)",
                 color = backlightTextSecondary,
                 fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Bold,
@@ -3788,7 +3819,7 @@ private fun IpodAboutScreen(
 
             // Autor
             Text(
-                text = "autor: Márcio Amaro - marcio.amaro@gmail.com",
+                text = "autor: Márcio Amaro marcio.amaro@gmail.com",
                 color = backlightHighlight,
                 fontSize = (11f * fontScale).sp,
                 fontWeight = FontWeight.SemiBold,

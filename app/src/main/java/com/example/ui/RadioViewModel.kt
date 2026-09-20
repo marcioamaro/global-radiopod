@@ -114,7 +114,8 @@ enum class LcdBacklight(val displayName: String, val background: Long, val textP
     VINTAGE_AMBER("Vintage Amber RDS", 0xFF2A1B0A, 0xFFFEF3C7, 0xFFFBBF24, 0xFFD97706),
     MONOCHROME_GREY("Monochrome LCD", 0xFF8A9A86, 0xFF142411, 0xFF2D4629, 0xFF4A6B44),
     OLED_MATRIX("OLED Matrix Dark", 0xFF050505, 0xFF00E5FF, 0xFF0284C7, 0xFF007799),
-    EMERALD_GREEN("Retro Emerald", 0xFF062817, 0xFF86EFAC, 0xFF4ADE80, 0xFF16A34A)
+    EMERALD_GREEN("Retro Emerald", 0xFF062817, 0xFF86EFAC, 0xFF4ADE80, 0xFF16A34A),
+    U2_RED_BLACK("U2 Ruby Red LCD", 0xFFFF8A8A, 0xFF111111, 0xFF222222, 0xFFDC2626)
 }
 
 data class UiState(
@@ -133,6 +134,7 @@ data class UiState(
     val fontType: IpodFontType = IpodFontType.MONOSPACE,
     val fontSizeScale: IpodFontSizeScale = IpodFontSizeScale.SCALE_100,
     val isFontBold: Boolean = true,
+    val is24HourClock: Boolean = true,
     val autoPlayOnLaunch: Boolean = true,
     val dockClockScale: com.example.data.preferences.DockClockScale = com.example.data.preferences.DockClockScale.SCALE_100,
     val dockShowSeconds: Boolean = false,
@@ -633,6 +635,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                 fontType = prefs.fontType,
                 fontSizeScale = prefs.fontSizeScale,
                 isFontBold = prefs.isFontBold,
+                is24HourClock = prefs.is24HourClock,
                 autoPlayOnLaunch = prefs.isAutoPlayOnLaunch,
                 dockClockScale = prefs.dockClockScale,
                 dockShowSeconds = prefs.dockShowSeconds,
@@ -947,11 +950,29 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun reloadPreferencesFromStorage() {
+        val manualPalette = IpodPalette(
+            bodyColor = prefs.customBodyColor,
+            wheelColor = prefs.customWheelColor,
+            wheelTextColor = prefs.customWheelTextColor,
+            centerButtonColor = prefs.customCenterButtonColor
+        )
+        val updatedAppearance = _uiState.value.appearanceSettings.copy(
+            manualPalette = manualPalette,
+            activePalette = manualPalette,
+            lastValidPalette = manualPalette
+        )
         _uiState.value = _uiState.value.copy(
             chassisTheme = prefs.chassisTheme,
             backlight = prefs.lcdBacklight,
+            wheelPreset = prefs.wheelPreset,
+            appearanceSettings = updatedAppearance,
+            customBodyColor = prefs.customBodyColor,
+            customWheelColor = prefs.customWheelColor,
+            customWheelTextColor = prefs.customWheelTextColor,
+            customCenterButtonColor = prefs.customCenterButtonColor,
             fontSizeScale = prefs.fontSizeScale,
-            isFontBold = prefs.isFontBold
+            isFontBold = prefs.isFontBold,
+            is24HourClock = prefs.is24HourClock
         )
     }
 

@@ -90,10 +90,10 @@ fun IpodBrickGameScreen(
     backlightHighlight: Color,
     modifier: Modifier = Modifier
 ) {
-    // Paleta LCD monocromática autêntica do iPod Classic
-    val lcdBackground = Color(0xFF8E9E76) // Verde-oliva clássico LCD retrô
-    val lcdPixelDark = Color(0xFF142010)   // Pixel escuro LCD
-    val lcdPixelMid = Color(0xFF384A2C)    // Pixel médio LCD
+    // Paleta LCD adaptativa conforme o tema selecionado para o LCD
+    val lcdBackground = backlightBg
+    val lcdPixelDark = backlightTextPrimary
+    val lcdPixelMid = backlightTextSecondary
 
     // *** FIX: rememberUpdatedState garante que o loop de física SEMPRE leia
     // a posição atual do paddle, não a posição capturada pela closure ***

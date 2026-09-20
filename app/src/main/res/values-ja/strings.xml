@@ -1,0 +1,208 @@
+<resources>
+    <string name="app_name">MediaPod + Radio / Podcast</string>
+    <string name="media_notification_channel_name">バックグラウンド ラジオ ＆ ポッドキャスト</string>
+
+    <!-- メインメニュー -->
+    <string name="menu_radio">ラジオ</string>
+    <string name="menu_podcasts">ポッドキャスト</string>
+    <string name="menu_mp3">音楽プレーヤー</string>
+    <string name="menu_video">動画プレーヤー</string>
+    <string name="menu_youtube">YouTube</string>
+    <string name="menu_equalizer">イコライザー</string>
+    <string name="menu_audio_output">音声出力</string>
+    <string name="menu_game">ブロックくずし</string>
+    <string name="menu_car_mode">ドライブモード</string>
+    <string name="menu_dock_mode">ドックモード</string>
+    <string name="menu_settings">設定</string>
+    <string name="menu_about">情報</string>
+    <string name="menu_close_app">終了</string>
+
+    <!-- ラジオ サブメニュー -->
+    <string name="radio_now_playing">再生中</string>
+    <string name="radio_favorites">お気に入り</string>
+    <string name="radio_recents">最近再生した局</string>
+    <string name="radio_top_brazil">ブラジル人気局（1,307局）</string>
+    <string name="radio_top_world">世界の人気局</string>
+    <string name="radio_genres">ジャンル＆スタイル</string>
+    <string name="radio_countries">国・地域</string>
+    <string name="radio_search">放送局を検索</string>
+
+    <!-- ポッドキャスト サブメニュー -->
+    <string name="podcast_now_playing">再生中</string>
+    <string name="podcast_favorites">お気に入りポッドキャスト</string>
+    <string name="podcast_recents">最近のポッドキャスト</string>
+    <string name="podcast_top_brazil">ブラジル トップ100</string>
+    <string name="podcast_top_world">世界 トップ100</string>
+    <string name="podcast_categories">カテゴリー＆ジャンル</string>
+    <string name="podcast_by_country">国別</string>
+    <string name="podcast_search">ポッドキャストを検索</string>
+    <string name="podcast_custom">カスタム ポッドキャスト</string>
+
+    <!-- 設定 サブメニュー -->
+    <string name="settings_theme">本体カラー</string>
+    <string name="settings_backlight">バックライト</string>
+    <string name="settings_wheel">クリックホイール</string>
+    <string name="settings_font">フォント</string>
+    <string name="settings_font_size">文字サイズ</string>
+    <string name="settings_language">言語</string>
+    <string name="settings_auto_play">起動時に自動再生</string>
+    <string name="settings_sound">ホイール操作音</string>
+    <string name="settings_haptics">振動フィードバック</string>
+    <string name="settings_sleep_timer">おやすみタイマー</string>
+    <string name="settings_dock_clock_scale">時計の文字サイズ</string>
+    <string name="settings_dock_show_seconds">秒を表示 (:ss)</string>
+    <string name="settings_backup_export">バックアップを書き出し (.enc)</string>
+    <string name="settings_backup_restore">バックアップを復元 (.enc)</string>
+    <string name="settings_clear_history">履歴を消去</string>
+
+    <!-- プレーヤー＆ステータス -->
+    <string name="status_live">LIVE</string>
+    <string name="status_tuning">選局中...</string>
+    <string name="status_buffering">読み込み中...</string>
+    <string name="status_paused">一時停止</string>
+    <string name="status_stopped">停止</string>
+    <string name="status_digital_rds">LIVE • デジタルRDS放送</string>
+    <string name="speed">速度</string>
+    <string name="chapters">チャプター</string>
+    <string name="volume">音量</string>
+    <string name="dock_extra_dim">減光モード</string>
+
+    <!-- イコライザー -->
+    <string name="eq_title">イコライザー</string>
+    <string name="eq_active">イコライザー有効</string>
+    <string name="eq_disabled">イコライザー無効</string>
+    <string name="eq_on">オン</string>
+    <string name="eq_off">オフ</string>
+    <string name="eq_presets">オーディオ プリセット:</string>
+    <string name="eq_frequencies">周波数調整 (-12dB ～ +12dB):</string>
+
+    <!-- メッセージ＆アラート -->
+    <string name="msg_no_episodes">現在利用可能なエピソードはありません</string>
+    <string name="msg_connection_error">インターネット接続を確認してください</string>
+    <string name="msg_invalid_backup">無効または互換性のないバックアップファイルです</string>
+    <string name="msg_history_cleared">履歴を正常に消去しました</string>
+
+    <!-- ダイアログ＆ボタン -->
+    <string name="dialog_restart_title">再起動が必要です</string>
+    <string name="dialog_language_restart_msg">新しい言語を適用するためアプリを再起動します。よろしいですか？</string>
+    <string name="dialog_backup_success_msg">設定が正常に復元されました。設定を読み込むためアプリを再起動します。</string>
+    <string name="btn_continue">次へ</string>
+    <string name="btn_cancel">キャンセル</string>
+    <string name="btn_close">閉じる</string>
+    <string name="btn_ok">OK</string>
+
+    <!-- 初期設定ウィザード -->
+    <string name="onboarding_title">Global RadioPod へようこそ</string>
+    <string name="onboarding_subtitle">あなた好みの iPod スタイルにカスタマイズしましょう！</string>
+    <string name="onboarding_step_language_title">言語</string>
+    <string name="onboarding_step_language_desc">使用する言語を選択してください。すぐに切り替わります。</string>
+    <string name="onboarding_step_clock_title">時刻の表示形式</string>
+    <string name="onboarding_step_clock_desc">画面上部の時刻表示形式を選択してください。</string>
+    <string name="onboarding_clock_24h">24時間表示 (例: 14:30)</string>
+    <string name="onboarding_clock_12h">12時間表示 AM/PM (例: 2:30 PM)</string>
+    <string name="onboarding_clock_preview_label">現在の時刻</string>
+    <string name="onboarding_step_theme_title">本体 ＆ 画面ライト</string>
+    <string name="onboarding_step_theme_desc">本体カラーとレトロな画面バックライトを選択してください。</string>
+    <string name="onboarding_theme_chassis">本体カラー</string>
+    <string name="onboarding_theme_backlight">画面バックライト</string>
+    <string name="onboarding_step_a11y_title">文字サイズ ＆ 視認性</string>
+    <string name="onboarding_step_a11y_desc">目に優しく読みやすい文字サイズとコントラストを選択してください。</string>
+    <string name="onboarding_font_size_label">文字サイズ</string>
+    <string name="onboarding_high_contrast_label">太字でくっきり表示</string>
+    <string name="onboarding_high_contrast_desc">文字を太くして、どんな明るさでも読みやすくします。</string>
+    <string name="onboarding_step_wheel_title">クリックホイール</string>
+    <string name="onboarding_step_wheel_desc">ホイールを回した時の反応スタイルを選択してください。</string>
+    <string name="onboarding_wheel_sensitivity">感度</string>
+    <string name="onboarding_wheel_mode_progressive">ナチュラル（回す速さに応じて加速）</string>
+    <string name="onboarding_wheel_mode_fixed">一定速度</string>
+    <string name="onboarding_wheel_sandbox_tip">下のミニホイールを回して反応を試してみてください！</string>
+    <string name="onboarding_wheel_ticks_counter">認識した操作回数: %1$d</string>
+    <string name="onboarding_wheel_speed_label">速度: %1$s</string>
+    <string name="onboarding_step_summary_title">準備完了！</string>
+    <string name="onboarding_step_summary_desc">あなた専用の iPod が完成しました。設定はいつでも変更できます。</string>
+    <string name="onboarding_summary_language">言語: %1$s</string>
+    <string name="onboarding_summary_clock">時計: %1$s</string>
+    <string name="onboarding_summary_chassis">本体: %1$s</string>
+    <string name="onboarding_summary_backlight">画面ライト: %1$s</string>
+    <string name="onboarding_summary_contrast">ハイコントラスト: %1$s</string>
+    <string name="onboarding_summary_wheel">ホイール: %1$s</string>
+    <string name="onboarding_btn_next">次へ</string>
+    <string name="onboarding_btn_back">戻る</string>
+    <string name="onboarding_btn_finish">聞き始める</string>
+    <string name="onboarding_btn_skip">あとで設定する</string>
+    <string name="settings_rerun_wizard">初期設定ウィザード</string>
+    <string name="settings_rerun_wizard_summary">言語、カラー、文字、ホイールをいつでも再設定できます</string>
+    <string name="onboarding_theme_random_colors">🎲 ランダムカラー</string>
+    <string name="onboarding_theme_u2_special">U2 スペシャルエディション</string>
+    <string name="onboarding_theme_u2_desc">象徴的なクラシックスタイル：ブラック本体、レッドホイール、点灯ディスプレイ</string>
+    <string name="onboarding_wheel_progressive_desc">指を速く動かすほどスムーズに加速します（1x → 2x → 3x）</string>
+    <string name="onboarding_wheel_fixed_desc">選んだ一定のスピードで安定してスクロールします</string>
+    <string name="onboarding_wheel_fixed_speed_label">ホイール速度:</string>
+    <string name="onboarding_speed_slow">ゆっくり (1x)</string>
+    <string name="onboarding_speed_standard">標準 (2x)</string>
+    <string name="onboarding_speed_fast">高速 (5x)</string>
+    <string name="onboarding_wheel_interactive_test">ホイールのテスト（ミニホイールを回して確認）:</string>
+    <string name="onboarding_active_tag">✓ 有効</string>
+    <string name="settings_group_random_colors">ランダムカラーモード</string>
+    <string name="settings_random_colors_desc">起動ごとに本体・ホイール・ボタンの安全な組み合わせを自動生成します</string>
+    <string name="settings_random_reroll_btn">🎲 新しい組み合わせを再生成</string>
+    <string name="settings_group_custom_colors">お好みカスタマイズ（カスタムカラー）</string>
+    <string name="settings_custom_chassis_btn">本体カラー</string>
+    <string name="settings_custom_wheel_btn">クリックホイールカラー</string>
+    <string name="settings_custom_center_button_btn">中央ボタンカラー</string>
+    <string name="settings_group_presets">プリセットカラー ＆ テーマ</string>
+    <string name="settings_chassis_presets">本体プリセット</string>
+    <string name="settings_wheel_presets">クリックホイール プリセット</string>
+    <string name="settings_lcd_presets">液晶バックライト</string>
+    <string name="settings_color_adjust">調整 🎨</string>
+    <string name="settings_color_locked">ロック中 🔒</string>
+    <string name="settings_manual_edit_unlocked">手動編集可能: プリセットの選択やカスタムカラーの自由な設定が可能です。</string>
+    <string name="settings_manual_edit_locked">ランダムモード有効中: 現在のパレットを保護するため、手動カラー変更はロックされています。</string>
+    <string name="settings_group_fonts">iPodモード フォント</string>
+    <string name="settings_font_style_label">フォントスタイル:</string>
+    <string name="settings_font_size_label">文字サイズ:</string>
+    <string name="settings_font_bold_label">太字表示</string>
+    <string name="settings_font_bold_active">✓ 太字</string>
+    <string name="settings_font_bold_normal">標準</string>
+    <string name="settings_group_startup_prefs">起動 ＆ 基本設定</string>
+    <string name="settings_startup_autoplay_title">前回の放送局で自動再生</string>
+    <string name="settings_startup_autoplay_desc">最後に聴いていた放送局を記憶し、アプリ起動時にすぐ再生します</string>
+    <string name="settings_tag_enabled">✓ オン</string>
+    <string name="settings_tag_disabled">オフ</string>
+    <string name="settings_tag_configure">設定</string>
+    <string name="settings_chassis_anim_title">背面メタルケース効果</string>
+    <string name="settings_chassis_anim_desc">「情報」画面タップ時にクラシックな鏡面ステンレスの背面を表示します</string>
+    <string name="settings_group_streaming_stability">ストリーミング ＆ 安定性</string>
+    <string name="settings_pure_audio_title">省パケット・安定ストリーミング</string>
+    <string name="settings_pure_audio_desc">途切れのない安定した再生を最優先します（低速回線に最適）</string>
+    <string name="settings_group_battery_bg">バックグラウンド ＆ バッテリー</string>
+    <string name="settings_battery_bg_title">バックグラウンドでの連続再生</string>
+    <string name="settings_battery_bg_desc">画面オフやロック時でも音声が途切れないよう保護します</string>
+    <string name="settings_group_sleep_timer">おやすみタイマー</string>
+    <string name="settings_sleep_timer_off">無効</string>
+    <string name="settings_sleep_timer_end_of_track">エピソード終了時</string>
+    <string name="settings_sleep_timer_min_format">%d分</string>
+    <string name="settings_group_dock_mode">ナイトスタンドモード（ドック）</string>
+    <string name="settings_dock_clock_size_label">時計表示サイズ:</string>
+    <string name="settings_dock_show_seconds_title">秒を表示 (:ss)</string>
+    <string name="settings_dock_show_seconds_desc">時計の横に滑らかに秒数をカウント表示します</string>
+    <string name="settings_group_backup_title">安全なバックアップ ＆ 復元</string>
+    <string name="settings_backup_desc">放送局、お気に入り、設定を安全な暗号化ファイルに保存・復元します。</string>
+    <string name="settings_backup_export_btn">バックアップを書き出し</string>
+    <string name="settings_backup_restore_btn">バックアップを復元</string>
+    <string name="settings_backup_success_msg">バックアップが正常に復元されました！</string>
+    <string name="settings_backup_export_success_msg">バックアップが正常に書き出されました！</string>
+    <string name="settings_backup_error_msg">バックアップファイルの処理中にエラーが発生しました。</string>
+    <string name="settings_wheel_test_title">操作テストエリア（ミニホイールを回して確認）:</string>
+    <string name="settings_wheel_test_item_prefix">テスト項目 #%d</string>
+    <string name="settings_group_history">履歴管理</string>
+    <string name="settings_history_desc">最近再生した局やポッドキャストの履歴をクリアして整理します。</string>
+    <string name="settings_history_clear_radios">ラジオ履歴を消去</string>
+    <string name="settings_history_clear_podcasts">ポッドキャスト履歴を消去</string>
+    <string name="settings_history_clear_all">すべての履歴を消去</string>
+    <string name="settings_history_radios_cleared">ラジオ履歴を消去しました！</string>
+    <string name="settings_history_podcasts_cleared">ポッドキャスト履歴を消去しました！</string>
+    <string name="settings_history_all_cleared">すべての履歴を消去しました！</string>
+    <string name="settings_group_wizard">初期設定ウィザード</string>
+    <string name="settings_wizard_run_btn">起動 ⚙️</string>
+</resources>

@@ -113,6 +113,28 @@ class OnboardingWizardViewModel @JvmOverloads constructor(
         persistPartialProgress()
     }
 
+    fun applyU2SpecialEdition() {
+        _uiState.update {
+            it.copy(
+                chassisTheme = IpodChassisTheme.U2_SPECIAL,
+                lcdBacklight = LcdBacklight.U2_RED_BLACK
+            )
+        }
+        persistPartialProgress()
+    }
+
+    fun applyRandomColors() {
+        val randomChassis = IpodChassisTheme.values().random()
+        val randomBacklight = LcdBacklight.values().random()
+        _uiState.update {
+            it.copy(
+                chassisTheme = randomChassis,
+                lcdBacklight = randomBacklight
+            )
+        }
+        persistPartialProgress()
+    }
+
     fun setLcdBacklight(backlight: LcdBacklight) {
         _uiState.update { it.copy(lcdBacklight = backlight) }
         persistPartialProgress()
@@ -226,6 +248,18 @@ class OnboardingWizardViewModel @JvmOverloads constructor(
         // Sync to IpodPreferencesManager
         ipodPrefs.chassisTheme = current.chassisTheme
         ipodPrefs.lcdBacklight = current.lcdBacklight
+        ipodPrefs.is24HourClock = current.is24HourClock
+        if (current.chassisTheme == IpodChassisTheme.U2_SPECIAL) {
+            ipodPrefs.wheelPreset = com.example.data.preferences.IpodWheelPreset.U2_RED
+            ipodPrefs.customBodyColor = 0xFF111111
+            ipodPrefs.customWheelColor = 0xFFDC2626
+            ipodPrefs.customWheelTextColor = 0xFFFFFFFF
+            ipodPrefs.customCenterButtonColor = 0xFF111111
+        } else {
+            ipodPrefs.customBodyColor = current.chassisTheme.bodyColor
+            ipodPrefs.customWheelColor = current.chassisTheme.wheelColor
+            ipodPrefs.customCenterButtonColor = current.chassisTheme.bodyColor
+        }
         val fontScaleEnum = when {
             current.fontSizeScale >= 2.5f -> IpodFontSizeScale.SCALE_250
             current.fontSizeScale >= 2.0f -> IpodFontSizeScale.SCALE_200

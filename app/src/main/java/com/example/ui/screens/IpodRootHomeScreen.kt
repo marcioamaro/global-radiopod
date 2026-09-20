@@ -136,6 +136,8 @@ fun IpodRootHomeScreen(
                             fontSize = (12.5f * fontScale).sp,
                             fontWeight = if (isBold || isSelected) FontWeight.Bold else FontWeight.Medium,
                             fontFamily = fontFamily,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f)
                         )
                         Icon(
@@ -182,10 +184,11 @@ fun IpodRootHomeScreen(
                             Text(
                                 text = nowPlayingTitle,
                                 color = backlightTextPrimary,
-                                fontSize = 9.sp,
+                                fontSize = (11f * fontScale).sp,
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = fontFamily,
-                                maxLines = 1
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
                         }
                     }
@@ -216,7 +219,7 @@ fun IpodRootHomeScreen(
                             Text(
                                 text = nowPlayingTitle,
                                 color = backlightTextPrimary,
-                                fontSize = (10f * fontScale).sp,
+                                fontSize = (11f * fontScale).sp,
                                 fontWeight = if (isBold) FontWeight.Black else FontWeight.Bold,
                                 fontFamily = fontFamily,
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -228,7 +231,7 @@ fun IpodRootHomeScreen(
                             Text(
                                 text = "MEDIAPOD\nRADIO / PODCAST",
                                 color = backlightTextPrimary.copy(alpha = 0.6f),
-                                fontSize = 8.5.sp,
+                                fontSize = (10.5f * fontScale).sp,
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = fontFamily,
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -256,7 +259,7 @@ fun IpodRootHomeScreen(
                         Text(
                             text = "MEDIAPOD\nRADIO / PODCAST",
                             color = backlightTextPrimary.copy(alpha = 0.5f),
-                            fontSize = 8.5.sp,
+                            fontSize = (10.5f * fontScale).sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = fontFamily,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center

@@ -25,9 +25,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -87,6 +89,17 @@ import com.example.data.prefs.FixedSpeed
 import com.example.ui.IpodChassisTheme
 import com.example.ui.LcdBacklight
 import com.example.ui.theme.IpodColorContrastUtil
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalConfiguration
+import android.content.res.Configuration
+import java.util.Locale
+import com.example.ui.components.ClickWheel
 import com.example.util.AppLocaleManager
 import kotlinx.coroutines.delay
 import kotlin.math.PI
@@ -110,6 +123,20 @@ fun OnboardingWizardScreen(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
+    val currentLocale = remember(state.languageTag) {
+        val parts = state.languageTag.split("-")
+        if (parts.size > 1) Locale(parts[0], parts[1]) else Locale(parts[0])
+    }
+    val localizedConfig = remember(currentLocale) {
+        Configuration(context.resources.configuration).apply {
+            setLocale(currentLocale)
+            setLayoutDirection(currentLocale)
+        }
+    }
+    val localizedContext = remember(localizedConfig) {
+        context.createConfigurationContext(localizedConfig)
+    }
+
     if (!state.isReady) {
         Box(
             modifier = modifier
@@ -122,17 +149,23 @@ fun OnboardingWizardScreen(
         return
     }
 
-    Surface(
-        modifier = modifier
-            .fillMaxSize()
-            .testTag("onboarding_wizard_screen"),
-        color = BgDark
+    CompositionLocalProvider(
+        LocalContext provides localizedContext,
+        LocalConfiguration provides localizedConfig
     ) {
-        Column(
-            modifier = Modifier
+        Surface(
+            modifier = modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .testTag("onboarding_wizard_screen"),
+            color = BgDark
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
             // Top Header: Step Indicator & Adaptive Bitten Pear Logo
             WizardTopBar(
                 currentStep = state.currentStep,
@@ -183,6 +216,7 @@ fun OnboardingWizardScreen(
                         2 -> StepThemeColors(
                             selectedChassis = state.chassisTheme,
                             selectedBacklight = state.lcdBacklight,
+                            highContrast = state.highContrast,
                             onSelectChassis = {
                                 triggerHapticTick(context)
                                 viewModel.setChassisTheme(it)
@@ -190,6 +224,14 @@ fun OnboardingWizardScreen(
                             onSelectBacklight = {
                                 triggerHapticTick(context)
                                 viewModel.setLcdBacklight(it)
+                            },
+                            onSelectU2 = {
+                                triggerHapticTick(context)
+                                viewModel.applyU2SpecialEdition()
+                            },
+                            onRandomColors = {
+                                triggerHapticTick(context)
+                                viewModel.applyRandomColors()
                             }
                         )
                         3 -> StepTypographyA11y(
@@ -202,12 +244,10 @@ fun OnboardingWizardScreen(
                             }
                         )
                         4 -> StepClickWheelCalibration(
-                            sensitivity = state.clickWheelSensitivity,
                             mode = state.clickWheelMode,
                             fixedSpeed = state.clickWheelFixedSpeed,
-                            tickCount = state.sandboxTickCount,
-                            velocity = state.sandboxVelocity,
-                            onSensitivityChange = { viewModel.setClickWheelSensitivity(it) },
+                            selectedBacklight = state.lcdBacklight,
+                            selectedChassis = state.chassisTheme,
                             onModeChange = {
                                 triggerHapticTick(context)
                                 viewModel.setClickWheelMode(it)
@@ -215,10 +255,6 @@ fun OnboardingWizardScreen(
                             onSpeedChange = {
                                 triggerHapticTick(context)
                                 viewModel.setClickWheelFixedSpeed(it)
-                            },
-                            onWheelSpun = { vel ->
-                                triggerHapticTick(context)
-                                viewModel.onSandboxWheelSpun(vel)
                             }
                         )
                         5 -> StepSummary(
@@ -257,6 +293,7 @@ fun OnboardingWizardScreen(
             )
         }
     }
+}
 }
 
 @Composable
@@ -372,8 +409,7 @@ private fun StepLanguage(
         Spacer(modifier = Modifier.height(12.dp))
 
         AppLocaleManager.SUPPORTED_LOCALES.forEach { loc ->
-            val isSelected = currentTag.equals(loc.tag, ignoreCase = true) ||
-                    (loc.tag.startsWith("pt") && currentTag.startsWith("pt"))
+            val isSelected = currentTag.equals(loc.tag, ignoreCase = true)
             val borderCol = if (isSelected) AccentCyan else CardBorderDark
             val bgCol = if (isSelected) CardBorderDark else CardBgDark
 
@@ -556,11 +592,208 @@ private fun ClockOptionCard(
 // Step 2: Theme & Backlight Colors
 // ---------------------------------------------------------------------------
 @Composable
+private fun IpodMiniaturePreview(
+    chassisTheme: IpodChassisTheme,
+    lcdBacklight: LcdBacklight,
+    highContrast: Boolean
+) {
+    val animatedBodyColor by animateColorAsState(Color(chassisTheme.bodyColor), label = "bodyColor")
+    val animatedWheelColor by animateColorAsState(
+        if (chassisTheme == IpodChassisTheme.U2_SPECIAL) Color(0xFFDC2626) else Color(chassisTheme.wheelColor),
+        label = "wheelColor"
+    )
+    val animatedLcdBg by animateColorAsState(Color(lcdBacklight.background), label = "lcdBg")
+    val animatedLcdText by animateColorAsState(Color(lcdBacklight.textPrimary), label = "lcdText")
+    val animatedLcdSec by animateColorAsState(Color(lcdBacklight.textSecondary), label = "lcdSec")
+    val animatedLcdHighlight by animateColorAsState(Color(lcdBacklight.highlight), label = "lcdHighlight")
+
+    val centerButtonBg = if (chassisTheme == IpodChassisTheme.U2_SPECIAL) Color(0xFF111111) else animatedBodyColor
+    val pearLogoColor = IpodColorContrastUtil.getAdaptivePearLogoColor(centerButtonBg)
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        // Gabinete em miniatura do iPod Classic
+        Box(
+            modifier = Modifier
+                .width(180.dp)
+                .height(240.dp)
+                .shadow(14.dp, RoundedCornerShape(22.dp))
+                .clip(RoundedCornerShape(22.dp))
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            animatedBodyColor,
+                            animatedBodyColor.copy(alpha = 0.90f)
+                        )
+                    )
+                )
+                .border(1.5.dp, Color.White.copy(alpha = 0.35f), RoundedCornerShape(22.dp))
+                .padding(10.dp)
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Tela LCD retrô
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(92.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(animatedLcdBg)
+                        .border(1.2.dp, animatedLcdHighlight.copy(alpha = 0.65f), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 8.dp, vertical = 6.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        // Header do LCD
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Global RadioPod",
+                                color = animatedLcdText,
+                                fontSize = 8.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.Monospace
+                            )
+                            Text(
+                                text = "12:00",
+                                color = animatedLcdSec,
+                                fontSize = 8.sp,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        }
+
+                        // Tocando Agora
+                        Column {
+                            Text(
+                                text = "▶ MPB FM 90.3",
+                                color = animatedLcdText,
+                                fontSize = 10.5.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontFamily = FontFamily.Monospace,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Text(
+                                text = "Rio de Janeiro • Ao Vivo",
+                                color = animatedLcdSec,
+                                fontSize = 8.sp,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        }
+
+                        // Rodapé do LCD
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = lcdBacklight.displayName.take(14),
+                                color = animatedLcdHighlight,
+                                fontSize = 7.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.Monospace
+                            )
+                            Text(
+                                text = "●●●○",
+                                color = animatedLcdSec,
+                                fontSize = 7.sp
+                            )
+                        }
+                    }
+                }
+
+                // ClickWheel miniatura proporcional
+                Box(
+                    modifier = Modifier
+                        .size(110.dp)
+                        .shadow(4.dp, CircleShape)
+                        .clip(CircleShape)
+                        .background(animatedWheelColor)
+                        .border(1.dp, Color.Black.copy(alpha = 0.2f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val wheelLabelColor = if (chassisTheme == IpodChassisTheme.U2_SPECIAL) {
+                        Color.White
+                    } else if (animatedWheelColor.luminance() > 0.5f) {
+                        Color(0xFF334155)
+                    } else {
+                        Color(0xFFF1F5F9)
+                    }
+
+                    Text(
+                        text = "MENU",
+                        color = wheelLabelColor,
+                        fontSize = 7.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.TopCenter).padding(top = 4.dp)
+                    )
+                    Text(
+                        text = "|◀◀",
+                        color = wheelLabelColor,
+                        fontSize = 7.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.CenterStart).padding(start = 6.dp)
+                    )
+                    Text(
+                        text = "▶▶|",
+                        color = wheelLabelColor,
+                        fontSize = 7.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.CenterEnd).padding(end = 6.dp)
+                    )
+                    Text(
+                        text = "▶❚❚",
+                        color = wheelLabelColor,
+                        fontSize = 7.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 4.dp)
+                    )
+
+                    // Botão Central
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .shadow(2.dp, CircleShape)
+                            .clip(CircleShape)
+                            .background(centerButtonBg)
+                            .border(0.8.dp, Color.White.copy(alpha = 0.25f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_pear_logo),
+                            contentDescription = "Logo",
+                            tint = pearLogoColor,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun StepThemeColors(
     selectedChassis: IpodChassisTheme,
     selectedBacklight: LcdBacklight,
+    highContrast: Boolean,
     onSelectChassis: (IpodChassisTheme) -> Unit,
-    onSelectBacklight: (LcdBacklight) -> Unit
+    onSelectBacklight: (LcdBacklight) -> Unit,
+    onSelectU2: () -> Unit,
+    onRandomColors: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         StepHeader(
@@ -568,63 +801,18 @@ private fun StepThemeColors(
             description = stringResource(id = R.string.onboarding_step_theme_desc)
         )
 
+        Spacer(modifier = Modifier.height(6.dp))
+
+        // Live iPod Classic Miniature Mockup Preview
+        IpodMiniaturePreview(
+            chassisTheme = selectedChassis,
+            lcdBacklight = selectedBacklight,
+            highContrast = highContrast
+        )
+
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Live Miniature LCD Preview
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 6.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(selectedBacklight.background)),
-            border = androidx.compose.foundation.BorderStroke(2.dp, Color(selectedBacklight.highlight))
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(14.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Global RadioPod",
-                        color = Color(selectedBacklight.textPrimary),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
-                    )
-                    Text(
-                        text = "12:00",
-                        color = Color(selectedBacklight.textSecondary),
-                        fontSize = 11.sp,
-                        fontFamily = FontFamily.Monospace
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "▶ Now Playing: MPB FM 90.3",
-                    color = Color(selectedBacklight.textPrimary),
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Monospace,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = "Rio de Janeiro • Ao Vivo",
-                    color = Color(selectedBacklight.textSecondary),
-                    fontSize = 11.sp,
-                    fontFamily = FontFamily.Monospace
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Chassis Finishes
+        // Acabamento do Gabinete
         Text(
             text = stringResource(id = R.string.onboarding_theme_chassis),
             color = TextWhite,
@@ -633,7 +821,101 @@ private fun StepThemeColors(
         )
         Spacer(modifier = Modifier.height(6.dp))
 
-        IpodChassisTheme.values().forEach { theme ->
+        // Botão Especial: 🎲 Modo Aleatório de Cores
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 3.dp)
+                .clickable { onRandomColors() },
+            shape = RoundedCornerShape(10.dp),
+            colors = CardDefaults.cardColors(containerColor = CardBgDark),
+            border = androidx.compose.foundation.BorderStroke(1.dp, AccentCyan.copy(alpha = 0.7f))
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.dp, vertical = 11.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "🎲", fontSize = 18.sp)
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = stringResource(id = R.string.onboarding_theme_random_colors),
+                        color = AccentCyan,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Text(
+                    text = "SORTEAR",
+                    color = AccentCyan,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+        }
+
+        // Botão Especial: U2 Edition (Red/Black)
+        val isU2Selected = selectedChassis == IpodChassisTheme.U2_SPECIAL
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 3.dp)
+                .clickable { onSelectU2() },
+            shape = RoundedCornerShape(10.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = if (isU2Selected) Color(0xFF1F1212) else CardBgDark
+            ),
+            border = androidx.compose.foundation.BorderStroke(
+                if (isU2Selected) 1.8.dp else 1.dp,
+                if (isU2Selected) Color(0xFFDC2626) else CardBorderDark
+            )
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(18.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFDC2626))
+                            .border(1.dp, Color(0xFF111111), CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            text = stringResource(id = R.string.onboarding_theme_u2_special),
+                            color = if (isU2Selected) Color(0xFFEF4444) else TextWhite,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = stringResource(id = R.string.onboarding_theme_u2_desc),
+                            color = TextMuted,
+                            fontSize = 10.sp
+                        )
+                    }
+                }
+                if (isU2Selected) {
+                    Text(
+                        text = stringResource(id = R.string.onboarding_active_tag),
+                        color = Color(0xFFEF4444),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                }
+            }
+        }
+
+        // Acabamentos de Linha Normal
+        IpodChassisTheme.values().filter { it != IpodChassisTheme.U2_SPECIAL }.forEach { theme ->
             val isSelected = theme == selectedChassis
             ThemeSelectionRow(
                 title = theme.displayName,
@@ -645,7 +927,7 @@ private fun StepThemeColors(
 
         Spacer(modifier = Modifier.height(14.dp))
 
-        // LCD Backlights
+        // Iluminação LCD
         Text(
             text = stringResource(id = R.string.onboarding_theme_backlight),
             color = TextWhite,
@@ -863,20 +1145,47 @@ private fun StepTypographyA11y(
 }
 
 // ---------------------------------------------------------------------------
-// Step 4: Click Wheel Calibration & Interactive Sandbox
+// Step 4: Click Wheel Calibration (Identical to iPod Classic Settings)
 // ---------------------------------------------------------------------------
 @Composable
 private fun StepClickWheelCalibration(
-    sensitivity: Float,
     mode: ClickWheelMode,
     fixedSpeed: FixedSpeed,
-    tickCount: Int,
-    velocity: Float,
-    onSensitivityChange: (Float) -> Unit,
+    selectedBacklight: LcdBacklight,
+    selectedChassis: IpodChassisTheme,
     onModeChange: (ClickWheelMode) -> Unit,
-    onSpeedChange: (FixedSpeed) -> Unit,
-    onWheelSpun: (Float) -> Unit
+    onSpeedChange: (FixedSpeed) -> Unit
 ) {
+    val context = LocalContext.current
+    val testItems = remember {
+        listOf(
+            "1. Antena 1 FM (94.7)",
+            "2. Jovem Pan FM (100.9)",
+            "3. MPB FM Rio (90.3)",
+            "4. Alpha FM (101.7)",
+            "5. BandNews FM (96.9)",
+            "6. Rádio Gaúcha (93.7)",
+            "7. CBN São Paulo (90.5)",
+            "8. Kiss FM Classic Rock",
+            "9. NovaBrasil FM (89.7)",
+            "10. Transamérica Hits"
+        )
+    }
+    var testIndex by remember { mutableStateOf(2) }
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(testIndex) {
+        listState.animateScrollToItem((testIndex - 1).coerceAtLeast(0))
+    }
+
+    val isProgressive = mode == ClickWheelMode.PROGRESSIVE
+    val isFixed = mode == ClickWheelMode.FIXED
+
+    val backlightHighlight = Color(selectedBacklight.highlight)
+    val backlightBg = Color(selectedBacklight.background)
+    val backlightTextPrimary = Color(selectedBacklight.textPrimary)
+    val backlightTextSecondary = Color(selectedBacklight.textSecondary)
+
     Column(modifier = Modifier.fillMaxWidth()) {
         StepHeader(
             title = stringResource(id = R.string.onboarding_step_wheel_title),
@@ -885,221 +1194,237 @@ private fun StepClickWheelCalibration(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Mode Selector: Progressive vs Fixed
+        // Modo Progressivo
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            ModeButton(
-                title = stringResource(id = R.string.onboarding_wheel_mode_progressive),
-                isSelected = mode == ClickWheelMode.PROGRESSIVE,
-                modifier = Modifier.weight(1f),
-                onClick = { onModeChange(ClickWheelMode.PROGRESSIVE) }
-            )
-            ModeButton(
-                title = stringResource(id = R.string.onboarding_wheel_mode_fixed),
-                isSelected = mode == ClickWheelMode.FIXED,
-                modifier = Modifier.weight(1f),
-                onClick = { onModeChange(ClickWheelMode.FIXED) }
-            )
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Sensitivity Slider
-        Text(
-            text = "${stringResource(id = R.string.onboarding_wheel_sensitivity)}: ${(sensitivity * 100).toInt()}%",
-            color = TextWhite,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Slider(
-            value = sensitivity,
-            onValueChange = { onSensitivityChange(it) },
-            valueRange = 0.5f..2.0f,
-            steps = 5,
-            colors = SliderDefaults.colors(
-                thumbColor = AccentCyan,
-                activeTrackColor = AccentCyan,
-                inactiveTrackColor = CardBorderDark
-            )
-        )
-
-        // Sandbox stats card
-        Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 6.dp),
-            shape = RoundedCornerShape(10.dp),
-            colors = CardDefaults.cardColors(containerColor = CardBgDark),
-            border = androidx.compose.foundation.BorderStroke(1.dp, CardBorderDark)
+                .clip(RoundedCornerShape(8.dp))
+                .background(if (isProgressive) CardBorderDark else CardBgDark)
+                .border(1.dp, if (isProgressive) AccentCyan else CardBorderDark, RoundedCornerShape(8.dp))
+                .clickable { onModeChange(ClickWheelMode.PROGRESSIVE) }
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 14.dp, vertical = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Text(
+                text = if (isProgressive) "●" else "○",
+                color = if (isProgressive) AccentCyan else TextMuted,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(end = 10.dp)
+            )
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(id = R.string.onboarding_wheel_ticks_counter, tickCount),
-                    color = AccentCyan,
-                    fontSize = 13.sp,
+                    text = stringResource(id = R.string.onboarding_wheel_mode_progressive),
+                    color = if (isProgressive) TextWhite else TextMuted,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = stringResource(
-                        id = R.string.onboarding_wheel_speed_label,
-                        if (velocity > 0f) String.format(java.util.Locale.US, "%.1f rad/s", velocity) else "0.0"
-                    ),
+                    text = stringResource(id = R.string.onboarding_wheel_progressive_desc),
                     color = TextMuted,
-                    fontSize = 12.sp
+                    fontSize = 11.sp
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            text = stringResource(id = R.string.onboarding_wheel_sandbox_tip),
-            color = TextMuted,
-            fontSize = 11.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // Interactive ClickWheel Sandbox
-        Box(
+        // Modo Fixa
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(180.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            InteractiveSandboxWheel(
-                sensitivity = sensitivity,
-                onTick = { vel -> onWheelSpun(vel) }
-            )
-        }
-    }
-}
-
-@Composable
-private fun ModeButton(
-    title: String,
-    isSelected: Boolean,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = modifier
-            .clickable { onClick() },
-        shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) CardBorderDark else CardBgDark
-        ),
-        border = androidx.compose.foundation.BorderStroke(
-            if (isSelected) 1.5.dp else 1.dp,
-            if (isSelected) AccentCyan else CardBorderDark
-        )
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = 8.dp),
-            contentAlignment = Alignment.Center
+                .clip(RoundedCornerShape(8.dp))
+                .background(if (isFixed) CardBorderDark else CardBgDark)
+                .border(1.dp, if (isFixed) AccentCyan else CardBorderDark, RoundedCornerShape(8.dp))
+                .clickable { onModeChange(ClickWheelMode.FIXED) }
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = title,
-                color = if (isSelected) AccentCyan else TextWhite,
-                fontSize = 12.sp,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                textAlign = TextAlign.Center
+                text = if (isFixed) "●" else "○",
+                color = if (isFixed) AccentCyan else TextMuted,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(end = 10.dp)
             )
-        }
-    }
-}
-
-@Composable
-private fun InteractiveSandboxWheel(
-    sensitivity: Float,
-    onTick: (Float) -> Unit
-) {
-    var previousAngle by remember { mutableFloatStateOf(0f) }
-    var accumulatedDelta by remember { mutableFloatStateOf(0f) }
-    var wheelCenter by remember { mutableStateOf(Offset.Zero) }
-    var lastDragTimeMs by remember { mutableLongStateOf(0L) }
-
-    val baseThreshold = (PI / 10).toFloat()
-    val threshold = baseThreshold / sensitivity.coerceIn(0.5f, 2.0f)
-
-    Box(
-        modifier = Modifier
-            .size(160.dp)
-            .shadow(8.dp, CircleShape)
-            .clip(CircleShape)
-            .background(
-                Brush.radialGradient(
-                    colors = listOf(Color(0xFF334155), Color(0xFF1E293B))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(id = R.string.onboarding_wheel_mode_fixed),
+                    color = if (isFixed) TextWhite else TextMuted,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
                 )
-            )
-            .border(2.dp, AccentCyan.copy(alpha = 0.5f), CircleShape)
-            .onGloballyPositioned { coords ->
-                wheelCenter = Offset(coords.size.width / 2f, coords.size.height / 2f)
+                Text(
+                    text = stringResource(id = R.string.onboarding_wheel_fixed_desc),
+                    color = TextMuted,
+                    fontSize = 11.sp
+                )
             }
-            .pointerInput(sensitivity) {
-                detectDragGestures(
-                    onDragStart = { offset ->
-                        val dx = offset.x - wheelCenter.x
-                        val dy = offset.y - wheelCenter.y
-                        previousAngle = atan2(dy, dx)
-                        accumulatedDelta = 0f
-                        lastDragTimeMs = System.currentTimeMillis()
-                    },
-                    onDrag = { change, _ ->
-                        change.consume()
-                        val now = System.currentTimeMillis()
-                        val timeDiff = (now - lastDragTimeMs).coerceAtLeast(1L)
-                        val dx = change.position.x - wheelCenter.x
-                        val dy = change.position.y - wheelCenter.y
-                        val currentAngle = atan2(dy, dx)
+        }
 
-                        var diff = currentAngle - previousAngle
-                        if (diff > PI) diff -= (2 * PI).toFloat()
-                        if (diff < -PI) diff += (2 * PI).toFloat()
-
-                        accumulatedDelta += diff
-                        previousAngle = currentAngle
-                        lastDragTimeMs = now
-
-                        val angularSpeed = kotlin.math.abs(diff) / (timeDiff / 1000f)
-
-                        if (kotlin.math.abs(accumulatedDelta) >= threshold) {
-                            onTick(angularSpeed)
-                            accumulatedDelta = 0f
+        // Níveis de Velocidade Fixa (Animado quando Fixo)
+        AnimatedVisibility(visible = isFixed) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.onboarding_wheel_fixed_speed_label),
+                    color = TextWhite,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    FixedSpeed.values().forEach { speed ->
+                        val isSpeedSelected = fixedSpeed == speed
+                        val label = when (speed) {
+                            FixedSpeed.SLOW -> stringResource(id = R.string.onboarding_speed_slow)
+                            FixedSpeed.STANDARD -> stringResource(id = R.string.onboarding_speed_standard)
+                            FixedSpeed.FAST -> stringResource(id = R.string.onboarding_speed_fast)
+                        }
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (isSpeedSelected) AccentCyan.copy(alpha = 0.25f) else CardBgDark)
+                                .border(
+                                    1.2.dp,
+                                    if (isSpeedSelected) AccentCyan else CardBorderDark,
+                                    RoundedCornerShape(8.dp)
+                                )
+                                .clickable { onSpeedChange(speed) }
+                                .padding(vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = label,
+                                color = if (isSpeedSelected) AccentCyan else TextWhite,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // Área de Teste Interativa (Split Preview)
+        Text(
+            text = stringResource(id = R.string.onboarding_wheel_interactive_test),
+            color = TextWhite,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Row(
+            modifier = Modifier
+                .height(175.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(backlightBg.copy(alpha = 0.95f))
+                .border(1.5.dp, backlightHighlight.copy(alpha = 0.7f), RoundedCornerShape(12.dp))
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Lado Esquerdo: Lista de estações roláveis
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0x18000000))
+                    .padding(3.dp)
+            ) {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    itemsIndexed(testItems) { index, item ->
+                        val isSelected = index == testIndex
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(if (isSelected) backlightHighlight else Color.Transparent)
+                                .padding(horizontal = 6.dp, vertical = 3.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = item,
+                                color = if (isSelected) Color.White else backlightTextPrimary,
+                                fontSize = 10.5.sp,
+                                fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Normal,
+                                fontFamily = FontFamily.Monospace,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Lado Direito: Mini ClickWheel funcional
+            Box(
+                modifier = Modifier.size(130.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                val wheelCol = if (selectedChassis == IpodChassisTheme.U2_SPECIAL) {
+                    Color(0xFFDC2626)
+                } else {
+                    Color(selectedChassis.wheelColor)
+                }
+                val centerBtnCol = if (selectedChassis == IpodChassisTheme.U2_SPECIAL) {
+                    Color(0xFF111111)
+                } else {
+                    Color(selectedChassis.bodyColor)
+                }
+                val wheelTextCol = if (selectedChassis == IpodChassisTheme.U2_SPECIAL) {
+                    Color.White
+                } else if (wheelCol.luminance() > 0.5f) {
+                    Color(0xFF334155)
+                } else {
+                    Color(0xFFF1F5F9)
+                }
+
+                ClickWheel(
+                    onRotaryScroll = { steps ->
+                        triggerHapticTick(context)
+                        testIndex = (testIndex + steps).coerceIn(0, testItems.lastIndex)
+                    },
+                    onCenterClick = {
+                        triggerHapticTick(context)
+                        testIndex = 0
+                    },
+                    onMenuClick = {
+                        triggerHapticTick(context)
+                        testIndex = 0
+                    },
+                    onPlayPauseClick = {
+                        triggerHapticTick(context)
+                        testIndex = testItems.lastIndex
+                    },
+                    onPrevClick = {
+                        triggerHapticTick(context)
+                        testIndex = (testIndex - 1).coerceAtLeast(0)
+                    },
+                    onNextClick = {
+                        triggerHapticTick(context)
+                        testIndex = (testIndex + 1).coerceAtMost(testItems.lastIndex)
+                    },
+                    wheelColor = wheelCol,
+                    textColor = wheelTextCol,
+                    centerButtonColor = centerBtnCol,
+                    wheelSize = 125.dp
                 )
             }
-            .testTag("onboarding_sandbox_wheel"),
-        contentAlignment = Alignment.Center
-    ) {
-        // Center Select Disc with Adaptive Pear Logo
-        Box(
-            modifier = Modifier
-                .size(64.dp)
-                .clip(CircleShape)
-                .background(Color(0xFF0F172A))
-                .border(1.dp, AccentCyan.copy(alpha = 0.7f), CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_pear_logo),
-                contentDescription = "Wheel Center",
-                tint = AccentCyan,
-                modifier = Modifier.size(26.dp)
-            )
         }
     }
 }
