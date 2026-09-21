@@ -321,9 +321,9 @@ private fun WizardTopBar(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Global RadioPod",
+                    text = stringResource(R.string.app_name),
                     color = TextWhite,
-                    fontSize = 15.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.SansSerif
                 )
@@ -660,9 +660,9 @@ private fun IpodMiniaturePreview(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Global RadioPod",
+                                text = "MediaPod + Radio / Podcast",
                                 color = animatedLcdText,
-                                fontSize = 8.5.sp,
+                                fontSize = 8.sp,
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = FontFamily.Monospace
                             )

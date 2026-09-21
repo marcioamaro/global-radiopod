@@ -74,6 +74,12 @@ class OnboardingWizardViewModel @JvmOverloads constructor(
             val parsedSpeed = runCatching { FixedSpeed.valueOf(initialConfig.clickWheelFixedSpeed) }
                 .getOrDefault(FixedSpeed.STANDARD)
 
+            val effectiveInitialScale = if (initialConfig.isOnboardingCompleted) {
+                ipodPrefs.fontSizeScale.scale
+            } else {
+                initialConfig.fontSizeScale
+            }
+
             _uiState.update { current ->
                 if (!current.isReady) {
                     current.copy(
@@ -82,7 +88,7 @@ class OnboardingWizardViewModel @JvmOverloads constructor(
                         is24HourClock = initialConfig.is24HourClock,
                         chassisTheme = parsedChassis,
                         lcdBacklight = parsedBacklight,
-                        fontSizeScale = initialConfig.fontSizeScale,
+                        fontSizeScale = effectiveInitialScale,
                         highContrast = initialConfig.highContrast,
                         clickWheelSensitivity = initialConfig.clickWheelSensitivity,
                         clickWheelMode = parsedMode,
@@ -261,9 +267,10 @@ class OnboardingWizardViewModel @JvmOverloads constructor(
             ipodPrefs.customCenterButtonColor = current.chassisTheme.bodyColor
         }
         val fontScaleEnum = when {
-            current.fontSizeScale >= 2.5f -> IpodFontSizeScale.SCALE_250
-            current.fontSizeScale >= 2.0f -> IpodFontSizeScale.SCALE_200
-            current.fontSizeScale >= 1.5f -> IpodFontSizeScale.SCALE_150
+            current.fontSizeScale >= 1.88f -> IpodFontSizeScale.SCALE_200
+            current.fontSizeScale >= 1.63f -> IpodFontSizeScale.SCALE_175
+            current.fontSizeScale >= 1.38f -> IpodFontSizeScale.SCALE_150
+            current.fontSizeScale >= 1.13f -> IpodFontSizeScale.SCALE_125
             else -> IpodFontSizeScale.SCALE_100
         }
         ipodPrefs.fontSizeScale = fontScaleEnum

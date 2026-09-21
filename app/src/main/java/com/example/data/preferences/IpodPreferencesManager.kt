@@ -25,16 +25,18 @@ fun IpodFontType.toFontFamily(): androidx.compose.ui.text.font.FontFamily {
 
 enum class IpodFontSizeScale(val displayName: String, val scale: Float) {
     SCALE_100("100%", 1.0f),
+    SCALE_125("125%", 1.25f),
     SCALE_150("150%", 1.5f),
-    SCALE_200("200%", 2.0f),
-    SCALE_250("250%", 2.5f)
+    SCALE_175("175%", 1.75f),
+    SCALE_200("200%", 2.0f)
 }
 
 enum class DockClockScale(val displayName: String, val multiplier: Float) {
     SCALE_100("100% (Padrão)", 1.0f),
+    SCALE_125("125%", 1.25f),
     SCALE_150("150%", 1.5f),
-    SCALE_200("200%", 2.0f),
-    SCALE_250("250%", 2.5f)
+    SCALE_175("175%", 1.75f),
+    SCALE_200("200%", 2.0f)
 }
 
 enum class IpodWheelPreset(
@@ -514,9 +516,10 @@ class IpodPreferencesManager private constructor(context: Context) {
             return try {
                 when (name) {
                     "COMPACT", "NORMAL", "SCALE_100" -> IpodFontSizeScale.SCALE_100
+                    "SCALE_125" -> IpodFontSizeScale.SCALE_125
                     "LARGE", "EXTRA_LARGE", "SCALE_150" -> IpodFontSizeScale.SCALE_150
-                    "SCALE_200" -> IpodFontSizeScale.SCALE_200
-                    "SCALE_250" -> IpodFontSizeScale.SCALE_250
+                    "SCALE_175" -> IpodFontSizeScale.SCALE_175
+                    "SCALE_200", "SCALE_250" -> IpodFontSizeScale.SCALE_200
                     else -> IpodFontSizeScale.valueOf(name ?: IpodFontSizeScale.SCALE_100.name)
                 }
             } catch (_: Exception) {
@@ -546,7 +549,14 @@ class IpodPreferencesManager private constructor(context: Context) {
         get() {
             val name = prefs.getString(KEY_DOCK_CLOCK_SCALE, DockClockScale.SCALE_100.name)
             return try {
-                DockClockScale.valueOf(name ?: DockClockScale.SCALE_100.name)
+                when (name) {
+                    "SCALE_100" -> DockClockScale.SCALE_100
+                    "SCALE_125" -> DockClockScale.SCALE_125
+                    "SCALE_150" -> DockClockScale.SCALE_150
+                    "SCALE_175" -> DockClockScale.SCALE_175
+                    "SCALE_200", "SCALE_250" -> DockClockScale.SCALE_200
+                    else -> DockClockScale.valueOf(name ?: DockClockScale.SCALE_100.name)
+                }
             } catch (_: Exception) {
                 DockClockScale.SCALE_100
             }

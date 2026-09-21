@@ -203,7 +203,7 @@ fun RdsDisplay(
                     .border(1.2.dp, backlightTextPrimary.copy(alpha = 0.5f), RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                val favicon = station?.favicon?.trim().orEmpty()
+                val favicon = station?.effectiveFavicon.orEmpty()
                 if (favicon.isNotBlank()) {
                     var loadFailed by remember(favicon) { mutableStateOf(false) }
 

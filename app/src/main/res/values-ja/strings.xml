@@ -92,7 +92,7 @@
     <string name="btn_ok">OK</string>
 
     <!-- 初期設定ウィザード -->
-    <string name="onboarding_title">Global RadioPod へようこそ</string>
+    <string name="onboarding_title">MediaPod + Radio / Podcast へようこそ</string>
     <string name="onboarding_subtitle">あなた好みの iPod スタイルにカスタマイズしましょう！</string>
     <string name="onboarding_step_language_title">言語</string>
     <string name="onboarding_step_language_desc">使用する言語を選択してください。すぐに切り替わります。</string>

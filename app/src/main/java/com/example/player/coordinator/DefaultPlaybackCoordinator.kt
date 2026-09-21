@@ -152,7 +152,7 @@ class DefaultPlaybackCoordinator internal constructor(
                     mediaUri = s.streamUrl,
                     title = s.name,
                     subtitle = subtitle,
-                    artworkUri = s.favicon.ifBlank { null },
+                    artworkUri = s.effectiveFavicon.ifBlank { null },
                     mediaType = ActiveMediaType.LIVE_RADIO,
                     durationMs = null,
                     isLiveStream = true

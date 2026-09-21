@@ -1105,8 +1105,8 @@ class RadioPlayerManager private constructor(private val context: Context) {
         val streamTitle = _rdsInfo.value.radioText.ifBlank {
             lastRealSongTitle?.ifBlank { null } ?: lastRawStreamTitle?.ifBlank { null } ?: "Ao Vivo"
         }
-        val radioLogoUri = if (station.favicon.isNotBlank()) {
-            Uri.parse(station.favicon)
+        val radioLogoUri = if (station.hasValidFavicon) {
+            Uri.parse(station.effectiveFavicon)
         } else {
             Uri.parse("android.resource://${context.packageName}/${R.drawable.ic_radio_generic}")
         }

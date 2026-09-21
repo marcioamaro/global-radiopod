@@ -130,7 +130,7 @@ fun StationLargeCard(
                     .border(1.5.dp, backlightTextPrimary, RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                val favicon = station.favicon.trim()
+                val favicon = station.effectiveFavicon
                 if (favicon.isNotBlank()) {
                     var loadFailed by remember(favicon) { mutableStateOf(false) }
                     if (!loadFailed) {

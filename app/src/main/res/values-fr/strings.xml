@@ -92,7 +92,7 @@
     <string name="btn_ok">OK</string>
 
     <!-- Onboarding Wizard -->
-    <string name="onboarding_title">Bienvenue sur Global RadioPod</string>
+    <string name="onboarding_title">Bienvenue sur MediaPod + Radio / Podcast</string>
     <string name="onboarding_subtitle">Personnalisons votre iPod exactement comme vous l\'aimez !</string>
     <string name="onboarding_step_language_title">Langue</string>
     <string name="onboarding_step_language_desc">Dans quelle langue souhaitez-vous naviguer ? Nous changeons instantanément.</string>

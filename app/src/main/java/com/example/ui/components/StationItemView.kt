@@ -83,7 +83,7 @@ fun StationItemView(
     ) {
         // Compact logo (40dp) - LCD Monocromático ou ícone clássico
         val darkTone = if (isSelected) Color.White else backlightTextPrimary
-        val favicon = station.favicon.trim()
+        val favicon = station.effectiveFavicon
         Box(
             modifier = Modifier
                 .size(40.dp)

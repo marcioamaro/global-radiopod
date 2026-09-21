@@ -184,6 +184,31 @@ data class RadioStation(
             if (country.isNotBlank()) parts.add(country)
             return if (parts.isNotEmpty()) parts.joinToString(" • ") else "Mundial"
         }
+
+    val effectiveFavicon: String
+        get() = if (isPlaceholderFavicon(favicon)) "" else favicon.trim()
+
+    val hasValidFavicon: Boolean
+        get() = effectiveFavicon.isNotBlank()
+
+    companion object {
+        fun isPlaceholderFavicon(url: String?): Boolean {
+            if (url.isNullOrBlank()) return true
+            val clean = url.trim().lowercase()
+            return clean.contains("icone_tudoradio.jpg") ||
+                   clean.contains("tudoradio.com/img/layout") ||
+                   clean.contains("radios.com.br/img/logo_default") ||
+                   clean.contains("radios.com.br/img/placeholder") ||
+                   clean.contains("default_logo") ||
+                   clean.contains("default_radio") ||
+                   clean.contains("radio_default") ||
+                   clean.contains("no_image") ||
+                   clean.contains("no-image") ||
+                   clean.contains("no_logo") ||
+                   clean.contains("nologo") ||
+                   clean.contains("placeholder")
+        }
+    }
 }
 
 fun RadioStationDto.toDomain(isFavorite: Boolean = false): RadioStation {

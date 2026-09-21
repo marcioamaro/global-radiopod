@@ -340,8 +340,8 @@ class RadioMediaService : MediaLibraryService() {
                     val station = playerManager.currentStation.value
                     val stationName = station?.name ?: nowPlaying.title
                     val songTitle = getActiveSongOrLiveText()
-                    val hasFavicon = !station?.favicon.isNullOrBlank()
-                    val artworkUri = if (hasFavicon) Uri.parse(station!!.favicon) else radioDefaultIconUri
+                    val hasFavicon = station?.hasValidFavicon == true
+                    val artworkUri = if (hasFavicon) Uri.parse(station!!.effectiveFavicon) else radioDefaultIconUri
 
                     val builder = MediaMetadata.Builder()
                         .setTitle(stationName)
@@ -371,8 +371,8 @@ class RadioMediaService : MediaLibraryService() {
                     if (station != null) {
                         val stationName = station.name
                         val songTitle = getActiveSongOrLiveText()
-                        val hasFavicon = station.favicon.isNotBlank()
-                        val artworkUri = if (hasFavicon) Uri.parse(station.favicon) else radioDefaultIconUri
+                        val hasFavicon = station.hasValidFavicon
+                        val artworkUri = if (hasFavicon) Uri.parse(station.effectiveFavicon) else radioDefaultIconUri
 
                         val builder = MediaMetadata.Builder()
                             .setTitle(stationName)
@@ -448,7 +448,7 @@ class RadioMediaService : MediaLibraryService() {
         // 7. Atualização do logotipo remoto colorido de rádio
         serviceScope.launch {
             playerManager.currentStation.collect { station ->
-                val favicon = station?.favicon?.trim().orEmpty()
+                val favicon = station?.effectiveFavicon.orEmpty()
                 if (favicon.isNotBlank()) {
                     withContext(Dispatchers.IO) {
                         try {
@@ -571,8 +571,8 @@ class RadioMediaService : MediaLibraryService() {
             val station = playerManager.currentStation.value
             if (station != null) {
                 val songTitle = getActiveSongOrLiveText()
-                val hasFavicon = station.favicon.isNotBlank()
-                val artworkUri = if (hasFavicon) Uri.parse(station.favicon) else radioDefaultIconUri
+                val hasFavicon = station.hasValidFavicon
+                val artworkUri = if (hasFavicon) Uri.parse(station.effectiveFavicon) else radioDefaultIconUri
                 val builder = MediaMetadata.Builder()
                     .setTitle(station.name)
                     .setDisplayTitle(station.name)
@@ -615,8 +615,8 @@ class RadioMediaService : MediaLibraryService() {
             val station = playerManager.currentStation.value
             if (station != null) {
                 val songTitle = getActiveSongOrLiveText()
-                val hasFavicon = station.favicon.isNotBlank()
-                val artworkUri = if (hasFavicon) Uri.parse(station.favicon) else radioDefaultIconUri
+                val hasFavicon = station.hasValidFavicon
+                val artworkUri = if (hasFavicon) Uri.parse(station.effectiveFavicon) else radioDefaultIconUri
                 val builder = MediaMetadata.Builder()
                     .setTitle(station.name)
                     .setDisplayTitle(station.name)
@@ -697,7 +697,13 @@ class RadioMediaService : MediaLibraryService() {
         }
 
         override fun getDeviceInfo(): androidx.media3.common.DeviceInfo {
-            return androidx.media3.common.DeviceInfo.Builder(androidx.media3.common.DeviceInfo.PLAYBACK_TYPE_REMOTE)
+            val isCast = AudioRouteManager.getInstance(applicationContext).isCastingActive()
+            val playbackType = if (isCast) {
+                androidx.media3.common.DeviceInfo.PLAYBACK_TYPE_REMOTE
+            } else {
+                androidx.media3.common.DeviceInfo.PLAYBACK_TYPE_LOCAL
+            }
+            return androidx.media3.common.DeviceInfo.Builder(playbackType)
                 .setMinVolume(0)
                 .setMaxVolume(100)
                 .build()
@@ -1897,8 +1903,8 @@ class RadioMediaService : MediaLibraryService() {
         ): MediaItem {
             val isCurrent = playerManager.currentStation.value?.id == station.id
             val subtitle = if (isCurrent) getActiveSongOrLiveText() else "Ao Vivo"
-            val hasFavicon = station.favicon.isNotBlank()
-            val artworkUri = if (hasFavicon) Uri.parse(station.favicon) else radioDefaultIconUri
+            val hasFavicon = station.hasValidFavicon
+            val artworkUri = if (hasFavicon) Uri.parse(station.effectiveFavicon) else radioDefaultIconUri
             val itemMediaId = customMediaId ?: "radio_${station.id}"
             val builder = MediaMetadata.Builder()
                 .setTitle(station.name.take(40))
@@ -2015,7 +2021,7 @@ class RadioMediaService : MediaLibraryService() {
                 mediaUri = station.streamUrl,
                 title = station.name,
                 subtitle = subtitle,
-                artworkUri = station.favicon.ifBlank { null },
+                artworkUri = station.effectiveFavicon.ifBlank { null },
                 mediaType = com.example.player.ActiveMediaType.LIVE_RADIO,
                 durationMs = null,
                 isLiveStream = true

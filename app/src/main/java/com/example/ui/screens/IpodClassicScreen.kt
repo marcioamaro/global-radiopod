@@ -3456,7 +3456,7 @@ private fun IpodSettingsScreen(
             )
         }
 
-        // Escala de Tamanho da Fonte da Hora: 100%, 150%, 200%, 250%
+        // Escala de Tamanho da Fonte da Hora: 100%, 125%, 150%, 175%, 200%
         item {
             val prefs = remember { com.example.data.preferences.IpodPreferencesManager.getInstance(context) }
             val currentScale = uiState.dockClockScale
@@ -3808,7 +3808,7 @@ private fun IpodAboutScreen(
 
             // Data da versão aaaa.mm.dd e número da versão
             Text(
-                text = "2026.09.20 - Versão 0.3.1 (83 Inl-PRA)",
+                text = "2026.09.21 - Versão 0.3.2 (84 Inl-PRA)",
                 color = backlightTextSecondary,
                 fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Bold,
