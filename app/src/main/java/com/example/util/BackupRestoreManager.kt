@@ -7,6 +7,7 @@ import com.example.data.db.RadioDatabase
 import com.example.data.model.PodcastShow
 import com.example.data.model.RadioStation
 import com.example.data.model.YouTubeVideo
+import com.example.data.preferences.BrickHighScore
 import com.example.data.preferences.IpodFontType
 import com.example.data.preferences.IpodFontSizeScale
 import com.example.data.preferences.IpodPreferencesManager
@@ -171,6 +172,18 @@ object BackupRestoreManager {
             })
         }
         root.put("youtubeVideos", ytArray)
+
+        // 6. Jogo Brick High Scores (Arcade Ranking)
+        val brickScores = prefs.getBrickHighScores()
+        val brickArray = JSONArray()
+        for (s in brickScores) {
+            brickArray.put(JSONObject().apply {
+                put("initials", s.initials)
+                put("score", s.score)
+                put("timestamp", s.timestamp)
+            })
+        }
+        root.put("brickHighScores", brickArray)
 
         root.toString(2)
     }
@@ -398,6 +411,23 @@ object BackupRestoreManager {
                     )
                     prefs.addYouTubeVideo(video)
                 }
+            }
+
+            // Restore Brick High Scores (Arcade Ranking)
+            if (root.has("brickHighScores")) {
+                val brickArray = root.getJSONArray("brickHighScores")
+                val scoresList = mutableListOf<BrickHighScore>()
+                for (i in 0 until brickArray.length()) {
+                    val b = brickArray.getJSONObject(i)
+                    scoresList.add(
+                        BrickHighScore(
+                            initials = b.optString("initials", "AAA"),
+                            score = b.optInt("score", 0),
+                            timestamp = b.optLong("timestamp", System.currentTimeMillis())
+                        )
+                    )
+                }
+                prefs.setBrickHighScores(scoresList)
             }
 
             true

@@ -19,6 +19,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -26,6 +30,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -81,6 +86,7 @@ enum class GameState {
 @Composable
 fun IpodBrickGameScreen(
     paddlePositionRatio: Float, // 0.0f (esquerda) a 1.0f (direita) controlado pelo Click Wheel
+    gameWheelTicks: Long = 0L,  // Contador rotativo contínuo sem limites para digitação de iniciais
     onPaddleMove: (Float) -> Unit,
     centerActionTrigger: Long = 0L, // Gatilho do botão central do Click Wheel
     soundAndHaptics: IpodSoundAndHaptics,
@@ -106,10 +112,11 @@ fun IpodBrickGameScreen(
     var highScores by remember { mutableStateOf(prefs.getBrickHighScores()) }
     var highlightedScoreRank by remember { mutableIntStateOf(-1) }
 
-    // Iniciais retro para ranking arcade (3 letras)
-    val alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?"
+    // Iniciais retro para ranking arcade (3 caracteres: A-Z seguidos de 1234567890 em loop contínuo)
+    val alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
     val initials = remember { mutableStateListOf('A', 'A', 'A') }
     var currentInitialIndex by remember { mutableIntStateOf(0) }
+    var lastProcessedWheelTicks by remember { mutableLongStateOf(gameWheelTicks) }
     var lastWheelPosForInitials by remember { mutableFloatStateOf(paddlePositionRatio) }
 
     var score by rememberSaveable { mutableIntStateOf(0) }
@@ -204,21 +211,21 @@ fun IpodBrickGameScreen(
         launchBall()
     }
 
-    // Navegação pelas letras via Click Wheel (giro rotativo) na tela de iniciais
-    LaunchedEffect(paddlePositionRatio, gameState) {
+    // Navegação pelas letras via Click Wheel (giro rotativo contínuo sem travas) na tela de iniciais
+    LaunchedEffect(gameWheelTicks, gameState) {
         if (gameState == GameState.ENTER_INITIALS) {
-            val delta = paddlePositionRatio - lastWheelPosForInitials
-            if (abs(delta) >= 0.02f) {
-                val step = if (delta > 0f) 1 else -1
+            val delta = gameWheelTicks - lastProcessedWheelTicks
+            if (delta != 0L) {
+                val step = if (delta > 0L) 1 else -1
                 val curChar = initials[currentInitialIndex]
                 val curIdx = alphabet.indexOf(curChar).coerceAtLeast(0)
                 val nextIdx = (curIdx + step).mod(alphabet.length)
                 initials[currentInitialIndex] = alphabet[nextIdx]
-                lastWheelPosForInitials = paddlePositionRatio
+                lastProcessedWheelTicks = gameWheelTicks
                 soundAndHaptics.performClickHaptic()
             }
         } else {
-            lastWheelPosForInitials = paddlePositionRatio
+            lastProcessedWheelTicks = gameWheelTicks
         }
     }
 
@@ -460,7 +467,7 @@ fun IpodBrickGameScreen(
             }
             .testTag("ipod_brick_game_screen")
     ) {
-        // BARRA DE STATUS SUPERIOR DO LCD
+        // BARRA DE STATUS SUPERIOR DO LCD (NÍVEL À ESQUERDA, PONTUAÇÃO AO CENTRO, VIDAS EM CORAÇÃO À DIREITA)
         Column(modifier = Modifier.fillMaxSize()) {
             Row(
                 modifier = Modifier
@@ -469,63 +476,37 @@ fun IpodBrickGameScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Ícone de Play / Pause
+                // Nível (Lado Esquerdo)
                 Text(
-                    text = if (gameState == GameState.PLAYING) "▶" else "❚❚",
+                    text = "LVL $level",
                     color = lcdPixelDark,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Black,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.Monospace
                 )
 
-                // Nível e Pontuação
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "LVL $level",
-                        color = lcdPixelDark,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = "PTS: $score",
-                        color = lcdPixelDark,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
-                    )
-                }
+                // Pontuação (Ao Centro)
+                Text(
+                    text = "PTS: $score",
+                    color = lcdPixelDark,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace
+                )
 
-                // Vidas e Bateria
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "●".repeat(lives.coerceIn(0, 3)),
-                        color = lcdPixelDark,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Black
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    // Ícone de bateria LCD de 4 barras
-                    Box(
-                        modifier = Modifier
-                            .width(22.dp)
-                            .height(10.dp)
-                            .border(1.5.dp, lcdPixelDark, RoundedCornerShape(1.dp))
-                            .padding(1.dp)
-                    ) {
-                        Row(modifier = Modifier.fillMaxSize()) {
-                            repeat(3) {
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxSize()
-                                        .background(lcdPixelDark)
-                                        .padding(horizontal = 0.5.dp)
-                                )
-                                Spacer(modifier = Modifier.width(1.dp))
-                            }
-                        }
+                // Vidas em formato de coração (Lado Direito: 3 corações fixos)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    for (i in 1..3) {
+                        val isAlive = i <= lives
+                        Icon(
+                            imageVector = if (isAlive) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                            contentDescription = if (isAlive) "Vida ativa" else "Vida perdida",
+                            tint = if (isAlive) lcdPixelDark else lcdPixelDark.copy(alpha = 0.3f),
+                            modifier = Modifier.size(13.dp)
+                        )
                     }
                 }
             }
@@ -661,13 +642,22 @@ fun IpodBrickGameScreen(
                                     }
                                     .padding(horizontal = 8.dp, vertical = 5.dp)
                             ) {
-                                Text(
-                                    text = "🏆 TOP 10",
-                                    color = lcdPixelDark,
-                                    fontSize = 9.5.sp,
-                                    fontWeight = FontWeight.Black,
-                                    fontFamily = FontFamily.Monospace
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    LcdTrophyIcon(
+                                        tint = lcdPixelDark,
+                                        modifier = Modifier.size(11.dp)
+                                    )
+                                    Text(
+                                        text = "TOP 10",
+                                        color = lcdPixelDark,
+                                        fontSize = 9.5.sp,
+                                        fontWeight = FontWeight.Black,
+                                        fontFamily = FontFamily.Monospace
+                                    )
+                                }
                             }
                         }
                     }
@@ -886,14 +876,29 @@ fun IpodBrickGameScreen(
                             .padding(horizontal = 8.dp, vertical = 5.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
-                            text = "★ TOP 10 RANKING ARCADE ★",
-                            color = lcdPixelDark,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Black,
-                            fontFamily = FontFamily.Monospace,
-                            letterSpacing = 0.5.sp
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            LcdTrophyIcon(
+                                tint = lcdPixelDark,
+                                modifier = Modifier.size(11.dp)
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = "TOP 10 RANKING ARCADE",
+                                color = lcdPixelDark,
+                                fontSize = 10.5.sp,
+                                fontWeight = FontWeight.Black,
+                                fontFamily = FontFamily.Monospace,
+                                letterSpacing = 0.5.sp
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            LcdTrophyIcon(
+                                tint = lcdPixelDark,
+                                modifier = Modifier.size(11.dp)
+                            )
+                        }
 
                         // Cabeçalho da tabela
                         Row(
@@ -925,59 +930,76 @@ fun IpodBrickGameScreen(
                                 .background(lcdPixelDark)
                         )
 
-                        // Linhas do Top 10
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth()
-                                .padding(vertical = 1.dp),
-                            verticalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            val displayList = highScores.take(10)
-                            for (idx in displayList.indices) {
-                                val item = displayList[idx]
-                                val isHighlighted = (idx == highlightedScoreRank)
-                                val rankStr = when (idx) {
-                                    0 -> "1ST"
-                                    1 -> "2ND"
-                                    2 -> "3RD"
-                                    else -> String.format(java.util.Locale.US, "%02d.", idx + 1)
-                                }
-                                val scoreStr = String.format(java.util.Locale.US, "%05d", item.score)
+                        // Linhas do Top 10 (Somente pontuações reais salvas pelo usuário)
+                        val displayList = highScores.take(10)
+                        if (displayList.isEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "NENHUM RECORDE REGISTRADO",
+                                    color = lcdPixelMid,
+                                    fontSize = 8.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                            }
+                        } else {
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth()
+                                    .padding(vertical = 1.dp),
+                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                for (idx in displayList.indices) {
+                                    val item = displayList[idx]
+                                    val isHighlighted = (idx == highlightedScoreRank)
+                                    val rankStr = when (idx) {
+                                        0 -> "1ST"
+                                        1 -> "2ND"
+                                        2 -> "3RD"
+                                        else -> String.format(java.util.Locale.US, "%02d.", idx + 1)
+                                    }
+                                    val scoreStr = String.format(java.util.Locale.US, "%05d", item.score)
 
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(2.dp))
-                                        .background(if (isHighlighted) lcdPixelDark else Color.Transparent)
-                                        .padding(horizontal = 4.dp, vertical = 0.5.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(2.dp))
+                                            .background(if (isHighlighted) lcdPixelDark else Color.Transparent)
+                                            .padding(horizontal = 4.dp, vertical = 0.5.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = if (isHighlighted) "▶$rankStr" else " $rankStr",
+                                                color = if (isHighlighted) lcdBackground else lcdPixelDark,
+                                                fontSize = 8.5.sp,
+                                                fontWeight = if (isHighlighted) FontWeight.Black else FontWeight.Bold,
+                                                fontFamily = FontFamily.Monospace
+                                            )
+                                            Spacer(modifier = Modifier.width(10.dp))
+                                            Text(
+                                                text = item.initials,
+                                                color = if (isHighlighted) lcdBackground else lcdPixelDark,
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.Black,
+                                                fontFamily = FontFamily.Monospace
+                                            )
+                                        }
                                         Text(
-                                            text = if (isHighlighted) "▶$rankStr" else " $rankStr",
+                                            text = scoreStr,
                                             color = if (isHighlighted) lcdBackground else lcdPixelDark,
-                                            fontSize = 8.5.sp,
+                                            fontSize = 9.sp,
                                             fontWeight = if (isHighlighted) FontWeight.Black else FontWeight.Bold,
                                             fontFamily = FontFamily.Monospace
                                         )
-                                        Spacer(modifier = Modifier.width(10.dp))
-                                        Text(
-                                            text = item.initials,
-                                            color = if (isHighlighted) lcdBackground else lcdPixelDark,
-                                            fontSize = 9.sp,
-                                            fontWeight = FontWeight.Black,
-                                            fontFamily = FontFamily.Monospace
-                                        )
                                     }
-                                    Text(
-                                        text = scoreStr,
-                                        color = if (isHighlighted) lcdBackground else lcdPixelDark,
-                                        fontSize = 9.sp,
-                                        fontWeight = if (isHighlighted) FontWeight.Black else FontWeight.Bold,
-                                        fontFamily = FontFamily.Monospace
-                                    )
                                 }
                             }
                         }
@@ -1031,5 +1053,83 @@ fun IpodBrickGameScreen(
                 }
             }
         }
+    }
+}
+
+/**
+ * Ícone vetorial retrô monocromático de troféu para o display LCD no estilo FLAT.
+ */
+@Composable
+private fun LcdTrophyIcon(
+    tint: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val stroke = (w * 0.10f).coerceAtLeast(1.2f)
+
+        // 1. Cálice / Corpo do troféu (Flat Preenchido)
+        val cupPath = androidx.compose.ui.graphics.Path().apply {
+            moveTo(w * 0.22f, h * 0.12f)
+            lineTo(w * 0.78f, h * 0.12f)
+            lineTo(w * 0.74f, h * 0.42f)
+            cubicTo(w * 0.68f, h * 0.62f, w * 0.32f, h * 0.62f, w * 0.26f, h * 0.42f)
+            close()
+        }
+        drawPath(cupPath, color = tint)
+
+        // 2. Alça esquerda em arco geométrico flat
+        val leftHandle = androidx.compose.ui.graphics.Path().apply {
+            moveTo(w * 0.24f, h * 0.18f)
+            cubicTo(w * 0.04f, h * 0.18f, w * 0.04f, h * 0.46f, w * 0.26f, h * 0.46f)
+        }
+        drawPath(
+            path = leftHandle,
+            color = tint,
+            style = androidx.compose.ui.graphics.drawscope.Stroke(
+                width = stroke,
+                cap = androidx.compose.ui.graphics.StrokeCap.Round
+            )
+        )
+
+        // 3. Alça direita em arco geométrico flat
+        val rightHandle = androidx.compose.ui.graphics.Path().apply {
+            moveTo(w * 0.76f, h * 0.18f)
+            cubicTo(w * 0.96f, h * 0.18f, w * 0.96f, h * 0.46f, w * 0.74f, h * 0.46f)
+        }
+        drawPath(
+            path = rightHandle,
+            color = tint,
+            style = androidx.compose.ui.graphics.drawscope.Stroke(
+                width = stroke,
+                cap = androidx.compose.ui.graphics.StrokeCap.Round
+            )
+        )
+
+        // 4. Haste vertical central flat
+        val stemWidth = w * 0.14f
+        drawRect(
+            color = tint,
+            topLeft = Offset((w - stemWidth) / 2f, h * 0.58f),
+            size = Size(stemWidth, h * 0.20f)
+        )
+
+        // 5. Base / Pedestal em dois níveis flat LCD
+        val midBaseW = w * 0.44f
+        val midBaseH = h * 0.07f
+        drawRect(
+            color = tint,
+            topLeft = Offset((w - midBaseW) / 2f, h * 0.76f),
+            size = Size(midBaseW, midBaseH)
+        )
+
+        val bottomBaseW = w * 0.68f
+        val bottomBaseH = h * 0.10f
+        drawRect(
+            color = tint,
+            topLeft = Offset((w - bottomBaseW) / 2f, h * 0.85f),
+            size = Size(bottomBaseW, bottomBaseH)
+        )
     }
 }

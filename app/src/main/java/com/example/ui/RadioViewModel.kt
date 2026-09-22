@@ -155,6 +155,7 @@ data class UiState(
     val activeCategoryName: String = "Top Mundial",
     val isSearchActive: Boolean = false,
     val gamePaddlePosition: Float = 0.5f,
+    val gameWheelTicks: Long = 0L,
     // Custom Stations
     val customStations: List<RadioStation> = emptyList(),
     // Podcasts
@@ -1047,7 +1048,11 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         if (_uiState.value.currentScreen == IpodScreenDestination.NOW_PLAYING_RDS ||
             _uiState.value.currentScreen == IpodScreenDestination.MP3_NOW_PLAYING ||
             _uiState.value.currentScreen == IpodScreenDestination.PODCAST_NOW_PLAYING) {
-            adjustVolume(stepDelta * 0.04f)
+            // Bug fix #2: No modo FIXED o stepDelta pode ser > 1 dependendo do threshold acumulado.
+            // Para o volume, normalizamos para ±1 (sinal), garantindo sempre um passo suave
+            // e consistente independente do modo ou velocidade configurada na roda.
+            val normalizedVolumeDelta = Integer.signum(stepDelta)
+            adjustVolume(normalizedVolumeDelta * 0.04f)
             soundAndHaptics.performClickHaptic()
             return
         }
@@ -1059,11 +1064,14 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
             return
         }
 
-        // In BRICK GAME screen, rotating the Click Wheel moves the paddle raquete!
+        // In BRICK GAME screen, rotating the Click Wheel moves the paddle raquete or rotates initials!
         if (_uiState.value.currentScreen == IpodScreenDestination.GAME_BRICK) {
             val delta = stepDelta * 0.05f
             val newPos = (_uiState.value.gamePaddlePosition + delta).coerceIn(0.12f, 0.88f)
-            _uiState.value = _uiState.value.copy(gamePaddlePosition = newPos)
+            _uiState.value = _uiState.value.copy(
+                gamePaddlePosition = newPos,
+                gameWheelTicks = _uiState.value.gameWheelTicks + stepDelta
+            )
             soundAndHaptics.performClickHaptic()
             return
         }

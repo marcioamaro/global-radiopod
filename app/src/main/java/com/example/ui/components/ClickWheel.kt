@@ -89,7 +89,12 @@ fun ClickWheel(
         var wheelCenter by remember { mutableStateOf(Offset.Zero) }
         var lastDragTimeMs by remember { mutableLongStateOf(0L) }
 
-        val ROTATION_THRESHOLD_RADIANS = (PI / 9).toFloat() // ~20 degrees per step
+        // Base threshold: ~20 degrees per step.
+        // No modo FIXED, o threshold é reduzido pelo multiplier so que a roda gira
+        // MENOS para avançar 1 item (velocidade maior), sem nunca pular linhas.
+        // No modo PROGRESSIVE, o threshold permanece constante e o speedMultiplier
+        // escala os baseSteps (pode avançar N itens por evento, comportamento original).
+        val BASE_ROTATION_THRESHOLD = (PI / 9).toFloat() // ~20 degrees
 
         // Exact classic iPod ClickWheel proportion:
         // Center button is exactly 38% of outer wheel diameter across all device modes
@@ -135,20 +140,40 @@ fun ClickWheel(
                         previousAngle = currentAngle
                         lastDragTimeMs = now
 
-                        // Calculate angular speed (rad/sec) and get steps via centralized ClickWheelEngine
+                        // Obter configurações atuais do engine para determinar modo e multiplicador
+                        val settings = effectiveEngine.getSettings()
                         val angularSpeed = kotlin.math.abs(diff) / (timeDiff / 1000f)
-                        val speedMultiplier = effectiveEngine.calculateSteps(angularSpeed)
 
-                        if (accumulatedDelta >= ROTATION_THRESHOLD_RADIANS) {
-                            val baseSteps = (accumulatedDelta / ROTATION_THRESHOLD_RADIANS).toInt()
-                            val steps = baseSteps * speedMultiplier
-                            onRotaryScroll(steps)
-                            accumulatedDelta -= baseSteps * ROTATION_THRESHOLD_RADIANS
-                        } else if (accumulatedDelta <= -ROTATION_THRESHOLD_RADIANS) {
-                            val baseSteps = (accumulatedDelta / ROTATION_THRESHOLD_RADIANS).toInt()
-                            val steps = baseSteps * speedMultiplier
-                            onRotaryScroll(steps)
-                            accumulatedDelta -= baseSteps * ROTATION_THRESHOLD_RADIANS
+                        if (settings.mode == com.example.data.prefs.ClickWheelMode.FIXED) {
+                            // Bug fix #1: No modo FIXED, reduzir o threshold proporcionalmente
+                            // ao multiplier. Cada evento dispara SEMPRE 1 item — sem pular linhas.
+                            val fixedMultiplier = settings.fixedSpeed.multiplier
+                            val adjustedThreshold = BASE_ROTATION_THRESHOLD / fixedMultiplier.toFloat()
+
+                            if (accumulatedDelta >= adjustedThreshold) {
+                                val baseSteps = (accumulatedDelta / adjustedThreshold).toInt()
+                                onRotaryScroll(baseSteps)
+                                accumulatedDelta -= baseSteps * adjustedThreshold
+                            } else if (accumulatedDelta <= -adjustedThreshold) {
+                                val baseSteps = (accumulatedDelta / adjustedThreshold).toInt()
+                                onRotaryScroll(baseSteps)
+                                accumulatedDelta -= baseSteps * adjustedThreshold
+                            }
+                        } else {
+                            // Modo PROGRESSIVE: comportamento original — multiplica baseSteps
+                            val speedMultiplier = effectiveEngine.calculateSteps(angularSpeed)
+
+                            if (accumulatedDelta >= BASE_ROTATION_THRESHOLD) {
+                                val baseSteps = (accumulatedDelta / BASE_ROTATION_THRESHOLD).toInt()
+                                val steps = baseSteps * speedMultiplier
+                                onRotaryScroll(steps)
+                                accumulatedDelta -= baseSteps * BASE_ROTATION_THRESHOLD
+                            } else if (accumulatedDelta <= -BASE_ROTATION_THRESHOLD) {
+                                val baseSteps = (accumulatedDelta / BASE_ROTATION_THRESHOLD).toInt()
+                                val steps = baseSteps * speedMultiplier
+                                onRotaryScroll(steps)
+                                accumulatedDelta -= baseSteps * BASE_ROTATION_THRESHOLD
+                            }
                         }
                     }
                 )

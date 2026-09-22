@@ -30,12 +30,15 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Cast
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SmartDisplay
@@ -50,6 +53,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -255,11 +259,12 @@ fun IpodYouTubeListScreen(
 fun IpodAddYouTubeUrlScreen(
     onSaveSuccess: (title: String, url: String) -> Unit,
     onCancel: () -> Unit,
+    backlightBg: Color = Color.Transparent,
     backlightTextPrimary: Color,
     backlightTextSecondary: Color,
     backlightHighlight: Color,
     fontFamily: FontFamily,
-    fontScale: Float = 1.5f,
+    fontScale: Float = 1.0f,
     isBold: Boolean = true
 ) {
     val context = LocalContext.current
@@ -338,224 +343,335 @@ fun IpodAddYouTubeUrlScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(10.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+            .background(backlightBg)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            horizontalAlignment = Alignment.Start
         ) {
-            Text(
-                text = "ADICIONAR VÍDEO DO YOUTUBE",
-                color = backlightTextPrimary,
-                fontSize = (11f * fontScale).coerceIn(11f, 15f).sp,
-                fontWeight = FontWeight.Black,
-                fontFamily = fontFamily
-            )
-
-            IconButton(onClick = onCancel, modifier = Modifier.size(26.dp)) {
-                Icon(
-                    imageVector = Icons.Default.Clear,
-                    contentDescription = "Cancelar",
-                    tint = backlightTextSecondary,
-                    modifier = Modifier.size(18.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "ADICIONAR VÍDEO DO YOUTUBE",
+                    color = backlightTextPrimary,
+                    fontSize = (11.5f * fontScale).sp,
+                    fontWeight = FontWeight.Black,
+                    fontFamily = fontFamily
                 )
-            }
-        }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+                IconButton(onClick = onCancel, modifier = Modifier.size(24.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = "Cancelar",
+                        tint = backlightTextSecondary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(2.dp))
+
             Text(
-                text = "URL do Vídeo (youtube.com, youtu.be, shorts):",
+                text = "Insira o link do vídeo do YouTube (youtube.com, youtu.be, shorts).",
                 color = backlightTextSecondary,
                 fontSize = (9f * fontScale).sp,
                 fontFamily = fontFamily
             )
 
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Campo URL / Link do Vídeo
             Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(3.dp))
-                    .background(backlightHighlight.copy(alpha = 0.18f))
-                    .border(1.dp, backlightHighlight, RoundedCornerShape(3.dp))
-                    .clickable { handlePasteFromClipboard() }
-                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.ContentPaste,
-                    contentDescription = "Colar URL",
-                    tint = backlightTextPrimary,
-                    modifier = Modifier.size(11.dp)
-                )
-                Spacer(modifier = Modifier.width(3.dp))
                 Text(
-                    text = "COLAR",
+                    text = "URL / LINK DO VÍDEO",
                     color = backlightTextPrimary,
-                    fontSize = (8.5f * fontScale).sp,
+                    fontSize = (9f * fontScale).sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = fontFamily
                 )
-            }
-        }
 
-        OutlinedTextField(
-            value = urlInput,
-            onValueChange = {
-                urlInput = it
-                if (it.isNotBlank()) {
-                    val res = YouTubeUrlValidator.validateUrl(it)
-                    if (res is YouTubeValidationResult.Success) {
-                        isError = false
-                        validationMessage = "URL válida! ID: ${res.videoId}"
-                        if (titleInput.isBlank()) {
-                            triggerTitleResolution(res.cleanUrl)
-                        }
-                    } else if (res is YouTubeValidationResult.Error) {
-                        isError = true
-                        validationMessage = res.message
-                    }
-                } else {
-                    validationMessage = null
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .defaultMinSize(minHeight = 46.dp),
-            placeholder = { Text("https://www.youtube.com/watch?v=...", fontSize = (9.5f * fontScale).sp) },
-            singleLine = true,
-            textStyle = LocalTextStyle.current.copy(
-                fontSize = (10f * fontScale).sp,
-                platformStyle = PlatformTextStyle(includeFontPadding = false)
-            ),
-            trailingIcon = {
-                IconButton(onClick = { handlePasteFromClipboard() }) {
+                // Botão Colar URL
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(3.dp))
+                        .background(backlightHighlight.copy(alpha = 0.18f))
+                        .border(1.dp, backlightHighlight, RoundedCornerShape(3.dp))
+                        .clickable { handlePasteFromClipboard() }
+                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Icon(
-                        imageVector = Icons.Default.ContentPaste,
+                        imageVector = Icons.AutoMirrored.Filled.Assignment,
                         contentDescription = "Colar URL",
-                        tint = backlightHighlight
+                        tint = backlightTextPrimary,
+                        modifier = Modifier.size(11.dp)
                     )
-                }
-            },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = backlightHighlight,
-                unfocusedBorderColor = backlightTextPrimary.copy(alpha = 0.4f),
-                focusedTextColor = backlightTextPrimary,
-                unfocusedTextColor = backlightTextPrimary
-            )
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "Título Personalizado (Opcional):",
-                    color = backlightTextSecondary,
-                    fontSize = (9f * fontScale).sp,
-                    fontFamily = fontFamily
-                )
-                if (isResolvingTitle) {
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(3.dp))
                     Text(
-                        text = "(Buscando título...)",
-                        color = backlightHighlight,
-                        fontSize = (8f * fontScale).sp,
+                        text = "COLAR",
+                        color = backlightTextPrimary,
+                        fontSize = (8.5f * fontScale).sp,
+                        fontWeight = FontWeight.Bold,
                         fontFamily = fontFamily
                     )
                 }
             }
 
-            Row(
+            Spacer(modifier = Modifier.height(2.dp))
+            OutlinedTextField(
+                value = urlInput,
+                onValueChange = {
+                    urlInput = it
+                    if (it.isNotBlank()) {
+                        val res = YouTubeUrlValidator.validateUrl(it)
+                        if (res is YouTubeValidationResult.Success) {
+                            isError = false
+                            validationMessage = "URL do YouTube válida! ID: ${res.videoId}"
+                            if (titleInput.isBlank()) {
+                                triggerTitleResolution(res.cleanUrl)
+                            }
+                        } else if (res is YouTubeValidationResult.Error) {
+                            isError = true
+                            validationMessage = res.message
+                        }
+                    } else {
+                        validationMessage = null
+                    }
+                },
                 modifier = Modifier
-                    .clip(RoundedCornerShape(3.dp))
-                    .background(backlightHighlight.copy(alpha = 0.18f))
-                    .border(1.dp, backlightHighlight, RoundedCornerShape(3.dp))
-                    .clickable { handlePasteTitleFromClipboard() }
-                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = 44.dp),
+                textStyle = LocalTextStyle.current.copy(
+                    fontSize = (10.5f * fontScale).sp,
+                    lineHeight = 14.sp,
+                    fontFamily = FontFamily.Monospace,
+                    platformStyle = PlatformTextStyle(includeFontPadding = false)
+                ),
+                placeholder = {
+                    Text(
+                        text = "https://www.youtube.com/watch?v=...",
+                        fontSize = (9.5f * fontScale).sp,
+                        color = backlightTextSecondary.copy(alpha = 0.6f),
+                        fontFamily = FontFamily.Monospace
+                    )
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(6.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = backlightHighlight,
+                    unfocusedBorderColor = backlightHighlight.copy(alpha = 0.45f),
+                    focusedTextColor = backlightTextPrimary,
+                    unfocusedTextColor = backlightTextPrimary,
+                    focusedPlaceholderColor = backlightTextSecondary.copy(alpha = 0.6f),
+                    unfocusedPlaceholderColor = backlightTextSecondary.copy(alpha = 0.6f),
+                    focusedContainerColor = Color(0x22000000),
+                    unfocusedContainerColor = Color(0x15000000),
+                    cursorColor = backlightHighlight
+                )
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Campo Título
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.ContentPaste,
-                    contentDescription = "Colar Título",
-                    tint = backlightTextPrimary,
-                    modifier = Modifier.size(11.dp)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "TÍTULO (OPCIONAL)",
+                        color = backlightTextPrimary,
+                        fontSize = (9f * fontScale).sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily
+                    )
+                    if (isResolvingTitle) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "(Buscando título...)",
+                            color = backlightHighlight,
+                            fontSize = (8f * fontScale).sp,
+                            fontFamily = fontFamily
+                        )
+                    }
+                }
+
+                // Botão Colar Título
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(3.dp))
+                        .background(backlightHighlight.copy(alpha = 0.18f))
+                        .border(1.dp, backlightHighlight, RoundedCornerShape(3.dp))
+                        .clickable { handlePasteTitleFromClipboard() }
+                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Assignment,
+                        contentDescription = "Colar Título",
+                        tint = backlightTextPrimary,
+                        modifier = Modifier.size(11.dp)
+                    )
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Text(
+                        text = "COLAR",
+                        color = backlightTextPrimary,
+                        fontSize = (8.5f * fontScale).sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(2.dp))
+            OutlinedTextField(
+                value = titleInput,
+                onValueChange = { titleInput = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = 44.dp),
+                textStyle = LocalTextStyle.current.copy(
+                    fontSize = (11f * fontScale).sp,
+                    lineHeight = 15.sp,
+                    platformStyle = PlatformTextStyle(includeFontPadding = false)
+                ),
+                placeholder = {
+                    Text(
+                        text = "Ex: Nome do clipe ou apresentação",
+                        fontSize = (10f * fontScale).sp,
+                        color = backlightTextSecondary.copy(alpha = 0.6f),
+                        fontFamily = fontFamily
+                    )
+                },
+                trailingIcon = {
+                    if (isResolvingTitle) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(14.dp),
+                            strokeWidth = 2.dp,
+                            color = backlightHighlight
+                        )
+                    }
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(6.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = backlightHighlight,
+                    unfocusedBorderColor = backlightHighlight.copy(alpha = 0.45f),
+                    focusedTextColor = backlightTextPrimary,
+                    unfocusedTextColor = backlightTextPrimary,
+                    focusedPlaceholderColor = backlightTextSecondary.copy(alpha = 0.6f),
+                    unfocusedPlaceholderColor = backlightTextSecondary.copy(alpha = 0.6f),
+                    focusedContainerColor = Color(0x22000000),
+                    unfocusedContainerColor = Color(0x15000000),
+                    cursorColor = backlightHighlight
                 )
-                Spacer(modifier = Modifier.width(3.dp))
+            )
+
+            // Feedback de Validação
+            validationMessage?.let { msg ->
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(
+                            if (!isError) backlightHighlight.copy(alpha = 0.25f)
+                            else Color(0x33DC2626)
+                        )
+                        .border(
+                            1.dp,
+                            if (!isError) backlightHighlight else Color(0x88DC2626),
+                            RoundedCornerShape(4.dp)
+                        )
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (isResolvingTitle) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(13.dp),
+                            strokeWidth = 2.dp,
+                            color = backlightTextPrimary
+                        )
+                    } else if (!isError) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = backlightTextPrimary,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Error,
+                            contentDescription = null,
+                            tint = backlightTextPrimary,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = msg,
+                        color = backlightTextPrimary,
+                        fontSize = (9.5f * fontScale).sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily
+                    )
+                }
+            }
+        }
+
+        // Action Buttons at bottom
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color(0x22000000))
+                    .border(1.dp, backlightTextSecondary.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                    .clickable { onCancel() }
+                    .padding(vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(
-                    text = "COLAR",
-                    color = backlightTextPrimary,
-                    fontSize = (8.5f * fontScale).sp,
+                    text = "CANCELAR",
+                    color = backlightTextSecondary,
+                    fontSize = (10f * fontScale).sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = fontFamily
                 )
             }
-        }
 
-        OutlinedTextField(
-            value = titleInput,
-            onValueChange = { titleInput = it },
-            modifier = Modifier
-                .fillMaxWidth()
-                .defaultMinSize(minHeight = 46.dp),
-            placeholder = { Text("Nome do clipe ou apresentação", fontSize = (9.5f * fontScale).sp) },
-            trailingIcon = {
-                if (isResolvingTitle) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(14.dp),
-                        strokeWidth = 2.dp,
-                        color = backlightHighlight
-                    )
-                }
-            },
-            singleLine = true,
-            textStyle = LocalTextStyle.current.copy(
-                fontSize = (10f * fontScale).sp,
-                platformStyle = PlatformTextStyle(includeFontPadding = false)
-            ),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = backlightHighlight,
-                unfocusedBorderColor = backlightTextPrimary.copy(alpha = 0.4f),
-                focusedTextColor = backlightTextPrimary,
-                unfocusedTextColor = backlightTextPrimary
-            )
-        )
-
-        if (validationMessage != null) {
-            Text(
-                text = validationMessage!!,
-                color = if (isError) Color(0xFFDC2626) else backlightHighlight,
-                fontSize = (9f * fontScale).sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = fontFamily
-            )
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            ElevatedButton(
-                onClick = onCancel,
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.elevatedButtonColors(containerColor = Color(0x33000000))
+            Box(
+                modifier = Modifier
+                    .weight(1.3f)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(backlightHighlight)
+                    .clickable { handleSave() }
+                    .padding(vertical = 8.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Text("Cancelar", color = backlightTextPrimary, fontSize = 11.sp, fontFamily = fontFamily)
-            }
-
-            ElevatedButton(
-                onClick = { handleSave() },
-                modifier = Modifier.weight(1.3f),
-                colors = ButtonDefaults.elevatedButtonColors(containerColor = backlightHighlight)
-            ) {
-                Text("Salvar Vídeo", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = fontFamily)
+                Text(
+                    text = "SALVAR VÍDEO",
+                    color = Color.White,
+                    fontSize = (10f * fontScale).sp,
+                    fontWeight = FontWeight.Black,
+                    fontFamily = fontFamily
+                )
             }
         }
     }
@@ -570,62 +686,64 @@ fun IpodAddYouTubeUrlScreen(
  * - Não remove nem oculta anúncios oficiais
  * - Permite botão de Cast para transmissão na rede local (Smart TVs, Chromecast)
  */
-class YouTubeJsBridge(private val onTimeUpdate: (Int) -> Unit) {
+class YouTubeJsBridge(private val onPositionUpdate: (Int) -> Unit) {
     @android.webkit.JavascriptInterface
     fun onTimeUpdate(seconds: Int) {
-        onTimeUpdate(seconds)
+        onPositionUpdate(seconds)
     }
 }
 
-private fun buildYouTubePlayerHtml(videoId: String, startSeconds: Int): String {
+internal fun buildYouTubePlayerHtml(videoId: String, startSeconds: Int): String {
     return """
         <!DOCTYPE html>
         <html>
         <head>
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+            <meta name="referrer" content="strict-origin-when-cross-origin">
             <style>
                 body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; }
                 #player { width: 100%; height: 100%; border: none; }
             </style>
         </head>
         <body>
-            <div id="player"></div>
+            <iframe id="player"
+                type="text/html"
+                width="100%"
+                height="100%"
+                src="https://www.youtube.com/embed/$videoId?enablejsapi=1&autoplay=1&playsinline=1&fs=1&rel=0&start=$startSeconds&origin=https://www.youtube.com"
+                frameborder="0"
+                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen>
+            </iframe>
+            <script src="https://www.youtube.com/iframe_api"></script>
             <script>
-                var tag = document.createElement('script');
-                tag.src = "https://www.youtube.com/iframe_api";
-                var firstScriptTag = document.getElementsByTagName('script')[0];
-                firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
                 var player;
                 function onYouTubeIframeAPIReady() {
                     player = new YT.Player('player', {
-                        height: '100%',
-                        width: '100%',
-                        videoId: '$videoId',
-                        playerVars: {
-                            'autoplay': 1,
-                            'enablejsapi': 1,
-                            'playsinline': 1,
-                            'fs': 1,
-                            'rel': 0,
-                            'modestbranding': 1,
-                            'start': $startSeconds
-                        },
                         events: {
-                            'onReady': onPlayerReady
+                            'onReady': onPlayerReady,
+                            'onError': onPlayerError
                         }
                     });
                 }
                 function onPlayerReady(event) {
                     event.target.playVideo();
                     setInterval(function() {
-                        if (player && player.getCurrentTime) {
-                            var t = Math.floor(player.getCurrentTime());
-                            if (window.AndroidBridge && t >= 0) {
-                                window.AndroidBridge.onTimeUpdate(t);
+                        try {
+                            if (player && player.getCurrentTime) {
+                                var t = Math.floor(player.getCurrentTime());
+                                if (window.AndroidBridge && t >= 0) {
+                                    window.AndroidBridge.onTimeUpdate(t);
+                                }
                             }
+                        } catch (e) {
+                            console.error("Time update error:", e);
                         }
                     }, 1000);
+                }
+                function onPlayerError(event) {
+                    console.error("YouTube Player Error code:", event.data);
                 }
             </script>
         </body>
@@ -633,7 +751,13 @@ private fun buildYouTubePlayerHtml(videoId: String, startSeconds: Int): String {
     """.trimIndent()
 }
 
+internal fun buildYouTubeWatchUrl(videoId: String, startSeconds: Int = 0): String {
+    val baseUrl = "https://m.youtube.com/watch?v=$videoId&embeds_referring_euri=https%3A%2F%2Fwww.youtube.com%2F&embeds_referring_origin=https%3A%2F%2Fwww.youtube.com"
+    return if (startSeconds > 0) "$baseUrl&t=${startSeconds}s" else baseUrl
+}
+
 @SuppressLint("SetJavaScriptEnabled")
+
 @Composable
 fun IpodYouTubePlayerScreen(
     video: YouTubeVideo,
@@ -646,25 +770,31 @@ fun IpodYouTubePlayerScreen(
     backlightHighlight: Color,
     fontFamily: FontFamily,
     fontScale: Float = 1.5f,
-    isBold: Boolean = true
+    isBold: Boolean = true,
+    sharedWebView: WebView? = null
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    var webViewRef by remember { mutableStateOf<WebView?>(null) }
-    var isLoading by remember { mutableStateOf(true) }
+    // Usa o WebView compartilhado (passado de fora) ou cria um local como fallback
+    var localWebViewRef by remember { mutableStateOf<WebView?>(null) }
+    var isLoading by remember { mutableStateOf(sharedWebView == null) }
+    val activeWebView = sharedWebView ?: localWebViewRef
 
     // Compliance Google Play / YouTube: Pausar vídeo ao sair da tela ou minimizar app
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_PAUSE || event == Lifecycle.Event.ON_STOP) {
-                webViewRef?.evaluateJavascript("if (typeof player !== 'undefined') { player.pauseVideo(); } else { document.querySelector('video')?.pause(); }", null)
+                activeWebView?.evaluateJavascript("var v = document.querySelector('video'); if (v) { v.pause(); } else if (typeof player !== 'undefined' && player && typeof player.pauseVideo === 'function') { player.pauseVideo(); }", null)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
-            webViewRef?.destroy()
-            webViewRef = null
+            // Só destrói se for um WebView local (não compartilhado)
+            if (sharedWebView == null) {
+                localWebViewRef?.destroy()
+                localWebViewRef = null
+            }
         }
     }
 
@@ -762,45 +892,98 @@ fun IpodYouTubePlayerScreen(
                 .border(1.2.dp, backlightTextPrimary.copy(alpha = 0.45f), RoundedCornerShape(6.dp)),
             contentAlignment = Alignment.Center
         ) {
-            AndroidView(
-                modifier = Modifier.fillMaxSize(),
-                factory = { ctx ->
-                    WebView(ctx).apply {
-                        layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                        )
-                        settings.apply {
-                            javaScriptEnabled = true
-                            domStorageEnabled = true
-                            mediaPlaybackRequiresUserGesture = false
-                            loadWithOverviewMode = true
-                            useWideViewPort = true
-                            builtInZoomControls = false
-                            displayZoomControls = false
-                            cacheMode = WebSettings.LOAD_DEFAULT
+            if (sharedWebView != null) {
+                // Reutiliza o WebView compartilhado sem recriar — continua de onde parou
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = { ctx ->
+                        android.widget.FrameLayout(ctx).apply {
+                            (sharedWebView.parent as? ViewGroup)?.removeView(sharedWebView)
+                            addView(sharedWebView, ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            ))
                         }
-                        addJavascriptInterface(YouTubeJsBridge(onTimeUpdate), "AndroidBridge")
-                        webViewClient = object : WebViewClient() {
-                            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                                isLoading = true
-                            }
-
-                            override fun onPageFinished(view: WebView?, url: String?) {
-                                isLoading = false
-                            }
-
-                            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                                return false // Permite navegação interna no player do YouTube
-                            }
+                    },
+                    update = { container ->
+                        if (sharedWebView.parent != container) {
+                            (sharedWebView.parent as? ViewGroup)?.removeView(sharedWebView)
+                            container.addView(sharedWebView, ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            ))
                         }
-                        webChromeClient = WebChromeClient()
-
-                        loadDataWithBaseURL("https://www.youtube-nocookie.com", buildYouTubePlayerHtml(video.id, initialStartSeconds), "text/html", "UTF-8", null)
-                        webViewRef = this
                     }
-                }
-            )
+                )
+            } else {
+                // Fallback: cria WebView local (sem WebView compartilhado)
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = { ctx ->
+                        WebView(ctx).apply {
+                            layoutParams = ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            )
+                            settings.apply {
+                                javaScriptEnabled = true
+                                domStorageEnabled = true
+                                mediaPlaybackRequiresUserGesture = false
+                                loadWithOverviewMode = true
+                                useWideViewPort = true
+                                builtInZoomControls = false
+                                displayZoomControls = false
+                                cacheMode = WebSettings.LOAD_DEFAULT
+                                userAgentString = userAgentString.replace("; wv", "")
+                            }
+                            addJavascriptInterface(YouTubeJsBridge(onTimeUpdate), "AndroidBridge")
+                            webViewClient = object : WebViewClient() {
+                                override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                                    isLoading = true
+                                }
+
+                                override fun onPageFinished(view: WebView?, url: String?) {
+                                    isLoading = false
+                                    view?.evaluateJavascript(
+                                        """
+                                        (function() {
+                                            function autoPlayVideo() {
+                                                var v = document.querySelector('video');
+                                                if (v) {
+                                                    if (v.paused) { v.play().catch(function(e){}); }
+                                                } else {
+                                                    setTimeout(autoPlayVideo, 400);
+                                                }
+                                            }
+                                            autoPlayVideo();
+                                            if (!window._ipodTimeInterval) {
+                                                window._ipodTimeInterval = setInterval(function() {
+                                                    try {
+                                                        var v = document.querySelector('video');
+                                                        if (v && !v.paused && window.AndroidBridge) {
+                                                            window.AndroidBridge.onTimeUpdate(Math.floor(v.currentTime));
+                                                        }
+                                                    } catch(e) {}
+                                                }, 1000);
+                                            }
+                                        })();
+                                        """.trimIndent(), null
+                                    )
+                                }
+
+                                override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                                    val url = request?.url?.toString() ?: return false
+                                    return !(url.startsWith("http://") || url.startsWith("https://"))
+                                }
+                            }
+                            android.webkit.CookieManager.getInstance().setAcceptCookie(true)
+                            android.webkit.CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
+                            loadUrl(buildYouTubeWatchUrl(video.id, initialStartSeconds))
+                            localWebViewRef = this
+                        }
+                    }
+                )
+            }
 
             if (isLoading) {
                 CircularProgressIndicator(
@@ -821,23 +1004,27 @@ fun FullscreenLandscapeYouTubePlayer(
     video: YouTubeVideo,
     onBack: () -> Unit,
     initialStartSeconds: Int = 0,
-    onTimeUpdate: (Int) -> Unit = {}
+    onTimeUpdate: (Int) -> Unit = {},
+    sharedWebView: WebView? = null
 ) {
-    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    var webViewRef by remember { mutableStateOf<WebView?>(null) }
+    var localWebViewRef by remember { mutableStateOf<WebView?>(null) }
+    val activeWebView = sharedWebView ?: localWebViewRef
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_PAUSE || event == Lifecycle.Event.ON_STOP) {
-                webViewRef?.evaluateJavascript("if (typeof player !== 'undefined') { player.pauseVideo(); } else { document.querySelector('video')?.pause(); }", null)
+                activeWebView?.evaluateJavascript("var v = document.querySelector('video'); if (v) { v.pause(); } else if (typeof player !== 'undefined' && player && typeof player.pauseVideo === 'function') { player.pauseVideo(); }", null)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
-            webViewRef?.destroy()
-            webViewRef = null
+            // Só destrói se for um WebView local (não compartilhado)
+            if (sharedWebView == null) {
+                localWebViewRef?.destroy()
+                localWebViewRef = null
+            }
         }
     }
 
@@ -846,30 +1033,65 @@ fun FullscreenLandscapeYouTubePlayer(
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        AndroidView(
-            modifier = Modifier.fillMaxSize(),
-            factory = { ctx ->
-                WebView(ctx).apply {
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-                    settings.apply {
-                        javaScriptEnabled = true
-                        domStorageEnabled = true
-                        mediaPlaybackRequiresUserGesture = false
-                        loadWithOverviewMode = true
-                        useWideViewPort = true
+        if (sharedWebView != null) {
+            // Reutiliza o WebView compartilhado sem recriar — continua de onde parou
+            AndroidView(
+                modifier = Modifier.fillMaxSize(),
+                factory = { ctx ->
+                    android.widget.FrameLayout(ctx).apply {
+                        (sharedWebView.parent as? ViewGroup)?.removeView(sharedWebView)
+                        addView(sharedWebView, ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        ))
                     }
-                    addJavascriptInterface(YouTubeJsBridge(onTimeUpdate), "AndroidBridge")
-                    webViewClient = WebViewClient()
-                    webChromeClient = WebChromeClient()
-
-                    loadDataWithBaseURL("https://www.youtube-nocookie.com", buildYouTubePlayerHtml(video.id, initialStartSeconds), "text/html", "UTF-8", null)
-                    webViewRef = this
+                },
+                update = { container ->
+                    if (sharedWebView.parent != container) {
+                        (sharedWebView.parent as? ViewGroup)?.removeView(sharedWebView)
+                        container.addView(sharedWebView, ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        ))
+                    }
                 }
-            }
-        )
+            )
+        } else {
+            // Fallback: cria WebView local
+            AndroidView(
+                modifier = Modifier.fillMaxSize(),
+                factory = { ctx ->
+                    WebView(ctx).apply {
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                        settings.apply {
+                            javaScriptEnabled = true
+                            domStorageEnabled = true
+                            mediaPlaybackRequiresUserGesture = false
+                            loadWithOverviewMode = true
+                            useWideViewPort = true
+                            builtInZoomControls = false
+                            displayZoomControls = false
+                            cacheMode = WebSettings.LOAD_DEFAULT
+                            userAgentString = userAgentString.replace("; wv", "")
+                        }
+                        addJavascriptInterface(YouTubeJsBridge(onTimeUpdate), "AndroidBridge")
+                        webViewClient = object : WebViewClient() {
+                            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                                val url = request?.url?.toString() ?: return false
+                                return !(url.startsWith("http://") || url.startsWith("https://"))
+                            }
+                        }
+                        android.webkit.CookieManager.getInstance().setAcceptCookie(true)
+                        android.webkit.CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
+                        loadUrl(buildYouTubeWatchUrl(video.id, initialStartSeconds))
+                        localWebViewRef = this
+                    }
+                }
+            )
+        }
 
         // Overlay Exit Button (Topo esquerdo)
         IconButton(

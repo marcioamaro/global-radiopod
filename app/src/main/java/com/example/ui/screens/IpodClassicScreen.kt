@@ -114,6 +114,7 @@ import com.example.ui.components.IpodHeader
 import com.example.ui.components.RdsDisplay
 import com.example.ui.components.MonochromeFlag
 import com.example.util.IpodSoundAndHaptics
+import android.webkit.WebView
 
 @Composable
 fun IpodClassicScreen(
@@ -183,6 +184,7 @@ fun IpodClassicScreen(
     onOpenNativeAudioChooser: () -> Unit = {},
     viewModel: com.example.ui.RadioViewModel? = null,
     onShowChassisBack: () -> Unit = {},
+    sharedYouTubeWebView: WebView? = null,
     modifier: Modifier = Modifier
 ) {
     val chassisTheme = uiState.chassisTheme
@@ -207,12 +209,13 @@ fun IpodClassicScreen(
     val effectiveSoundAndHaptics = soundAndHaptics ?: remember { IpodSoundAndHaptics.getInstance(context) }
 
     var sleepBannerMessage by remember { mutableStateOf<String?>(null) }
-    var showSleepBanner by remember { mutableStateOf(false) }
+    var sleepBannerTrigger by remember { mutableStateOf(0L) }
 
-    LaunchedEffect(showSleepBanner) {
-        if (showSleepBanner) {
+    LaunchedEffect(sleepBannerTrigger) {
+        if (sleepBannerTrigger > 0L) {
             delay(2500L)
-            showSleepBanner = false
+            sleepBannerTrigger = 0L
+            sleepBannerMessage = null
         }
     }
 
@@ -350,7 +353,7 @@ fun IpodClassicScreen(
                                     in 1..Int.MAX_VALUE -> "MODO DORMIR: $nextTimer MIN"
                                     else -> "MODO DORMIR: DESLIGADO"
                                 }
-                                showSleepBanner = true
+                                sleepBannerTrigger = System.currentTimeMillis()
                             }
                             .padding(horizontal = 8.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -654,6 +657,7 @@ fun IpodClassicScreen(
                                         backlightBg = backlightBg,
                                         backlightTextPrimary = backlightTextPrimary,
                                         backlightTextSecondary = backlightTextSecondary,
+                                        backlightHighlight = backlightHighlight,
                                         fontFamily = fontFamily,
                                         fontScale = fontScale,
                                         isBold = isBold
@@ -663,6 +667,7 @@ fun IpodClassicScreen(
                             IpodScreenDestination.GAME_BRICK -> {
                                 IpodBrickGameScreen(
                                     paddlePositionRatio = uiState.gamePaddlePosition,
+                                    gameWheelTicks = uiState.gameWheelTicks,
                                     onPaddleMove = onPaddleMove,
                                     centerActionTrigger = brickGameCenterAction,
                                     soundAndHaptics = effectiveSoundAndHaptics,
@@ -784,6 +789,7 @@ fun IpodClassicScreen(
                                     backlightTextPrimary = backlightTextPrimary,
                                     backlightTextSecondary = backlightTextSecondary,
                                     backlightHighlight = backlightHighlight,
+                                    fontScale = fontScale,
                                     isBold = isBold
                                 )
                             }
@@ -816,6 +822,7 @@ fun IpodClassicScreen(
                                     backlightTextPrimary = backlightTextPrimary,
                                     backlightTextSecondary = backlightTextSecondary,
                                     backlightHighlight = backlightHighlight,
+                                    fontScale = fontScale,
                                     isBold = isBold
                                 )
                             }
@@ -1285,6 +1292,7 @@ fun IpodClassicScreen(
                                         onSelectDestination(IpodScreenDestination.YOUTUBE_VIDEOS_LIST)
                                     },
                                     onCancel = { onSelectDestination(IpodScreenDestination.YOUTUBE_VIDEOS_LIST) },
+                                    backlightBg = backlightBg,
                                     backlightTextPrimary = backlightTextPrimary,
                                     backlightTextSecondary = backlightTextSecondary,
                                     backlightHighlight = backlightHighlight,
@@ -1309,7 +1317,8 @@ fun IpodClassicScreen(
                                         backlightHighlight = backlightHighlight,
                                         fontFamily = fontFamily,
                                         fontScale = fontScale,
-                                        isBold = isBold
+                                        isBold = isBold,
+                                        sharedWebView = sharedYouTubeWebView
                                     )
                                 }
                             }
@@ -1389,14 +1398,23 @@ fun IpodClassicScreen(
                 }
 
                 // Banner LCD retrô para feedback do Modo Dormir (Inversão monocromática com alto contraste - Flat LCD)
-                if (showSleepBanner && sleepBannerMessage != null) {
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = sleepBannerTrigger > 0L && sleepBannerMessage != null,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 28.dp)
+                ) {
                     Row(
                         modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .padding(top = 28.dp)
                             .clip(RoundedCornerShape(4.dp))
                             .background(backlightTextPrimary)
                             .border(1.dp, backlightBg, RoundedCornerShape(4.dp))
+                            .clickable {
+                                sleepBannerTrigger = 0L
+                                sleepBannerMessage = null
+                            }
                             .padding(horizontal = 10.dp, vertical = 5.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -1725,6 +1743,7 @@ private fun IpodGenresSplitView(
     backlightTextPrimary: Color,
     backlightTextSecondary: Color,
     backlightHighlight: Color,
+    fontScale: Float = 1.0f,
     isBold: Boolean = true
 ) {
     var searchQuery by remember { mutableStateOf("") }
@@ -1757,14 +1776,14 @@ private fun IpodGenresSplitView(
                     .defaultMinSize(minHeight = 46.dp)
                     .padding(horizontal = 4.dp, vertical = 2.dp),
                 textStyle = LocalTextStyle.current.copy(
-                    fontSize = 11.sp,
-                    lineHeight = 16.sp,
+                    fontSize = (11f * fontScale).sp,
+                    lineHeight = (16f * fontScale).sp,
                     platformStyle = PlatformTextStyle(includeFontPadding = false)
                 ),
                 placeholder = {
                     Text(
                         text = "Filtrar gêneros...",
-                        fontSize = 10.5.sp,
+                        fontSize = (10.5f * fontScale).sp,
                         color = backlightTextSecondary.copy(alpha = 0.7f),
                         fontFamily = FontFamily.Monospace
                     )
@@ -1831,7 +1850,7 @@ private fun IpodGenresSplitView(
                             Text(
                                 text = genre.name,
                                 color = if (isSelected) Color.White else backlightTextPrimary,
-                                fontSize = 11.5.sp,
+                                fontSize = (11.5f * fontScale).sp,
                                 fontWeight = if (isSelected || isBold) FontWeight.Black else FontWeight.Bold,
                                 fontFamily = FontFamily.Monospace,
                                 maxLines = 1,
@@ -1874,7 +1893,7 @@ private fun IpodGenresSplitView(
             Text(
                 text = activeGenre?.name ?: "",
                 color = backlightTextPrimary,
-                fontSize = 12.sp,
+                fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Bold,
                 fontFamily = FontFamily.Monospace
             )
@@ -1882,9 +1901,9 @@ private fun IpodGenresSplitView(
             Text(
                 text = activeGenre?.description ?: "",
                 color = backlightTextSecondary,
-                fontSize = 9.5.sp,
+                fontSize = (9.5f * fontScale).sp,
                 fontFamily = FontFamily.Monospace,
-                lineHeight = 13.sp
+                lineHeight = (13f * fontScale).sp
             )
         }
     }
@@ -1897,6 +1916,7 @@ private fun IpodCountriesSplitView(
     backlightTextPrimary: Color,
     backlightTextSecondary: Color,
     backlightHighlight: Color,
+    fontScale: Float = 1.0f,
     isBold: Boolean = true
 ) {
     var searchQuery by remember { mutableStateOf("") }
@@ -1929,14 +1949,14 @@ private fun IpodCountriesSplitView(
                     .defaultMinSize(minHeight = 46.dp)
                     .padding(horizontal = 4.dp, vertical = 2.dp),
                 textStyle = LocalTextStyle.current.copy(
-                    fontSize = 11.sp,
-                    lineHeight = 16.sp,
+                    fontSize = (11f * fontScale).sp,
+                    lineHeight = (16f * fontScale).sp,
                     platformStyle = PlatformTextStyle(includeFontPadding = false)
                 ),
                 placeholder = {
                     Text(
                         text = "Filtrar países...",
-                        fontSize = 10.5.sp,
+                        fontSize = (10.5f * fontScale).sp,
                         color = backlightTextSecondary.copy(alpha = 0.7f),
                         fontFamily = FontFamily.Monospace
                     )
@@ -2012,7 +2032,7 @@ private fun IpodCountriesSplitView(
                                     Text(
                                         text = country.code,
                                         color = if (isSelected) Color.White else backlightTextPrimary,
-                                        fontSize = 8.5.sp,
+                                        fontSize = (8.5f * fontScale).sp,
                                         fontWeight = FontWeight.Black,
                                         fontFamily = FontFamily.Monospace
                                     )
@@ -2022,7 +2042,7 @@ private fun IpodCountriesSplitView(
                             Text(
                                 text = country.name,
                                 color = if (isSelected) Color.White else backlightTextPrimary,
-                                fontSize = 11.5.sp,
+                                fontSize = (11.5f * fontScale).sp,
                                 fontWeight = if (isSelected || isBold) FontWeight.Black else FontWeight.Bold,
                                 fontFamily = FontFamily.Monospace,
                                 maxLines = 1,
@@ -2093,14 +2113,14 @@ private fun IpodCountriesSplitView(
             Text(
                 text = activeCountry?.name ?: "",
                 color = backlightTextPrimary,
-                fontSize = 13.sp,
+                fontSize = (13f * fontScale).sp,
                 fontWeight = FontWeight.Bold,
                 fontFamily = FontFamily.Monospace
             )
             Text(
                 text = activeCountry?.region ?: "",
                 color = backlightTextSecondary,
-                fontSize = 10.sp,
+                fontSize = (10f * fontScale).sp,
                 fontFamily = FontFamily.Monospace
             )
         }

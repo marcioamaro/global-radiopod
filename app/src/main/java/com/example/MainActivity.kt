@@ -5,6 +5,11 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.Toast
 import android.os.Bundle
+import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -160,19 +165,22 @@ fun MainScreen(viewModel: RadioViewModel) {
     val currentLanguageTag = onboardingConfig?.languageTag?.takeIf { it.isNotBlank() }
         ?: com.example.util.AppLocaleManager.getCurrentLanguageTag()
 
-    val localizedContext = remember(currentLanguageTag, context) {
+    val rawConfig = androidx.compose.ui.platform.LocalConfiguration.current
+
+    val localizedConfig = remember(rawConfig, currentLanguageTag) {
         val locale = if (currentLanguageTag.contains("-")) {
             val parts = currentLanguageTag.split("-")
             java.util.Locale(parts[0], parts[1])
         } else {
             java.util.Locale(currentLanguageTag)
         }
-        val config = android.content.res.Configuration(context.resources.configuration)
-        config.setLocale(locale)
-        context.createConfigurationContext(config)
+        android.content.res.Configuration(rawConfig).apply {
+            setLocale(locale)
+        }
     }
-    val localizedConfig = remember(localizedContext) {
-        localizedContext.resources.configuration
+
+    val localizedContext = remember(currentLanguageTag, context, rawConfig) {
+        context.createConfigurationContext(localizedConfig)
     }
 
     val activityResultOwner = androidx.activity.compose.LocalActivityResultRegistryOwner.current
@@ -378,19 +386,152 @@ fun MainScreen(viewModel: RadioViewModel) {
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
     val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
 
+    // Calcula as cores do tema LCD atual para passar aos players fullscreen
+    val backlightHighlight = remember(uiState.backlight) { Color(uiState.backlight.highlight) }
+    val backlightTextPrimary = remember(uiState.backlight) { Color(uiState.backlight.textPrimary) }
+
+    // WebView compartilhado para o player YouTube — criado uma vez e reutilizado ao girar o celular,
+    // evitando que o vídeo reinicie ao trocar de portrait para landscape e vice-versa.
+    val isYouTubePlayerActive = uiState.currentScreen == com.example.ui.IpodScreenDestination.YOUTUBE_PLAYER &&
+            uiState.currentYouTubeVideo != null
+    val sharedYouTubeWebView = remember { mutableStateOf<WebView?>(null) }
+
+    // Cria o WebView compartilhado quando entra no player YouTube; destrói ao sair
+    DisposableEffect(isYouTubePlayerActive, uiState.currentYouTubeVideo?.id) {
+        if (isYouTubePlayerActive && uiState.currentYouTubeVideo != null) {
+            val video = uiState.currentYouTubeVideo!!
+            val startSeconds = viewModel.youTubePlaybackPositionSeconds
+            val wv = WebView(context).apply {
+                layoutParams = android.view.ViewGroup.LayoutParams(
+                    android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                    android.view.ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                settings.apply {
+                    javaScriptEnabled = true
+                    domStorageEnabled = true
+                    mediaPlaybackRequiresUserGesture = false
+                    loadWithOverviewMode = true
+                    useWideViewPort = true
+                    builtInZoomControls = false
+                    displayZoomControls = false
+                    cacheMode = WebSettings.LOAD_DEFAULT
+                    userAgentString = userAgentString.replace("; wv", "")
+                }
+                addJavascriptInterface(
+                    com.example.ui.screens.YouTubeJsBridge { s -> viewModel.updateYouTubePlaybackPosition(s) },
+                    "AndroidBridge"
+                )
+                android.webkit.CookieManager.getInstance().setAcceptCookie(true)
+                android.webkit.CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
+                webViewClient = object : WebViewClient() {
+                    override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                        val url = request?.url?.toString() ?: return false
+                        return !(url.startsWith("http://") || url.startsWith("https://"))
+                    }
+
+                    override fun onPageFinished(view: WebView?, url: String?) {
+                        super.onPageFinished(view, url)
+                        view?.evaluateJavascript(
+                            """
+                            (function() {
+                                function autoPlayVideo() {
+                                    var v = document.querySelector('video');
+                                    if (v) {
+                                        if (v.paused) { v.play().catch(function(e){}); }
+                                    } else {
+                                        setTimeout(autoPlayVideo, 400);
+                                    }
+                                }
+                                autoPlayVideo();
+                                if (!window._ipodTimeInterval) {
+                                    window._ipodTimeInterval = setInterval(function() {
+                                        try {
+                                            var v = document.querySelector('video');
+                                            if (v && !v.paused && window.AndroidBridge) {
+                                                window.AndroidBridge.onTimeUpdate(Math.floor(v.currentTime));
+                                            }
+                                        } catch(e) {}
+                                    }, 1000);
+                                }
+                            })();
+                            """.trimIndent(), null
+                        )
+                    }
+                }
+                webChromeClient = WebChromeClient()
+                loadUrl(com.example.ui.screens.buildYouTubeWatchUrl(video.id, startSeconds))
+            }
+            sharedYouTubeWebView.value = wv
+        }
+        onDispose {
+            if (!isYouTubePlayerActive) {
+                sharedYouTubeWebView.value?.let { wv ->
+                    (wv.parent as? android.view.ViewGroup)?.removeView(wv)
+                    wv.destroy()
+                }
+                sharedYouTubeWebView.value = null
+            }
+        }
+    }
+
+    val isFullscreenVideo = isLandscape && (
+        uiState.currentScreen == com.example.ui.IpodScreenDestination.VIDEO_PLAYER ||
+        (uiState.currentScreen == com.example.ui.IpodScreenDestination.YOUTUBE_PLAYER && uiState.currentYouTubeVideo != null)
+    )
+
+    val composeView = androidx.compose.ui.platform.LocalView.current
+    DisposableEffect(isFullscreenVideo) {
+        val window = (context as? android.app.Activity)?.window
+        if (window != null) {
+            val insetsController = androidx.core.view.WindowCompat.getInsetsController(window, composeView)
+            if (isFullscreenVideo) {
+                insetsController.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+                insetsController.systemBarsBehavior = androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            } else {
+                insetsController.show(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            }
+        }
+        onDispose {
+            val window = (context as? android.app.Activity)?.window
+            if (window != null) {
+                val insetsController = androidx.core.view.WindowCompat.getInsetsController(window, composeView)
+                insetsController.show(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            }
+        }
+    }
+
     if (isLandscape && uiState.currentScreen == com.example.ui.IpodScreenDestination.VIDEO_PLAYER) {
         com.example.ui.screens.FullscreenLandscapeVideoPlayer(
             videoPlayerManager = viewModel.videoPlayerManager,
-            onBack = { viewModel.navigateBack() },
+            onBack = {
+                val activity = context as? android.app.Activity
+                activity?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                activity?.window?.decorView?.postDelayed({
+                    if (activity.requestedOrientation == android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+                        activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR
+                    }
+                }, 1000L)
+            },
             onNext = { viewModel.onNextTrackPress() },
-            onPrev = { viewModel.onPrevTrackPress() }
+            onPrev = { viewModel.onPrevTrackPress() },
+            backlightHighlight = backlightHighlight,
+            backlightTextPrimary = backlightTextPrimary
         )
     } else if (isLandscape && uiState.currentScreen == com.example.ui.IpodScreenDestination.YOUTUBE_PLAYER && uiState.currentYouTubeVideo != null) {
         com.example.ui.screens.FullscreenLandscapeYouTubePlayer(
             video = uiState.currentYouTubeVideo!!,
-            onBack = { viewModel.navigateBack() },
+            onBack = {
+                val activity = context as? android.app.Activity
+                activity?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                activity?.window?.decorView?.postDelayed({
+                    if (activity.requestedOrientation == android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+                        activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR
+                    }
+                }, 1000L)
+            },
             initialStartSeconds = viewModel.youTubePlaybackPositionSeconds,
-            onTimeUpdate = { viewModel.updateYouTubePlaybackPosition(it) }
+            onTimeUpdate = { viewModel.updateYouTubePlaybackPosition(it) },
+            sharedWebView = sharedYouTubeWebView.value
         )
     } else {
         Box(
@@ -424,7 +565,21 @@ fun MainScreen(viewModel: RadioViewModel) {
                                 onRotaryScroll = { steps -> viewModel.onRotaryScroll(steps) },
                                 onCenterClick = { viewModel.onCenterButtonPress() },
                                 onMenuClick = { viewModel.navigateBack() },
-                                onPlayPauseClick = { viewModel.onPlayPausePress() },
+                                onPlayPauseClick = {
+                                    if (uiState.currentScreen == com.example.ui.IpodScreenDestination.YOUTUBE_PLAYER) {
+                                        sharedYouTubeWebView.value?.evaluateJavascript(
+                                            "var v = document.querySelector('video'); " +
+                                            "if (v) { " +
+                                            "  if (v.paused) { v.play(); } else { v.pause(); } " +
+                                            "} else if (typeof player !== 'undefined' && player && typeof player.getPlayerState === 'function') { " +
+                                            "  var s = player.getPlayerState(); " +
+                                            "  if (s === 1) { player.pauseVideo(); } else { player.playVideo(); } " +
+                                            "}", null
+                                        )
+                                    } else {
+                                        viewModel.onPlayPausePress()
+                                    }
+                                },
                                 onPrevClick = { viewModel.onPrevTrackPress() },
                                 onNextClick = { viewModel.onNextTrackPress() },
                                 onToggleHold = { viewModel.toggleHoldSwitch() },
@@ -479,7 +634,11 @@ fun MainScreen(viewModel: RadioViewModel) {
                                     viewModel.playLocalVideo(video)
                                     viewModel.navigateTo(com.example.ui.IpodScreenDestination.VIDEO_PLAYER)
                                 },
-                                onToggleVideoFullscreen = { viewModel.toggleVideoFullscreen() },
+                                onToggleVideoFullscreen = {
+                                    viewModel.toggleVideoFullscreen()
+                                    val activity = context as? android.app.Activity
+                                    activity?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                                },
                                 isEqualizerEnabled = isEqualizerEnabled,
                                 onToggleEqualizerEnabled = { viewModel.setEqualizerEnabled(it) },
                                 equalizerPreset = equalizerPreset,
@@ -495,7 +654,8 @@ fun MainScreen(viewModel: RadioViewModel) {
                                     if (viewModel.isChassisBackAnimationEnabled.value) {
                                         isChassisBackShowing = true
                                     }
-                                }
+                                },
+                                sharedYouTubeWebView = sharedYouTubeWebView.value
                             )
                         } else {
                             Box(

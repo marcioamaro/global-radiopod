@@ -245,25 +245,6 @@ fun IpodHeader(
                     )
                 }
 
-                // Indicador discreto de velocidade na barra LCD quando diferente de 1.0x
-                if (playbackSpeed != 1.0f) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(backlightTextPrimary)
-                            .padding(horizontal = 3.5.dp, vertical = 1.dp)
-                    ) {
-                        Text(
-                            text = "${playbackSpeed}x",
-                            color = backlightBg,
-                            fontSize = (8f * fontScale).sp,
-                            fontWeight = FontWeight.Black,
-                            fontFamily = fontFamily
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(4.dp))
-                }
-
                 // Ícone de status de conexão OBRIGATORIAMENTE ao lado ESQUERDO do relógio LCD
                 if (status == RadioPlaybackStatus.NO_INTERNET) {
                     Icon(

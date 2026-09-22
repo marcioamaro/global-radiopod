@@ -650,7 +650,7 @@ class IpodPreferencesManager private constructor(context: Context) {
     fun getBrickHighScores(): List<BrickHighScore> {
         val jsonStr = prefs.getString(KEY_BRICK_HIGH_SCORES_JSON, null)
         if (jsonStr.isNullOrBlank()) {
-            return getDefaultBrickHighScores()
+            return emptyList()
         }
         return try {
             val array = org.json.JSONArray(jsonStr)
@@ -665,35 +665,16 @@ class IpodPreferencesManager private constructor(context: Context) {
                     )
                 )
             }
-            if (list.isEmpty()) getDefaultBrickHighScores() else list.sortedByDescending { it.score }.take(10)
+            list.sortedByDescending { it.score }.take(10)
         } catch (_: Exception) {
-            getDefaultBrickHighScores()
+            emptyList()
         }
     }
 
-    fun getDefaultBrickHighScores(): List<BrickHighScore> {
-        return listOf(
-            BrickHighScore("IPD", 1500),
-            BrickHighScore("MAC", 1200),
-            BrickHighScore("RET", 1000),
-            BrickHighScore("BRK", 850),
-            BrickHighScore("APL", 700),
-            BrickHighScore("GEO", 600),
-            BrickHighScore("CLW", 500),
-            BrickHighScore("RAD", 400),
-            BrickHighScore("LCD", 300),
-            BrickHighScore("MIN", 200)
-        )
-    }
-
-    fun saveBrickHighScore(initials: String, score: Int): List<BrickHighScore> {
-        val cleanInitials = initials.trim().uppercase().take(3).ifBlank { "AAA" }
-        val current = getBrickHighScores().toMutableList()
-        current.add(BrickHighScore(cleanInitials, score, System.currentTimeMillis()))
-        val updated = current.sortedByDescending { it.score }.take(10)
+    fun setBrickHighScores(scores: List<BrickHighScore>) {
         try {
             val array = org.json.JSONArray()
-            for (item in updated) {
+            for (item in scores.sortedByDescending { it.score }.take(10)) {
                 val obj = org.json.JSONObject().apply {
                     put("initials", item.initials)
                     put("score", item.score)
@@ -703,6 +684,14 @@ class IpodPreferencesManager private constructor(context: Context) {
             }
             prefs.edit().putString(KEY_BRICK_HIGH_SCORES_JSON, array.toString()).apply()
         } catch (_: Exception) {}
+    }
+
+    fun saveBrickHighScore(initials: String, score: Int): List<BrickHighScore> {
+        val cleanInitials = initials.trim().uppercase().take(3).ifBlank { "AAA" }
+        val current = getBrickHighScores().toMutableList()
+        current.add(BrickHighScore(cleanInitials, score, System.currentTimeMillis()))
+        val updated = current.sortedByDescending { it.score }.take(10)
+        setBrickHighScores(updated)
         return updated
     }
 }

@@ -264,6 +264,7 @@ fun IpodVideoPlayerScreen(
     backlightBg: Color,
     backlightTextPrimary: Color,
     backlightTextSecondary: Color,
+    backlightHighlight: Color = Color(0xFF00E5FF),
     fontFamily: FontFamily,
     fontScale: Float,
     isBold: Boolean
@@ -306,12 +307,7 @@ fun IpodVideoPlayerScreen(
                 }
             },
             update = { view ->
-                if (view.player != videoPlayerManager.exoPlayer) {
-                    view.player = videoPlayerManager.exoPlayer
-                }
-            },
-            onRelease = { view ->
-                view.player = null
+                view.player = videoPlayerManager.exoPlayer
             },
             modifier = Modifier.fillMaxSize()
         )
@@ -361,8 +357,8 @@ fun IpodVideoPlayerScreen(
                 positionMs = positionMs,
                 durationMs = durationMs,
                 onSeekTo = { targetMs -> videoPlayerManager.seekToPosition(targetMs) },
-                backlightTextPrimary = Color(0xFF00E5FF),
-                backlightTextSecondary = Color(0xFFAAAAAA),
+                backlightTextPrimary = backlightHighlight,
+                backlightTextSecondary = backlightTextPrimary.copy(alpha = 0.65f),
                 fontFamily = fontFamily
             )
 
@@ -375,12 +371,15 @@ fun IpodVideoPlayerScreen(
             ) {
                 val currentSpeed by videoPlayerManager.playbackSpeed.collectAsState()
                 val isCustomSpeed = currentSpeed != 1.0f
-                val chipContentColor = if (isCustomSpeed) Color.Black else Color.White
+                val chipContentColor = if (isCustomSpeed) {
+                    val luminance = 0.299f * backlightHighlight.red + 0.587f * backlightHighlight.green + 0.114f * backlightHighlight.blue
+                    if (luminance > 0.5f) Color.Black else Color.White
+                } else Color.White
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(3.dp))
-                        .background(if (isCustomSpeed) Color(0xFF00E5FF) else Color(0x33FFFFFF))
-                        .border(1.dp, Color(0xFF00E5FF).copy(alpha = 0.5f), RoundedCornerShape(3.dp))
+                        .background(if (isCustomSpeed) backlightHighlight else Color(0x33FFFFFF))
+                        .border(1.dp, backlightHighlight.copy(alpha = 0.5f), RoundedCornerShape(3.dp))
                         .clickable {
                             val speeds = listOf(0.5f, 1.0f, 1.5f, 2.0f)
                             val idx = speeds.indexOfFirst { kotlin.math.abs(it - currentSpeed) < 0.05f }
@@ -455,7 +454,9 @@ fun FullscreenLandscapeVideoPlayer(
     videoPlayerManager: LocalVideoPlayerManager,
     onBack: () -> Unit,
     onNext: () -> Unit,
-    onPrev: () -> Unit
+    onPrev: () -> Unit,
+    backlightHighlight: Color = Color(0xFF00E5FF),
+    backlightTextPrimary: Color = Color.White
 ) {
     val isPlaying by videoPlayerManager.isPlaying.collectAsState()
     val currentVideo by videoPlayerManager.currentVideo.collectAsState()
@@ -509,15 +510,18 @@ fun FullscreenLandscapeVideoPlayer(
                 }
             },
             update = { view ->
-                if (view.player != videoPlayerManager.exoPlayer) {
-                    view.player = videoPlayerManager.exoPlayer
-                }
-            },
-            onRelease = { view ->
-                view.player = null
+                view.player = videoPlayerManager.exoPlayer
             },
             modifier = Modifier.fillMaxSize()
         )
+
+        // Calcula cor e tint do botão Play no escopo da função para reutilização
+        val playBtnBg = backlightHighlight.copy(alpha = 0.85f)
+        val playIconTint = if (
+            0.299f * backlightHighlight.red +
+            0.587f * backlightHighlight.green +
+            0.114f * backlightHighlight.blue > 0.5f
+        ) Color.Black else Color.White
 
         // Floating Controls Overlay (Visible upon tap and auto-hides after 3s)
         androidx.compose.animation.AnimatedVisibility(
@@ -567,7 +571,7 @@ fun FullscreenLandscapeVideoPlayer(
                         )
                         Text(
                             text = currentVideo?.folderName ?: "Vídeos",
-                            color = Color(0xFF94A3B8),
+                            color = backlightTextPrimary.copy(alpha = 0.6f),
                             fontSize = 11.sp
                         )
                     }
@@ -595,18 +599,18 @@ fun FullscreenLandscapeVideoPlayer(
                         )
                     }
 
-                    // Play/Pause
+                    // Play/Pause — cor do tema atual
                     IconButton(
                         onClick = { videoPlayerManager.togglePlayPause() },
                         modifier = Modifier
                             .size(64.dp)
                             .clip(androidx.compose.foundation.shape.CircleShape)
-                            .background(Color(0xCC00E5FF))
+                            .background(playBtnBg)
                     ) {
                         Icon(
                             imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                             contentDescription = "Play/Pause",
-                            tint = Color.Black,
+                            tint = playIconTint,
                             modifier = Modifier.size(36.dp)
                         )
                     }
@@ -640,13 +644,14 @@ fun FullscreenLandscapeVideoPlayer(
                         )
                         .padding(horizontal = 20.dp, vertical = 12.dp)
                 ) {
+                    // Barra de progresso com cor do tema
                     Slider(
                         value = positionMs.toFloat(),
                         onValueChange = { newPos -> videoPlayerManager.seekTo(newPos.toLong()) },
                         valueRange = 0f..durationMs.coerceAtLeast(1L).toFloat(),
                         colors = SliderDefaults.colors(
-                            thumbColor = Color(0xFF00E5FF),
-                            activeTrackColor = Color(0xFF00E5FF),
+                            thumbColor = backlightHighlight,
+                            activeTrackColor = backlightHighlight,
                             inactiveTrackColor = Color(0x55FFFFFF)
                         ),
                         modifier = Modifier
@@ -666,13 +671,15 @@ fun FullscreenLandscapeVideoPlayer(
                             fontFamily = FontFamily.Monospace
                         )
 
+                        // Controle de velocidade com cor do tema
                         val currentSpeed by videoPlayerManager.playbackSpeed.collectAsState()
                         val isCustomSpeed = currentSpeed != 1.0f
-                        val chipContentColor = if (isCustomSpeed) Color.Black else Color.White
+                        val chipBg = if (isCustomSpeed) backlightHighlight else Color(0x44FFFFFF)
+                        val chipContentColor = if (isCustomSpeed) playIconTint else Color.White
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(4.dp))
-                                .background(if (isCustomSpeed) Color(0xFF00E5FF) else Color(0x44FFFFFF))
+                                .background(chipBg)
                                 .clickable {
                                     val speeds = listOf(0.5f, 1.0f, 1.5f, 2.0f)
                                     val idx = speeds.indexOfFirst { kotlin.math.abs(it - currentSpeed) < 0.05f }
@@ -700,7 +707,7 @@ fun FullscreenLandscapeVideoPlayer(
 
                         Text(
                             text = remainingFormatted,
-                            color = Color(0xFF94A3B8),
+                            color = backlightTextPrimary.copy(alpha = 0.6f),
                             fontSize = 11.sp,
                             fontFamily = FontFamily.Monospace
                         )
