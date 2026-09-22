@@ -1,0 +1,4 @@
+Discovery nl1 ClientConnectorDNSError Cannot connect to host nl1.api.radio-browser.info:443 ssl:default [getaddrinfo failed]
+Discovery de1 ClientResponseError 502, message='Bad Gateway', url='https://de1.api.radio-browser.info/json/stations/search?hidebroken=true&limit=100000'
+Discovery at1 ClientConnectorDNSError Cannot connect to host at1.api.radio-browser.info:443 ssl:default [getaddrinfo failed]
+Discovered: 59498 Existing: 10542
