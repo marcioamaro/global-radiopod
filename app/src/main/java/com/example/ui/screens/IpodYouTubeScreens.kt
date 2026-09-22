@@ -800,17 +800,41 @@ fun IpodYouTubePlayerScreen(
 
     fun openNetworkCastChooser() {
         try {
-            val router = MediaRouter.getInstance(context)
-            val selector = MediaRouteSelector.Builder()
-                .addControlCategory(MediaControlIntent.CATEGORY_REMOTE_PLAYBACK)
-                .build()
-            val dialog = MediaRouteDialogFactory.getDefault().onCreateChooserDialogFragment()
-            dialog.routeSelector = selector
-            val activity = context as? androidx.fragment.app.FragmentActivity
-            if (activity != null) {
-                dialog.show(activity.supportFragmentManager, "MediaRouteChooserDialog")
+            // Pausa a reprodução local no iPod antes de transmitir
+            activeWebView?.evaluateJavascript("var v = document.querySelector('video'); if (v) { v.pause(); }", null)
+
+            android.widget.Toast.makeText(
+                context,
+                "Abrindo no YouTube para transmitir para a TV...",
+                android.widget.Toast.LENGTH_SHORT
+            ).show()
+
+            val watchUrl = "https://www.youtube.com/watch?v=${video.id}"
+            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(watchUrl)).apply {
+                setPackage("com.google.android.youtube")
+                flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
             }
-        } catch (_: Exception) {}
+
+            if (intent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(intent)
+            } else {
+                val genericIntent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(watchUrl)).apply {
+                    flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                context.startActivity(genericIntent)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("IpodYouTubeScreens", "Erro ao abrir para Cast/YouTube", e)
+            try {
+                val fallbackIntent = android.content.Intent(
+                    android.content.Intent.ACTION_VIEW,
+                    android.net.Uri.parse("https://www.youtube.com/watch?v=${video.id}")
+                ).apply {
+                    flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                context.startActivity(fallbackIntent)
+            } catch (_: Exception) {}
+        }
     }
 
     Column(
