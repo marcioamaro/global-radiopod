@@ -54,7 +54,8 @@ fun IpodPodcastMenuScreen(
         stringResource(R.string.podcast_top_world) to Icons.Default.Public,
         stringResource(R.string.podcast_by_country) to Icons.Default.LocationOn,
         stringResource(R.string.podcast_search) to Icons.Default.Search,
-        stringResource(R.string.podcast_custom) to Icons.Default.Podcasts
+        stringResource(R.string.podcast_custom) to Icons.Default.Podcasts,
+        stringResource(R.string.library_bookmarks) to Icons.Default.Bookmark
     )
 
     com.marcioamaro.mediapod.ui.components.SelectableLazyColumn(
@@ -409,6 +410,7 @@ fun IpodPodcastNowPlayingScreen(
     backlightBg: Color,
     backlightTextPrimary: Color,
     backlightTextSecondary: Color,
+    backlightHighlight: Color = backlightTextPrimary,
     fontFamily: FontFamily,
     fontScale: Float,
     isBold: Boolean,
@@ -572,7 +574,20 @@ fun IpodPodcastNowPlayingScreen(
         }
 
         // Timeline Progress Bar & Time Stamps com suporte a touch-to-seek e scrubbing
-        episode?.let { com.marcioamaro.mediapod.ui.components.AddBookmarkControl(it, positionMs) }
+        episode?.let {
+            com.marcioamaro.mediapod.ui.components.AddBookmarkControl(
+                episode = it,
+                positionMs = positionMs,
+                backlightBg = backlightBg,
+                backlightTextPrimary = backlightTextPrimary,
+                backlightTextSecondary = backlightTextSecondary,
+                backlightHighlight = backlightHighlight,
+                fontFamily = fontFamily,
+                fontScale = fontScale,
+                isBold = isBold
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+        }
         Column(modifier = Modifier.fillMaxWidth()) {
             IpodInteractiveProgressBar(
                 positionMs = positionMs,

@@ -335,7 +335,12 @@ class RadioPlayerManager private constructor(private val context: Context) {
     private var totalAttemptCount = 0
     private var streamingTimeoutJob: Job? = null
     private var bufferingWatchdogJob: Job? = null
-    private var userInitiatedPause = false
+    // Exposta como val somente-leitura para que o RadioMediaService possa verificar
+    // antes de chamar autoPlayLastMediaIfIdle() e evitar tocar sem pedido do usuário
+    // @Volatile garante visibilidade entre threads (auditoria P1 — 24/09/2026)
+    @Volatile
+    var userInitiatedPause = false
+        private set
 
     init {
         try {

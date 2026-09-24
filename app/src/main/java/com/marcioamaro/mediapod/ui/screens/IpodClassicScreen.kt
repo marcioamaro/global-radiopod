@@ -957,6 +957,7 @@ fun IpodClassicScreen(
                                                 viewModel?.loadCustomPodcasts()
                                                 onSelectDestination(IpodScreenDestination.PODCASTS_CUSTOM_LIST)
                                             }
+                                            8 -> onSelectDestination(IpodScreenDestination.PODCAST_BOOKMARKS)
                                         }
                                     },
                                     backlightTextPrimary = backlightTextPrimary,
@@ -1206,6 +1207,7 @@ fun IpodClassicScreen(
                                     backlightBg = backlightBg,
                                     backlightTextPrimary = backlightTextPrimary,
                                     backlightTextSecondary = backlightTextSecondary,
+                                    backlightHighlight = backlightHighlight,
                                     fontFamily = fontFamily,
                                     fontScale = fontScale,
                                     isBold = isBold,
@@ -1404,10 +1406,47 @@ fun IpodClassicScreen(
                                     onShowChassisBack = onShowChassisBack
                                 )
                             }
+                            IpodScreenDestination.PODCAST_BOOKMARKS -> {
+                                val folders = viewModel?.getBookmarkFolders() ?: emptyList()
+                                IpodPodcastBookmarkFoldersScreen(
+                                    folders = folders,
+                                    selectedIndex = uiState.selectedIndex,
+                                    onSelectFolder = { index ->
+                                        viewModel?.selectMenuItemDirect(index)
+                                    },
+                                    backlightBg = backlightBg,
+                                    backlightTextPrimary = backlightTextPrimary,
+                                    backlightTextSecondary = backlightTextSecondary,
+                                    backlightHighlight = backlightHighlight,
+                                    fontFamily = fontFamily,
+                                    fontScale = fontScale,
+                                    isBold = isBold
+                                )
+                            }
+                            IpodScreenDestination.PODCAST_BOOKMARKS_LIST -> {
+                                val marks = viewModel?.getBookmarksForCurrentFolder() ?: emptyList()
+                                IpodPodcastBookmarkListScreen(
+                                    bookmarks = marks,
+                                    selectedIndex = uiState.selectedIndex,
+                                    onSelectBookmark = { mark ->
+                                        viewModel?.playBookmark(mark)
+                                    },
+                                    onDeleteBookmark = { id ->
+                                        viewModel?.deleteBookmark(id)
+                                    },
+                                    backlightBg = backlightBg,
+                                    backlightTextPrimary = backlightTextPrimary,
+                                    backlightTextSecondary = backlightTextSecondary,
+                                    backlightHighlight = backlightHighlight,
+                                    fontFamily = fontFamily,
+                                    fontScale = fontScale,
+                                    isBold = isBold
+                                )
                             }
                         }
                     }
                 }
+            }
 
                 // Banner LCD retrô para feedback do Modo Dormir (Inversão monocromática com alto contraste - Flat LCD)
                 androidx.compose.animation.AnimatedVisibility(
@@ -1491,6 +1530,8 @@ private fun getScreenTitle(uiState: UiState): String {
         IpodScreenDestination.RADIO_CUSTOM_LIST -> "Minhas Rádios"
         IpodScreenDestination.ADD_CUSTOM_RADIO -> "Adicionar Rádio"
         IpodScreenDestination.PODCASTS_MENU -> "Podcasts"
+        IpodScreenDestination.PODCAST_BOOKMARKS -> "Marcações"
+        IpodScreenDestination.PODCAST_BOOKMARKS_LIST -> uiState.selectedBookmarkFolder ?: "Marcações"
         IpodScreenDestination.PODCASTS_FAVORITES -> "Podcasts Favoritos"
         IpodScreenDestination.PODCASTS_RECENTS -> "Recentes (Podcasts)"
         IpodScreenDestination.PODCASTS_TOP_BRAZIL -> "Top Brasil (Podcasts)"
@@ -3724,7 +3765,7 @@ private fun IpodAboutScreen(
 
             // Data da versão aaaa.mm.dd e número da versão
             Text(
-                text = "2026.09.24 - Versão 0.3.11 (93)",
+                text = "2026.09.24 - Versão 0.3.12 (94)",
                 color = backlightTextSecondary,
                 fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Bold,

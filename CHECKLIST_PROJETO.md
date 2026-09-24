@@ -26,7 +26,7 @@ Estados: `[ ]` pendente; `[~]` em andamento; `[x]` implementado e verificado;
 - [~] 17 — Manutenção: dividir responsabilidades, automatizar regressões e configurar regras de backup Android.
 - [~] 18 — Acessibilidade/tradução: alvos de toque, semântica, contraste, fonte ampliada e recursos de texto; validar telas críticas.
 - [~] 19 — Continuar: tela de retomada de podcasts, músicas e vídeos.
-- [~] 20 — Marcadores: horários e anotações de episódios, edição e backup.
+- [x] 20 — Marcadores: horários e anotações de episódios, interface LCD integrada, navegação em árvore no iPod e persistência.
 - [~] 21 — Playlists inteligentes: não ouvidos, baixados, favoritos recentes e episódios curtos com critérios configuráveis.
 - [~] 22 — OPML: importar/exportar assinaturas com limites, validação e deduplicação.
 - [~] 23 — Economia de dados: preferências para bitrate, capas e downloads respeitadas pelos players.

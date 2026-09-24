@@ -54,6 +54,8 @@ enum class IpodScreenDestination {
     RADIO_CUSTOM_LIST,
     ADD_CUSTOM_RADIO,
     PODCASTS_MENU,
+    PODCAST_BOOKMARKS,
+    PODCAST_BOOKMARKS_LIST,
     PODCASTS_FAVORITES,
     PODCASTS_RECENTS,
     PODCASTS_TOP_BRAZIL,
@@ -161,6 +163,7 @@ data class UiState(
     // Custom Stations
     val customStations: List<RadioStation> = emptyList(),
     // Podcasts
+    val selectedBookmarkFolder: String? = null,
     val podcastShows: List<com.marcioamaro.mediapod.data.model.PodcastShow> = emptyList(),
     val currentPodcastShow: com.marcioamaro.mediapod.data.model.PodcastShow? = null,
     val podcastEpisodes: List<com.marcioamaro.mediapod.data.model.PodcastEpisode> = emptyList(),
@@ -619,7 +622,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private val initialAppearanceSettings by lazy { createInitialAppearanceSettings() }
+    // initialAppearanceSettings removido (dead code — nunca referenciado; createInitialAppearanceSettings() já é chamada no run{} de _uiState)
 
     private val _uiState = MutableStateFlow(
         run {
@@ -645,6 +648,40 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         }
     )
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+
+    val episodeBookmarks by lazy { com.marcioamaro.mediapod.data.repository.EpisodeBookmarks(radioApp) }
+
+    fun getBookmarkFolders(): List<Pair<String, List<com.marcioamaro.mediapod.data.repository.EpisodeBookmark>>> {
+        return episodeBookmarks.items.value
+            .groupBy { it.episode.showTitle.ifBlank { "Podcast" } }
+            .toList()
+            .sortedBy { it.first }
+    }
+
+    fun getBookmarksForCurrentFolder(): List<com.marcioamaro.mediapod.data.repository.EpisodeBookmark> {
+        val folder = _uiState.value.selectedBookmarkFolder ?: return emptyList()
+        return episodeBookmarks.items.value.filter {
+            (it.episode.showTitle.ifBlank { "Podcast" }) == folder
+        }.sortedByDescending { it.positionMs }
+    }
+
+    fun selectBookmarkFolder(folder: String) {
+        _uiState.value = _uiState.value.copy(selectedBookmarkFolder = folder, selectedIndex = 0)
+        navigateTo(IpodScreenDestination.PODCAST_BOOKMARKS_LIST)
+    }
+
+    fun playBookmark(mark: com.marcioamaro.mediapod.data.repository.EpisodeBookmark) {
+        playPodcastEpisode(mark.episode)
+        seekToPosition(mark.positionMs)
+        navigateTo(IpodScreenDestination.PODCAST_NOW_PLAYING)
+    }
+
+    fun deleteBookmark(id: String) {
+        episodeBookmarks.delete(id)
+        if (getBookmarksForCurrentFolder().isEmpty()) {
+            navigateBack()
+        }
+    }
 
     // Holds the playback queue corresponding to the last list user played from
     private var playbackQueue: List<RadioStation> = emptyList()
@@ -714,12 +751,15 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         // Auto-play on launch: Retoma última rádio ou podcast executado após carregamento na memória
+        // CORREÇÃO P0 (auditoria 24/09): guarda isAutoPlayOnLaunch adicionada — antes era ignorada aqui,
+        // causando reprodução indesejada mesmo com a preferência desativada.
         val lastMediaType = prefs.getLastMediaType()
         val lastStation = prefs.getLastPlayedStation()
         val lastPodcast = prefs.getLastPlayedPodcast()
 
         viewModelScope.launch {
             kotlinx.coroutines.delay(400) // tempo para inicialização de serviços e memória
+            if (!prefs.isAutoPlayOnLaunch) return@launch
             if (lastMediaType == "PODCAST" && lastPodcast != null) {
                 playPodcastEpisode(lastPodcast.first, lastPodcast.second)
             } else if (lastStation != null) {
@@ -1148,6 +1188,18 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         soundAndHaptics.performHeavyHaptic()
 
         when (currentScreen) {
+            IpodScreenDestination.PODCAST_BOOKMARKS -> {
+                val folders = getBookmarkFolders()
+                if (index in folders.indices) {
+                    selectBookmarkFolder(folders[index].first)
+                }
+            }
+            IpodScreenDestination.PODCAST_BOOKMARKS_LIST -> {
+                val marks = getBookmarksForCurrentFolder()
+                if (index in marks.indices) {
+                    playBookmark(marks[index])
+                }
+            }
             IpodScreenDestination.MAIN_MENU -> {
                 when (index) {
                     0 -> navigateTo(IpodScreenDestination.RADIO_MENU)
@@ -1232,6 +1284,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                         loadCustomPodcasts()
                         navigateTo(IpodScreenDestination.PODCASTS_CUSTOM_LIST)
                     }
+                    8 -> navigateTo(IpodScreenDestination.PODCAST_BOOKMARKS)
                 }
             }
             IpodScreenDestination.RADIO_CUSTOM_LIST -> {
@@ -2156,7 +2209,9 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
             IpodScreenDestination.MAIN_MENU -> 13
             IpodScreenDestination.AUDIO_OUTPUT_MENU -> audioRouteManager.availableDevices.value.size
             IpodScreenDestination.RADIO_MENU -> 9
-            IpodScreenDestination.PODCASTS_MENU -> 9
+            IpodScreenDestination.PODCASTS_MENU -> 10
+            IpodScreenDestination.PODCAST_BOOKMARKS -> getBookmarkFolders().size
+            IpodScreenDestination.PODCAST_BOOKMARKS_LIST -> getBookmarksForCurrentFolder().size
             IpodScreenDestination.RADIO_CUSTOM_LIST -> _uiState.value.customStations.size + 1
             IpodScreenDestination.ADD_CUSTOM_RADIO -> 0
             IpodScreenDestination.PODCASTS_CUSTOM_LIST -> _uiState.value.customPodcasts.size + 1

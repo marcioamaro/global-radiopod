@@ -55,7 +55,7 @@ class RadioMediaService : MediaLibraryService() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var mediaLibrarySession: MediaLibrarySession? = null
     private var forwardingPlayerInstance: RadioForwardingPlayer? = null
-    private var currentArtworkBitmap: android.graphics.Bitmap? = null
+    @Volatile private var currentArtworkBitmap: android.graphics.Bitmap? = null
     private lateinit var playerManager: RadioPlayerManager
     private lateinit var repository: RadioRepository
 
@@ -470,12 +470,6 @@ class RadioMediaService : MediaLibraryService() {
             }
         }
 
-        // 8. Atualização quando a máquina de estados de resiliência altera o modo
-        serviceScope.launch {
-            playerManager.playbackMode.collect {
-                updateNotification()
-            }
-        }
     }
 
     private inner class RadioForwardingPlayer(
@@ -1054,12 +1048,18 @@ class RadioMediaService : MediaLibraryService() {
         } catch (e: Exception) {
             android.util.Log.w("RadioMediaService", "Falha ao limpar AudioRouteManager: ${e.message}")
         }
-        serviceScope.launch {
+        // CORREÇÃO P1 (auditoria 24/09): mediaLibrarySession liberada sincronamente antes de cancelar
+        // o serviceScope. A versão anterior fazia serviceScope.launch{} seguido de cancel() imediato,
+        // causando vazamento de MediaLibrarySession e ExoPlayer se a coroutine fosse cancelada antes
+        // de executar.
+        try {
             mediaLibrarySession?.run {
                 player.release()
                 release()
-                mediaLibrarySession = null
             }
+            mediaLibrarySession = null
+        } catch (e: Exception) {
+            android.util.Log.w("RadioMediaService", "Erro ao liberar MediaLibrarySession: ${e.message}")
         }
         serviceScope.cancel()
         super.onDestroy()
@@ -1267,13 +1267,57 @@ class RadioMediaService : MediaLibraryService() {
             return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
         }
 
-        private fun autoPlayLastMediaIfIdle() {
+        private fun isAndroidAutoController(session: MediaSession, controller: MediaSession.ControllerInfo): Boolean {
+            val pkg = controller.packageName
+            val isAutoPkg = pkg == "com.google.android.projection.gearhead" ||
+                    pkg == "com.android.car.media" ||
+                    pkg == "com.google.android.carassistant" ||
+                    pkg.startsWith("com.google.android.apps.automotive")
+            val isAutoCompanion = try {
+                session.isAutoCompanionController(controller)
+            } catch (_: Throwable) {
+                false
+            }
+            return isAutoPkg || isAutoCompanion
+        }
+
+        private fun autoPlayForAndroidAutoIfAllowed() {
             if (playerManager.playbackStatus.value == RadioPlaybackStatus.PLAYING) return
+            val ipodPrefs = IpodPreferencesManager.getInstance(applicationContext)
+            // Reproduz automaticamente no Android Auto apenas se a preferência do usuário estiver ativa
+            if (!ipodPrefs.isAutoPlayOnLaunch) return
+
             val currentStation = playerManager.currentStation.value
             val currentPodcast = playerManager.currentPodcastEpisode.value
 
             if (currentStation == null && currentPodcast == null) {
-                val ipodPrefs = IpodPreferencesManager.getInstance(applicationContext)
+                val lastMediaType = ipodPrefs.getLastMediaType()
+                val lastStation = ipodPrefs.getLastPlayedStation()
+                val lastPodcast = ipodPrefs.getLastPlayedPodcast()
+
+                if (lastMediaType == "PODCAST" && lastPodcast != null) {
+                    playerManager.playPodcastEpisode(lastPodcast.first, lastPodcast.second)
+                } else if (lastStation != null) {
+                    playerManager.playStation(lastStation)
+                } else if (lastPodcast != null) {
+                    playerManager.playPodcastEpisode(lastPodcast.first, lastPodcast.second)
+                }
+            } else if (playerManager.playbackStatus.value != RadioPlaybackStatus.PLAYING) {
+                playerManager.resume()
+            }
+        }
+
+        private fun autoPlayLastMediaIfIdle() {
+            if (playerManager.playbackStatus.value == RadioPlaybackStatus.PLAYING) return
+            // Respeita pausa intencional do usuário: não retoma reprodução sem comando explícito
+            if (playerManager.userInitiatedPause) return
+            val ipodPrefs = IpodPreferencesManager.getInstance(applicationContext)
+            if (!ipodPrefs.isAutoPlayOnLaunch) return
+
+            val currentStation = playerManager.currentStation.value
+            val currentPodcast = playerManager.currentPodcastEpisode.value
+
+            if (currentStation == null && currentPodcast == null) {
                 val lastMediaType = ipodPrefs.getLastMediaType()
                 val lastStation = ipodPrefs.getLastPlayedStation()
                 val lastPodcast = ipodPrefs.getLastPlayedPodcast()
@@ -1295,7 +1339,10 @@ class RadioMediaService : MediaLibraryService() {
             browser: MediaSession.ControllerInfo,
             params: LibraryParams?
         ): ListenableFuture<LibraryResult<MediaItem>> {
-            autoPlayLastMediaIfIdle()
+            // Reproduz apenas se a conexão for proveniente do Android Auto e a preferência de autoplay estiver ativa
+            if (isAndroidAutoController(session, browser)) {
+                autoPlayForAndroidAutoIfAllowed()
+            }
             val listExtras = createContentStyleExtras(isGrid = false)
             val rootItem = MediaItem.Builder()
                 .setMediaId(ROOT_MEDIA_ID)
