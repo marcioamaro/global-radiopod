@@ -46,13 +46,22 @@ object PublishedRankings {
             .sortedBy { it.getInt("rank") }.take(limit.coerceIn(0, 20)).map { entry ->
                 val station = entry.getJSONObject("station")
                 val alternatives = station.optJSONArray("alternative_stream_urls")
+                val tagsRaw = station.opt("tags")
+                val parsedTags = when (tagsRaw) {
+                    is org.json.JSONArray -> (0 until tagsRaw.length())
+                        .map { tagsRaw.optString(it).replace("\"", "").replace("[", "").replace("]", "").trim() }
+                        .filter { it.isNotBlank() }
+                        .joinToString(", ")
+                    is String -> tagsRaw.replace("\"", "").replace("[", "").replace("]", "").trim()
+                    else -> ""
+                }
                 RadioStation(
                     id = station.getString("id"), name = entry.getString("title"),
                     streamUrl = station.getString("primary_stream_url"),
                     alternativeStreamUrls = if (alternatives == null) emptyList() else
                         (0 until alternatives.length()).map { alternatives.getString(it) },
                     favicon = station.optString("favicon_url", station.optString("favicon")),
-                    homepage = station.optString("homepage"), tags = station.opt("tags")?.toString().orEmpty(),
+                    homepage = station.optString("homepage"), tags = parsedTags,
                     country = station.optString("country"), countryCode = station.optString("country_code"),
                     state = station.optString("state"), city = station.optString("city"),
                     codec = station.optString("codec"), bitrate = station.optInt("bitrate_kbps"),

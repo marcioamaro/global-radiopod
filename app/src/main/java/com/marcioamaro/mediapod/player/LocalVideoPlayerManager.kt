@@ -85,10 +85,13 @@ class LocalVideoPlayerManager private constructor(private val context: Context) 
         ipodPrefs.localMediaPlaybackSpeed = safeSpeed
     }
 
+    fun setCastPositionDirect(posMs: Long, isPlaying: Boolean) {
+        _currentPositionMs.value = posMs
+        _isPlaying.value = isPlaying
+    }
+
     fun seekToPosition(posMs: Long) {
-        val target = posMs.coerceIn(0L, _durationMs.value.coerceAtLeast(0L))
-        exoPlayer.seekTo(target)
-        _currentPositionMs.value = target
+        seekTo(posMs)
     }
 
     private fun startProgressTracker() {
@@ -112,6 +115,21 @@ class LocalVideoPlayerManager private constructor(private val context: Context) 
 
     fun playVideo(video: LocalVideoTrack) {
         com.marcioamaro.mediapod.data.repository.MediaLibraryRepository.getInstance(context).recordRecent(video.libraryKey())
+        // Pausar rádio ou MP3 em execução
+        RadioPlayerManager.getInstance(context).pause()
+
+        _currentVideo.value = video
+        _durationMs.value = video.durationMs
+        _currentPositionMs.value = 0L
+
+        val routeManager = AudioRouteManager.getInstance(context)
+        if (routeManager.isCastingActive()) {
+            exoPlayer.pause()
+            _isPlaying.value = true
+            routeManager.updateCastMedia()
+            return
+        }
+
         // Se já for o mesmo vídeo carregado, mantenha a posição e retome se necessário
         if (_currentVideo.value?.id == video.id && exoPlayer.playbackState != Player.STATE_IDLE) {
             if (!exoPlayer.isPlaying) {
@@ -119,13 +137,6 @@ class LocalVideoPlayerManager private constructor(private val context: Context) 
             }
             return
         }
-
-        // Pausar rádio ou MP3 em execução
-        RadioPlayerManager.getInstance(context).pause()
-
-        _currentVideo.value = video
-        _durationMs.value = video.durationMs
-        _currentPositionMs.value = 0L
 
         val mediaItem = MediaItem.fromUri(video.contentUri)
         exoPlayer.setMediaItem(mediaItem)
@@ -138,6 +149,11 @@ class LocalVideoPlayerManager private constructor(private val context: Context) 
     }
 
     fun togglePlayPause() {
+        val routeManager = AudioRouteManager.getInstance(context)
+        if (routeManager.isCastingActive()) {
+            routeManager.togglePlayPause()
+            return
+        }
         if (exoPlayer.isPlaying) {
             exoPlayer.pause()
         } else {
@@ -147,25 +163,40 @@ class LocalVideoPlayerManager private constructor(private val context: Context) 
     }
 
     fun pause() {
+        val routeManager = AudioRouteManager.getInstance(context)
+        if (routeManager.isCastingActive()) {
+            routeManager.pause()
+        }
         exoPlayer.pause()
     }
 
     fun resume() {
+        val routeManager = AudioRouteManager.getInstance(context)
+        if (routeManager.isCastingActive()) {
+            routeManager.play()
+            return
+        }
         RadioPlayerManager.getInstance(context).pause()
         exoPlayer.play()
     }
 
     fun seekTo(positionMs: Long) {
-        exoPlayer.seekTo(positionMs.coerceIn(0L, _durationMs.value))
-        _currentPositionMs.value = exoPlayer.currentPosition
+        val target = positionMs.coerceIn(0L, _durationMs.value.coerceAtLeast(0L))
+        _currentPositionMs.value = target
+        val routeManager = AudioRouteManager.getInstance(context)
+        if (routeManager.isCastingActive()) {
+            routeManager.seekTo(target)
+            return
+        }
+        exoPlayer.seekTo(target)
     }
 
     fun forward10s() {
-        seekTo(exoPlayer.currentPosition + 10000L)
+        seekTo(_currentPositionMs.value + 10000L)
     }
 
     fun rewind10s() {
-        seekTo(exoPlayer.currentPosition - 10000L)
+        seekTo(_currentPositionMs.value - 10000L)
     }
 
     fun stop() {

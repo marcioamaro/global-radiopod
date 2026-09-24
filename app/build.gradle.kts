@@ -19,8 +19,8 @@ android {
     applicationId = "com.marcioamaro.mediapod"
     minSdk = 24
     targetSdk = 36
-    versionCode = 89
-    versionName = "0.3.7"
+    versionCode = 90
+    versionName = "0.3.8"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -65,7 +65,7 @@ android {
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       signingConfig = signingConfigs.getByName("release")
     }
-    debug { signingConfig = signingConfigs.getByName("debugConfig") }
+    debug { signingConfig = signingConfigs.getByName("release") }
   }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11

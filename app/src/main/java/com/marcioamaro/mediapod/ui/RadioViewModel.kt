@@ -712,6 +712,8 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         // Wire folder-spanning navigation callbacks
         playerManager.onFolderWrapNext = { nextLocalTrackWithFolderWrap() }
         playerManager.onFolderWrapPrev = { prevLocalTrackWithFolderWrap() }
+        playerManager.onNextVideo = { nextVideoWithFolderWrap() }
+        playerManager.onPrevVideo = { prevVideoWithFolderWrap() }
         videoPlayerManager.onVideoEnded = { nextVideoWithFolderWrap() }
 
         // Load stations
@@ -1639,25 +1641,32 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         radioApp.playbackCoordinator.play(radio.toPlaybackQueueItem())
     }
 
-    fun playStation(station: RadioStation) {
-        val fullList = if (playbackQueue.any { it.id == station.id }) {
-            playbackQueue
-        } else if (_uiState.value.stationsList.any { it.id == station.id }) {
-            _uiState.value.stationsList
-        } else if (favorites.value.any { it.id == station.id }) {
-            favorites.value
-        } else if (_uiState.value.recentsList.any { it.id == station.id }) {
-            _uiState.value.recentsList
-        } else {
-            listOf(station) + CuratedData.CURATED_GLOBAL_STATIONS
+    fun playStation(station: RadioStation, explicitList: List<RadioStation>? = null) {
+        val currentScreen = _uiState.value.currentScreen
+        val fullList = when {
+            explicitList != null && explicitList.isNotEmpty() -> explicitList
+            currentScreen == IpodScreenDestination.FAVORITES -> favorites.value
+            currentScreen == IpodScreenDestination.RECENTS -> _uiState.value.recentsList
+            currentScreen in listOf(
+                IpodScreenDestination.STATIONS_BY_GENRE,
+                IpodScreenDestination.STATIONS_BY_COUNTRY,
+                IpodScreenDestination.SEARCH,
+                IpodScreenDestination.TOP_BRAZIL,
+                IpodScreenDestination.TOP_WORLD
+            ) && _uiState.value.stationsList.isNotEmpty() -> _uiState.value.stationsList
+            _uiState.value.stationsList.any { it.id == station.id } -> _uiState.value.stationsList
+            favorites.value.any { it.id == station.id } -> favorites.value
+            _uiState.value.recentsList.any { it.id == station.id } -> _uiState.value.recentsList
+            playbackQueue.any { it.id == station.id } -> playbackQueue
+            else -> listOf(station) + CuratedData.CURATED_GLOBAL_STATIONS
         }
 
         val source = when {
-            favorites.value.any { it.id == station.id } && _uiState.value.stationsList == favorites.value -> QueueSource.FAVORITES
-            _uiState.value.recentsList.any { it.id == station.id } && _uiState.value.stationsList == _uiState.value.recentsList -> QueueSource.RECENTS
-            _uiState.value.searchQuery.isNotBlank() -> QueueSource.SEARCH
-            _uiState.value.activeCategoryName.contains("Top", ignoreCase = true) -> QueueSource.RANKING
-            _uiState.value.activeGenre != null || _uiState.value.activeCountry != null -> QueueSource.CATEGORY
+            fullList === favorites.value || currentScreen == IpodScreenDestination.FAVORITES -> QueueSource.FAVORITES
+            fullList === _uiState.value.recentsList || currentScreen == IpodScreenDestination.RECENTS -> QueueSource.RECENTS
+            currentScreen == IpodScreenDestination.SEARCH || _uiState.value.searchQuery.isNotBlank() -> QueueSource.SEARCH
+            currentScreen in listOf(IpodScreenDestination.TOP_BRAZIL, IpodScreenDestination.TOP_WORLD) -> QueueSource.RANKING
+            currentScreen in listOf(IpodScreenDestination.STATIONS_BY_GENRE, IpodScreenDestination.STATIONS_BY_COUNTRY) -> QueueSource.CATEGORY
             else -> QueueSource.GLOBAL
         }
 
@@ -1671,7 +1680,6 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
             stationsList = recents,
             activeCategoryName = "Recentes"
         )
-        playbackQueue = recents
     }
 
     fun clearRecentStations() {
@@ -1753,7 +1761,6 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                 isLoadingList = false,
                 stationsList = stations
             )
-            playbackQueue = stations
             if (isBrazil) {
                 onSearchStateChanged("SP", defaultCity = "São Paulo")
             }
@@ -1773,7 +1780,6 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                 isLoadingList = false,
                 stationsList = mapped
             )
-            playbackQueue = mapped
         }
     }
 
@@ -1878,7 +1884,6 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                 isLoadingList = false,
                 stationsList = mapped
             )
-            playbackQueue = mapped
         }
     }
 
@@ -2216,6 +2221,8 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
 
     override fun onCleared() {
         videoPlayerManager.onVideoEnded = null
+        playerManager.onNextVideo = null
+        playerManager.onPrevVideo = null
         playerManager.onFolderWrapNext = null
         playerManager.onFolderWrapPrev = null
         super.onCleared()

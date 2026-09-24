@@ -314,7 +314,8 @@ class DefaultPlaybackCoordinator internal constructor(
 
         when (item.mediaType) {
             ActiveMediaType.LIVE_RADIO -> {
-                val station = RadioStation(
+                val fullStation = com.marcioamaro.mediapod.data.repository.CuratedData.CURATED_GLOBAL_STATIONS.find { it.id == item.id }
+                val station = fullStation ?: RadioStation(
                     id = item.id,
                     name = item.title,
                     streamUrl = item.mediaUri,

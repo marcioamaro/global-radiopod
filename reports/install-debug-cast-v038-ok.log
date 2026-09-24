@@ -1,0 +1,84 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.5.0/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Reusing configuration cache.
+> Task :app:preBuild UP-TO-DATE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugBuildConfig UP-TO-DATE
+> Task :app:processDebugGoogleServices UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:generateDebugGlobalSynthetics UP-TO-DATE
+> Task :app:checkDebugDuplicateClasses UP-TO-DATE
+> Task :app:desugarDebugFileDependencies UP-TO-DATE
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :app:processDebugNavigationResources UP-TO-DATE
+> Task :app:compressDebugAssets UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:mergeLibDexDebug UP-TO-DATE
+> Task :app:generateDebugRFile UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:compileDebugNavigationResources UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:mergeDebugJniLibFolders UP-TO-DATE
+> Task :app:mergeExtDexDebug UP-TO-DATE
+> Task :app:validateSigningDebug UP-TO-DATE
+> Task :app:writeDebugAppMetadata UP-TO-DATE
+> Task :app:writeDebugSigningConfigVersions UP-TO-DATE
+> Task :app:mergeDebugNativeLibs UP-TO-DATE
+> Task :app:stripDebugDebugSymbols UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:kspDebugKotlin
+> Task :app:compileDebugKotlin
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/MainActivity.kt:173:23 'constructor(p0: String!, p1: String!): Locale' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/MainActivity.kt:175:23 'constructor(p0: String!): Locale' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/data/repository/CuratedStations.kt:65:65 'constructor(p0: String!, p1: String!): Locale' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/player/AudioRouteManager.kt:324:45 'fun seek(p0: Long): PendingResult<RemoteMediaClient.MediaChannelResult!>' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/player/RadioPlayerManager.kt:603:84 'field value: String' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/player/SmartLoadErrorHandlingPolicy.kt:138:13 Check for instance is always 'true'.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/service/RadioMediaService.kt:522:29 'static field COMMAND_SET_DEVICE_VOLUME: Int' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/service/RadioMediaService.kt:524:29 'static field COMMAND_ADJUST_DEVICE_VOLUME: Int' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/service/RadioMediaService.kt:541:24 'static field COMMAND_SET_DEVICE_VOLUME: Int' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/service/RadioMediaService.kt:543:24 'static field COMMAND_ADJUST_DEVICE_VOLUME: Int' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/service/RadioMediaService.kt:717:22 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/service/RadioMediaService.kt:1134:22 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/service/RadioMediaService.kt:1181:26 'fun onPlayerCommandRequest(p0: MediaSession, p1: MediaSession.ControllerInfo, p2: Int): Int' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/ui/components/MonochromeFlag.kt:78:17 Duplicate branch condition in 'when'.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/ui/onboarding/OnboardingWizardScreen.kt:128:29 'constructor(p0: String!, p1: String!): Locale' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/ui/onboarding/OnboardingWizardScreen.kt:128:61 'constructor(p0: String!): Locale' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/ui/onboarding/OnboardingWizardScreen.kt:1664:61 'static field VIBRATOR_SERVICE: String' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/ui/screens/CarModeScreen.kt:919:50 'val Icons.Filled.VolumeMute: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeMute.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/ui/screens/CarModeScreen.kt:920:50 'val Icons.Filled.VolumeDown: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeDown.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/ui/screens/CarModeScreen.kt:921:39 'val Icons.Filled.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/ui/screens/DockModeScreen.kt:110:64 'constructor(p0: String!, p1: String!): Locale' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/ui/screens/DockModeScreen.kt:117:92 'constructor(p0: String!, p1: String!): Locale' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/ui/screens/IpodAudioOutputScreen.kt:175:43 'val Icons.Filled.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/ui/screens/IpodPodcastScreens.kt:689:61 'val Icons.Filled.Notes: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Notes.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/ui/screens/IpodVideoScreen.kt:566:57 'val Icons.Filled.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/ui/screens/IpodYouTubeScreens.kt:771:26 'val LocalLifecycleOwner: ProvidableCompositionLocal<LifecycleOwner>' is deprecated. Moved to lifecycle-runtime-compose library in androidx.lifecycle.compose package.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/ui/screens/IpodYouTubeScreens.kt:855:49 'val Icons.Filled.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/ui/screens/IpodYouTubeScreens.kt:1028:26 'val LocalLifecycleOwner: ProvidableCompositionLocal<LifecycleOwner>' is deprecated. Moved to lifecycle-runtime-compose library in androidx.lifecycle.compose package.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/marcioamaro/mediapod/ui/screens/IpodYouTubeScreens.kt:1125:45 'val Icons.Filled.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack.
+
+> Task :app:processDebugJavaRes UP-TO-DATE
+> Task :app:mergeDebugJavaResource UP-TO-DATE
+> Task :app:compileDebugJavaWithJavac
+> Task :app:dexBuilderDebug
+> Task :app:mergeProjectDexDebug
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+
+> Task :app:installDebug
+Installing APK 'app-debug.apk' on '2306EPN60G - 16' for :app:debug
+Installed on 1 device.
+
+BUILD SUCCESSFUL in 2m 5s
+41 actionable tasks: 8 executed, 33 up-to-date
+Configuration cache entry reused.

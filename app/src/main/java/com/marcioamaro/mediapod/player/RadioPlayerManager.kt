@@ -319,6 +319,8 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
     var onFolderWrapNext: (() -> Unit)? = null
     var onFolderWrapPrev: (() -> Unit)? = null
+    var onNextVideo: (() -> Unit)? = null
+    var onPrevVideo: (() -> Unit)? = null
 
     private var localAudioQueue: List<com.marcioamaro.mediapod.data.model.LocalAudioTrack> = emptyList()
     private var audioProgressJob: Job? = null
@@ -639,7 +641,12 @@ class RadioPlayerManager private constructor(private val context: Context) {
     fun getCurrentPlaylist(): List<RadioStation> = playlist
 
     fun playNextStation() {
-        val coordinatorContextItems = (context.applicationContext as? com.marcioamaro.mediapod.RadioApp)?.playbackCoordinator?.navigationContext?.value?.items
+        val coordinator = (context.applicationContext as? com.marcioamaro.mediapod.RadioApp)?.playbackCoordinator
+        if (coordinator != null && coordinator.navigationContext.value.items.isNotEmpty()) {
+            coordinator.skipToNext()
+            return
+        }
+        val coordinatorContextItems = coordinator?.navigationContext?.value?.items
         val list = if (!coordinatorContextItems.isNullOrEmpty()) {
             coordinatorContextItems.map { it.toRadioStation() }
         } else if (playlist.isNotEmpty()) {
@@ -656,7 +663,12 @@ class RadioPlayerManager private constructor(private val context: Context) {
     }
 
     fun playPreviousStation() {
-        val coordinatorContextItems = (context.applicationContext as? com.marcioamaro.mediapod.RadioApp)?.playbackCoordinator?.navigationContext?.value?.items
+        val coordinator = (context.applicationContext as? com.marcioamaro.mediapod.RadioApp)?.playbackCoordinator
+        if (coordinator != null && coordinator.navigationContext.value.items.isNotEmpty()) {
+            coordinator.skipToPrevious()
+            return
+        }
+        val coordinatorContextItems = coordinator?.navigationContext?.value?.items
         val list = if (!coordinatorContextItems.isNullOrEmpty()) {
             coordinatorContextItems.map { it.toRadioStation() }
         } else if (playlist.isNotEmpty()) {
@@ -674,6 +686,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
     fun playNext() {
         when (_activeMediaType.value) {
+            ActiveMediaType.LOCAL_VIDEO -> onNextVideo?.invoke()
             ActiveMediaType.LOCAL_AUDIO -> nextLocalTrack()
             ActiveMediaType.PODCAST_EPISODE -> nextPodcastEpisode()
             ActiveMediaType.LIVE_RADIO -> playNextStation()
@@ -683,6 +696,14 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
     fun playPrevious() {
         when (_activeMediaType.value) {
+            ActiveMediaType.LOCAL_VIDEO -> {
+                val videoManager = LocalVideoPlayerManager.getInstance(context)
+                if (videoManager.currentPositionMs.value > 3000L) {
+                    videoManager.seekTo(0L)
+                } else {
+                    onPrevVideo?.invoke()
+                }
+            }
             ActiveMediaType.LOCAL_AUDIO -> {
                 if (_audioPositionMs.value > 3000L) {
                     seekToPosition(0L)
@@ -778,9 +799,6 @@ class RadioPlayerManager private constructor(private val context: Context) {
         val candidates = station.getAllStreamCandidates()
         val initialUrl = if (candidates.isNotEmpty()) candidates[0] else station.streamUrl
         playStreamUrl(station, initialUrl)
-        if (AudioRouteManager.getInstance(context).isCastingActive()) {
-            AudioRouteManager.getInstance(context).updateCastMedia()
-        }
     }
 
     private fun getHttpDataSourceFactory(): DefaultHttpDataSource.Factory {
@@ -1599,6 +1617,12 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
     fun seekLocalAudioTo(posMs: Long) {
         val target = posMs.coerceIn(0L, _audioDurationMs.value)
+        val routeManager = AudioRouteManager.getInstance(context)
+        if (routeManager.isCastingActive()) {
+            routeManager.seekTo(target)
+            _audioPositionMs.value = target
+            return
+        }
         exoPlayer?.seekTo(target)
         _audioPositionMs.value = target
     }

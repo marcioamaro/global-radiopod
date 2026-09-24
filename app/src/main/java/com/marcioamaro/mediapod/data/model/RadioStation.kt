@@ -172,9 +172,16 @@ data class RadioStation(
 
     val primaryGenre: String
         get() {
-            if (tags.isBlank()) return "Geral"
-            val first = tags.split(",", ";", " ").firstOrNull { it.isNotBlank() } ?: "Geral"
-            return first.trim().replaceFirstChar { it.uppercase() }
+            val clean = tags
+                .replace("[", "")
+                .replace("]", "")
+                .replace("\"", "")
+                .replace("'", "")
+                .trim()
+            if (clean.isBlank()) return "Geral"
+            val first = clean.split(",", ";").map { it.trim() }.firstOrNull { it.isNotBlank() } ?: "Geral"
+            if (first.isBlank() || first.equals("null", ignoreCase = true)) return "Geral"
+            return first.replaceFirstChar { if (it.isLowerCase()) it.titlecase(java.util.Locale.getDefault()) else it.toString() }
         }
 
     val locationLabel: String

@@ -32,4 +32,22 @@ class RadioRankingRepositoryTest {
         assertEquals(brazil.take(3), repo.getTopBrazil(3))
         assertTrue(repo.getTopWorld(-1).isEmpty())
     }
+
+    @Test fun topStationsTagsAndGenresAreCleanAndNotRawJson() = runBlocking {
+        PublishedRankings.initialize(ApplicationProvider.getApplicationContext<Context>())
+        val repo = RadioRankingRepository.getInstance()
+        val allTops = repo.getTopBrazil(20) + repo.getTopWorld(20)
+        
+        for (station in allTops) {
+            val genre = station.primaryGenre
+            assertFalse("Station '${station.name}' genre contains '[': $genre", genre.contains("["))
+            assertFalse("Station '${station.name}' genre contains ']': $genre", genre.contains("]"))
+            assertFalse("Station '${station.name}' genre contains '\"': $genre", genre.contains("\""))
+            
+            val tags = station.tags
+            assertFalse("Station '${station.name}' tags contain '[': $tags", tags.contains("["))
+            assertFalse("Station '${station.name}' tags contain ']': $tags", tags.contains("]"))
+            assertFalse("Station '${station.name}' tags contain '\"': $tags", tags.contains("\""))
+        }
+    }
 }

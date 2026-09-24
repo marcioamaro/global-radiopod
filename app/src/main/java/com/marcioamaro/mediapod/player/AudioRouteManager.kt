@@ -136,7 +136,7 @@ class AudioRouteManager private constructor(private val context: Context) {
             castSession = session
             isCastingActive = true
             _castSessionState.value = CastSessionState.CONNECTED
-            startLocalIconServer()
+            com.marcioamaro.mediapod.cast.CastStreamProxy.getInstance(context).startServer()
             session.remoteMediaClient?.registerCallback(remoteClientCallback)
             try {
                 session.addCastListener(castVolumeListener)
@@ -158,7 +158,7 @@ class AudioRouteManager private constructor(private val context: Context) {
             isCastingActive = false
             _castSessionState.value = CastSessionState.ERROR
             com.marcioamaro.mediapod.audio.VolumeManager.getInstance(context).switchToLocal()
-            stopLocalIconServer()
+            com.marcioamaro.mediapod.cast.CastStreamProxy.getInstance(context).stopServer()
             updateRoutes()
         }
         override fun onSessionEnding(session: com.google.android.gms.cast.framework.CastSession) {
@@ -174,7 +174,7 @@ class AudioRouteManager private constructor(private val context: Context) {
                 session.removeCastListener(castVolumeListener)
             } catch (_: Exception) {}
             castSession = null
-            stopLocalIconServer()
+            com.marcioamaro.mediapod.cast.CastStreamProxy.getInstance(context).stopServer()
             _castSessionState.value = CastSessionState.DISCONNECTED
             com.marcioamaro.mediapod.audio.VolumeManager.getInstance(context).switchToLocal()
             if (isCastingActive) {
@@ -190,7 +190,7 @@ class AudioRouteManager private constructor(private val context: Context) {
             castSession = session
             isCastingActive = true
             _castSessionState.value = CastSessionState.CONNECTED
-            startLocalIconServer()
+            com.marcioamaro.mediapod.cast.CastStreamProxy.getInstance(context).startServer()
             session.remoteMediaClient?.registerCallback(remoteClientCallback)
             try {
                 session.addCastListener(castVolumeListener)
@@ -210,7 +210,7 @@ class AudioRouteManager private constructor(private val context: Context) {
             castSession = null
             isCastingActive = false
             _castSessionState.value = CastSessionState.ERROR
-            stopLocalIconServer()
+            com.marcioamaro.mediapod.cast.CastStreamProxy.getInstance(context).stopServer()
             transferPlaybackToLocal()
             updateRoutes()
         }
@@ -223,25 +223,48 @@ class AudioRouteManager private constructor(private val context: Context) {
         override fun onStatusUpdated() {
             val rmc = castSession?.remoteMediaClient ?: return
             val playerManager = RadioPlayerManager.getInstance(context)
+            val mediaStatus = rmc.mediaStatus
+            android.util.Log.d(
+                "AudioRouteManager",
+                "Cast onStatusUpdated: isPlaying=${rmc.isPlaying}, isPaused=${rmc.isPaused}, isBuffering=${rmc.isBuffering}, " +
+                    "playerState=${mediaStatus?.playerState}, idleReason=${mediaStatus?.idleReason}, " +
+                    "streamPosition=${rmc.approximateStreamPosition}"
+            )
             lastRemoteIsPlaying = rmc.isPlaying
             val pos = rmc.approximateStreamPosition
-            if (pos > 0L && isCastingActive() && playerManager.activeMediaType.value != ActiveMediaType.LIVE_RADIO) {
+            if (pos > 0L && isCastingActive()) {
                 lastRemoteStreamPositionMs = pos
-                playerManager.setAudioPositionDirect(pos)
+                val activeType = playerManager.activeMediaType.value
+                if (activeType == ActiveMediaType.LOCAL_VIDEO) {
+                    com.marcioamaro.mediapod.player.LocalVideoPlayerManager.getInstance(context)
+                        .setCastPositionDirect(pos, rmc.isPlaying)
+                } else if (activeType != ActiveMediaType.LIVE_RADIO) {
+                    playerManager.setAudioPositionDirect(pos)
+                }
             }
             try {
                 val castVol = castSession?.volume?.toFloat() ?: 1.0f
                 com.marcioamaro.mediapod.audio.VolumeManager.getInstance(context).updateCastVolume(castVol)
             } catch (_: Exception) {}
-            val mediaStatus = rmc.mediaStatus
             if (mediaStatus != null) {
-                if (mediaStatus.playerState == com.google.android.gms.cast.MediaStatus.PLAYER_STATE_IDLE &&
-                    mediaStatus.idleReason == com.google.android.gms.cast.MediaStatus.IDLE_REASON_FINISHED) {
-                    // Item finalizou no Chromecast -> Avançar automaticamente para o próximo da fila
-                    scope.launch(Dispatchers.Main) {
-                        playNext()
+                if (mediaStatus.playerState == com.google.android.gms.cast.MediaStatus.PLAYER_STATE_IDLE) {
+                    when (mediaStatus.idleReason) {
+                        com.google.android.gms.cast.MediaStatus.IDLE_REASON_FINISHED -> {
+                            android.util.Log.d("AudioRouteManager", "Cast item finalizou -> avançando próximo")
+                            scope.launch(Dispatchers.Main) {
+                                playNext()
+                            }
+                            return
+                        }
+                        com.google.android.gms.cast.MediaStatus.IDLE_REASON_ERROR -> {
+                            android.util.Log.e("AudioRouteManager", "Cast ERRO DE REPRODUÇÃO (IDLE_REASON_ERROR) no dispositivo receptor!")
+                            playerManager.setPlaybackStatusDirect(RadioPlaybackStatus.ERROR)
+                            return
+                        }
+                        com.google.android.gms.cast.MediaStatus.IDLE_REASON_CANCELED -> {
+                            android.util.Log.w("AudioRouteManager", "Cast reprodução cancelada (IDLE_REASON_CANCELED)")
+                        }
                     }
-                    return
                 }
             }
             if (rmc.isPlaying) {
@@ -280,6 +303,10 @@ class AudioRouteManager private constructor(private val context: Context) {
 
     fun isCastingActive(): Boolean {
         return isCastingActive && castSession?.isConnected == true
+    }
+
+    fun getActiveCastDeviceName(): String? {
+        return if (isCastingActive()) castSession?.castDevice?.friendlyName else null
     }
 
     fun getRemoteMediaClient(): com.google.android.gms.cast.framework.media.RemoteMediaClient? {
@@ -431,7 +458,12 @@ class AudioRouteManager private constructor(private val context: Context) {
                 putString(com.google.android.gms.cast.MediaMetadata.KEY_ARTIST, streamTitle)
                 putString(com.google.android.gms.cast.MediaMetadata.KEY_SUBTITLE, streamTitle)
                 putString(com.google.android.gms.cast.MediaMetadata.KEY_ALBUM_TITLE, "MediaPod • Rádio")
-                applyAppIconToCast(this)
+                val iconUrl = com.marcioamaro.mediapod.cast.CastStreamProxy.getInstance(context).getAppIconUrl()
+                if (iconUrl != null) {
+                    try {
+                        addImage(com.google.android.gms.common.images.WebImage(android.net.Uri.parse(iconUrl), 512, 512))
+                    } catch (_: Exception) {}
+                }
             }
 
             // Verificar se há um item na fila do Cast e atualizar seus metadados
@@ -482,12 +514,109 @@ class AudioRouteManager private constructor(private val context: Context) {
     private fun transferPlaybackToCast(session: com.google.android.gms.cast.framework.CastSession) {
         val remoteMediaClient = session.remoteMediaClient ?: return
         val playerManager = RadioPlayerManager.getInstance(context)
+        val videoPlayerManager = com.marcioamaro.mediapod.player.LocalVideoPlayerManager.getInstance(context)
         val station = playerManager.currentStation.value
         val podcast = playerManager.currentPodcastEpisode.value
         val localAudio = playerManager.currentLocalAudio.value
+        val localVideo = videoPlayerManager.currentVideo.value
+        val activeType = playerManager.activeMediaType.value
+
+        val currentMediaId: String = when (activeType) {
+            ActiveMediaType.LOCAL_VIDEO -> "video_${localVideo?.id}"
+            ActiveMediaType.LOCAL_AUDIO -> "audio_${localAudio?.id}"
+            ActiveMediaType.PODCAST_EPISODE -> "podcast_${podcast?.id}"
+            else -> "station_${station?.id}"
+        }
+
+        val now = System.currentTimeMillis()
+        if (now - lastTransferTime < 600L && currentMediaId == lastTransferMediaId) {
+            android.util.Log.d("AudioRouteManager", "transferPlaybackToCast: ignorando chamada duplicada por debounce (< 600ms)")
+            return
+        }
+        lastTransferTime = now
+        lastTransferMediaId = currentMediaId
 
         try {
-            if (station != null) {
+            if (activeType == ActiveMediaType.LOCAL_VIDEO && localVideo != null) {
+                val proxyUrl = com.marcioamaro.mediapod.cast.CastStreamProxy.getInstance(context)
+                    .getLocalMediaProxyUrl(localVideo.contentUri, "video/mp4")
+                val castMeta = com.google.android.gms.cast.MediaMetadata(com.google.android.gms.cast.MediaMetadata.MEDIA_TYPE_MOVIE).apply {
+                    putString(com.google.android.gms.cast.MediaMetadata.KEY_TITLE, localVideo.title)
+                    putString(com.google.android.gms.cast.MediaMetadata.KEY_SUBTITLE, "MediaPod • Vídeo")
+                }
+                val iconUrl = com.marcioamaro.mediapod.cast.CastStreamProxy.getInstance(context).getAppIconUrl()
+                if (iconUrl != null) {
+                    try {
+                        castMeta.addImage(com.google.android.gms.common.images.WebImage(android.net.Uri.parse(iconUrl), 512, 512))
+                    } catch (_: Exception) {}
+                }
+                val mediaInfo = com.google.android.gms.cast.MediaInfo.Builder(proxyUrl)
+                    .setStreamType(com.google.android.gms.cast.MediaInfo.STREAM_TYPE_BUFFERED)
+                    .setContentType("video/mp4")
+                    .setStreamDuration(localVideo.durationMs)
+                    .setMetadata(castMeta)
+                    .build()
+
+                val request = com.google.android.gms.cast.MediaLoadRequestData.Builder()
+                    .setMediaInfo(mediaInfo)
+                    .setAutoplay(true)
+                    .setCurrentTime(videoPlayerManager.currentPositionMs.value)
+                    .build()
+
+                val pendingResult = remoteMediaClient.load(request)
+                pendingResult.setResultCallback { result ->
+                    val status = result.status
+                    android.util.Log.d(
+                        "AudioRouteManager",
+                        "Cast video load ResultCallback: isSuccess=${status.isSuccess}, " +
+                            "statusCode=${status.statusCode}, statusMessage=${status.statusMessage}"
+                    )
+                }
+                videoPlayerManager.pause()
+            } else if (activeType == ActiveMediaType.LOCAL_AUDIO && localAudio != null) {
+                val proxyUrl = com.marcioamaro.mediapod.cast.CastStreamProxy.getInstance(context)
+                    .getLocalMediaProxyUrl(localAudio.contentUri, "audio/mpeg")
+                val castMeta = com.google.android.gms.cast.MediaMetadata(com.google.android.gms.cast.MediaMetadata.MEDIA_TYPE_MUSIC_TRACK).apply {
+                    putString(com.google.android.gms.cast.MediaMetadata.KEY_TITLE, localAudio.title)
+                    putString(com.google.android.gms.cast.MediaMetadata.KEY_ARTIST, localAudio.artist)
+                    putString(com.google.android.gms.cast.MediaMetadata.KEY_SUBTITLE, localAudio.artist)
+                    putString(com.google.android.gms.cast.MediaMetadata.KEY_ALBUM_TITLE, localAudio.album)
+                }
+                if (localAudio.albumArtUrl != null) {
+                    try {
+                        castMeta.addImage(com.google.android.gms.common.images.WebImage(android.net.Uri.parse(localAudio.albumArtUrl)))
+                    } catch (_: Exception) {}
+                }
+                val iconUrl = com.marcioamaro.mediapod.cast.CastStreamProxy.getInstance(context).getAppIconUrl()
+                if (iconUrl != null) {
+                    try {
+                        castMeta.addImage(com.google.android.gms.common.images.WebImage(android.net.Uri.parse(iconUrl), 512, 512))
+                    } catch (_: Exception) {}
+                }
+                val mediaInfo = com.google.android.gms.cast.MediaInfo.Builder(proxyUrl)
+                    .setStreamType(com.google.android.gms.cast.MediaInfo.STREAM_TYPE_BUFFERED)
+                    .setContentType("audio/mpeg")
+                    .setStreamDuration(localAudio.durationMs)
+                    .setMetadata(castMeta)
+                    .build()
+
+                val request = com.google.android.gms.cast.MediaLoadRequestData.Builder()
+                    .setMediaInfo(mediaInfo)
+                    .setAutoplay(true)
+                    .setCurrentTime(playerManager.audioPositionMs.value)
+                    .build()
+
+                val pendingResult = remoteMediaClient.load(request)
+                pendingResult.setResultCallback { result ->
+                    val status = result.status
+                    android.util.Log.d(
+                        "AudioRouteManager",
+                        "Cast local audio load ResultCallback: isSuccess=${status.isSuccess}, " +
+                            "statusCode=${status.statusCode}, statusMessage=${status.statusMessage}"
+                    )
+                }
+                playerManager.pauseLocalOnly()
+            } else if (station != null) {
                 val streamUrl = station.streamUrl
                 val nowPlaying = playerManager.nowPlaying.value
                 val streamTitle = if (nowPlaying.hasTrackInfo && !nowPlaying.artist.equals("[sem informações]", ignoreCase = true)) nowPlaying.artist else "[sem informações]"
@@ -496,11 +625,36 @@ class AudioRouteManager private constructor(private val context: Context) {
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_ARTIST, streamTitle)
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_SUBTITLE, streamTitle)
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_ALBUM_TITLE, "MediaPod • Rádio")
-                    applyAppIconToCast(this)
                 }
-                val mediaInfo = com.google.android.gms.cast.MediaInfo.Builder(streamUrl)
+                if (station.favicon.isNotBlank()) {
+                    try {
+                        castMeta.addImage(com.google.android.gms.common.images.WebImage(android.net.Uri.parse(station.favicon)))
+                    } catch (_: Exception) {}
+                }
+                val iconUrl = com.marcioamaro.mediapod.cast.CastStreamProxy.getInstance(context).getAppIconUrl()
+                if (iconUrl != null) {
+                    try {
+                        castMeta.addImage(com.google.android.gms.common.images.WebImage(android.net.Uri.parse(iconUrl), 512, 512))
+                    } catch (_: Exception) {}
+                }
+
+                val isHls = streamUrl.contains(".m3u8", ignoreCase = true) || streamUrl.contains("/hls", ignoreCase = true)
+                val finalContentType = when {
+                    isHls -> "application/vnd.apple.mpegurl"
+                    streamUrl.contains(".aac", ignoreCase = true) -> "audio/aac"
+                    streamUrl.contains(".ogg", ignoreCase = true) || streamUrl.contains(".opus", ignoreCase = true) -> "audio/ogg"
+                    else -> "audio/mpeg"
+                }
+                val finalUrl = if (isHls) {
+                    streamUrl
+                } else {
+                    com.marcioamaro.mediapod.cast.CastStreamProxy.getInstance(context).getProxyStreamUrl(streamUrl)
+                }
+                android.util.Log.d("AudioRouteManager", "transferPlaybackToCast: rádio='${station.name}', urlFinal='$finalUrl', isHls=$isHls, contentType='$finalContentType'")
+
+                val mediaInfo = com.google.android.gms.cast.MediaInfo.Builder(finalUrl)
                     .setStreamType(com.google.android.gms.cast.MediaInfo.STREAM_TYPE_LIVE)
-                    .setContentType(detectContentType(streamUrl))
+                    .setContentType(finalContentType)
                     .setMetadata(castMeta)
                     .build()
 
@@ -509,7 +663,21 @@ class AudioRouteManager private constructor(private val context: Context) {
                     .setAutoplay(true)
                     .build()
 
-                remoteMediaClient.load(request)
+                val pendingResult = remoteMediaClient.load(request)
+                pendingResult.setResultCallback { result ->
+                    val status = result.status
+                    android.util.Log.d(
+                        "AudioRouteManager",
+                        "Cast remoteMediaClient.load ResultCallback: isSuccess=${status.isSuccess}, " +
+                            "statusCode=${status.statusCode}, statusMessage=${status.statusMessage}"
+                    )
+                    if (!status.isSuccess) {
+                        android.util.Log.e(
+                            "AudioRouteManager",
+                            "FALHA ao carregar rádio no Cast: code=${status.statusCode}, msg=${status.statusMessage}"
+                        )
+                    }
+                }
                 playerManager.pauseLocalOnly()
             } else if (podcast != null) {
                 val castMeta = com.google.android.gms.cast.MediaMetadata(com.google.android.gms.cast.MediaMetadata.MEDIA_TYPE_MUSIC_TRACK).apply {
@@ -517,7 +685,12 @@ class AudioRouteManager private constructor(private val context: Context) {
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_ARTIST, podcast.showTitle)
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_SUBTITLE, podcast.publishDate.ifBlank { "Podcast" })
                     putString(com.google.android.gms.cast.MediaMetadata.KEY_ALBUM_TITLE, "MediaPod • Podcast")
-                    applyAppIconToCast(this)
+                }
+                val iconUrl = com.marcioamaro.mediapod.cast.CastStreamProxy.getInstance(context).getAppIconUrl()
+                if (iconUrl != null) {
+                    try {
+                        castMeta.addImage(com.google.android.gms.common.images.WebImage(android.net.Uri.parse(iconUrl), 512, 512))
+                    } catch (_: Exception) {}
                 }
                 val mediaInfo = com.google.android.gms.cast.MediaInfo.Builder(podcast.audioUrl)
                     .setStreamType(com.google.android.gms.cast.MediaInfo.STREAM_TYPE_BUFFERED)
@@ -531,7 +704,15 @@ class AudioRouteManager private constructor(private val context: Context) {
                     .setCurrentTime(playerManager.audioPositionMs.value)
                     .build()
 
-                remoteMediaClient.load(request)
+                val pendingResult = remoteMediaClient.load(request)
+                pendingResult.setResultCallback { result ->
+                    val status = result.status
+                    android.util.Log.d(
+                        "AudioRouteManager",
+                        "Cast podcast load ResultCallback: isSuccess=${status.isSuccess}, " +
+                            "statusCode=${status.statusCode}, statusMessage=${status.statusMessage}"
+                    )
+                }
                 playerManager.pauseLocalOnly()
             }
         } catch (e: Exception) {
@@ -539,106 +720,28 @@ class AudioRouteManager private constructor(private val context: Context) {
         }
     }
 
-    private var localIconServer: java.net.ServerSocket? = null
-    private var localIconServerPort: Int = 8992
-    private var localIconJob: kotlinx.coroutines.Job? = null
-    private var appIconPngCached: ByteArray? = null
-
-    private fun getAppIconPngBytes(): ByteArray {
-        appIconPngCached?.let { return it }
-        try {
-            val drawable = androidx.core.content.ContextCompat.getDrawable(context, R.drawable.playstore_icon)
-                ?: androidx.core.content.ContextCompat.getDrawable(context, R.mipmap.ic_launcher)
-            if (drawable != null) {
-                val bitmap = if (drawable is android.graphics.drawable.BitmapDrawable) {
-                    drawable.bitmap
-                } else {
-                    val b = android.graphics.Bitmap.createBitmap(512, 512, android.graphics.Bitmap.Config.ARGB_8888)
-                    val canvas = android.graphics.Canvas(b)
-                    drawable.setBounds(0, 0, canvas.width, canvas.height)
-                    drawable.draw(canvas)
-                    b
-                }
-                val stream = java.io.ByteArrayOutputStream()
-                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
-                val bytes = stream.toByteArray()
-                appIconPngCached = bytes
-                return bytes
-            }
-        } catch (_: Exception) {}
-        return ByteArray(0)
-    }
-
-    private fun getLocalWifiIp(): String? {
-        try {
-            val interfaces = java.net.NetworkInterface.getNetworkInterfaces()
-            while (interfaces.hasMoreElements()) {
-                val iface = interfaces.nextElement()
-                if (iface.isLoopback || !iface.isUp) continue
-                val addresses = iface.inetAddresses
-                while (addresses.hasMoreElements()) {
-                    val addr = addresses.nextElement()
-                    if (!addr.isLoopbackAddress && addr is java.net.Inet4Address) {
-                        return addr.hostAddress
-                    }
-                }
-            }
-        } catch (_: Exception) {}
-        return null
-    }
-
-    private fun startLocalIconServer() {
-        if (localIconServer != null && !localIconServer!!.isClosed) return
-        localIconJob = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
-            try {
-                localIconServer = java.net.ServerSocket(0)
-                localIconServerPort = localIconServer!!.localPort
-                while (isActive && !localIconServer!!.isClosed) {
-                    val socket = localIconServer!!.accept()
-                    launch {
-                        try {
-                            val inStream = socket.getInputStream()
-                            val reader = java.io.BufferedReader(java.io.InputStreamReader(inStream))
-                            val line = reader.readLine()
-                            if (line != null && line.startsWith("GET /app_icon.png")) {
-                                val bytes = getAppIconPngBytes()
-                                val out = socket.getOutputStream()
-                                val header = "HTTP/1.1 200 OK\r\nContent-Type: image/png\r\nContent-Length: ${bytes.size}\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\n\r\n"
-                                out.write(header.toByteArray())
-                                out.write(bytes)
-                                out.flush()
-                            }
-                            socket.close()
-                        } catch (_: Exception) {}
-                    }
-                }
-            } catch (_: Exception) {}
-        }
-    }
-
-    private fun stopLocalIconServer() {
-        try {
-            localIconJob?.cancel()
-            localIconServer?.close()
-        } catch (_: Exception) {}
-        localIconServer = null
-    }
-
-    private fun applyAppIconToCast(castMeta: com.google.android.gms.cast.MediaMetadata) {
-        try {
-            startLocalIconServer()
-            val wifiIp = getLocalWifiIp()
-            if (wifiIp != null && localIconServer != null && !localIconServer!!.isClosed) {
-                val httpIconUri = android.net.Uri.parse("http://$wifiIp:$localIconServerPort/app_icon.png")
-                castMeta.addImage(com.google.android.gms.common.images.WebImage(httpIconUri, 512, 512))
-            }
-        } catch (_: Exception) {}
-    }
+    private var lastTransferTime = 0L
+    private var lastTransferMediaId: String? = null
 
     fun transferPlaybackToLocal() {
         try {
             val playerManager = RadioPlayerManager.getInstance(context)
-            if (playerManager.activeMediaType.value != ActiveMediaType.LIVE_RADIO && lastRemoteStreamPositionMs > 0L) {
+            val videoPlayerManager = com.marcioamaro.mediapod.player.LocalVideoPlayerManager.getInstance(context)
+            val activeType = playerManager.activeMediaType.value
+
+            if (activeType == ActiveMediaType.LOCAL_VIDEO) {
+                if (lastRemoteStreamPositionMs > 0L) {
+                    videoPlayerManager.seekTo(lastRemoteStreamPositionMs)
+                }
+                if (lastRemoteIsPlaying) {
+                    videoPlayerManager.resume()
+                } else {
+                    videoPlayerManager.pause()
+                }
+                return
+            }
+
+            if (activeType != ActiveMediaType.LIVE_RADIO && lastRemoteStreamPositionMs > 0L) {
                 playerManager.seekToPosition(lastRemoteStreamPositionMs)
             }
             if (lastRemoteIsPlaying) {
@@ -820,7 +923,7 @@ class AudioRouteManager private constructor(private val context: Context) {
      */
     fun cleanup() {
         stopDiscovery()
-        stopLocalIconServer()
+        com.marcioamaro.mediapod.cast.CastStreamProxy.getInstance(context).stopServer()
         try {
             val castContext = CastContext.getSharedInstance(context)
             castContext.sessionManager.removeSessionManagerListener(

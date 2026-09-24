@@ -299,28 +299,70 @@ fun IpodVideoPlayerScreen(
         String.format(java.util.Locale.US, "-%02d:%02d", remainingSecs / 60, remainingSecs % 60)
     }
 
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    val isCasting = com.marcioamaro.mediapod.player.AudioRouteManager.getInstance(ctx).isCastingActive()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        // ExoPlayer Video View
-        AndroidView(
-            factory = { ctx ->
-                PlayerView(ctx).apply {
-                    player = videoPlayerManager.exoPlayer
-                    useController = false
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-                }
-            },
-            update = { view ->
-                view.player = videoPlayerManager.exoPlayer
-            },
-            modifier = Modifier.fillMaxSize()
-        )
+        if (isCasting) {
+            val castDeviceName = com.marcioamaro.mediapod.player.AudioRouteManager.getInstance(ctx)
+                .getActiveCastDeviceName() ?: "Google Cast"
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFF141414))
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CastConnected,
+                    contentDescription = null,
+                    tint = backlightHighlight,
+                    modifier = Modifier.size(48.dp)
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "Transmitindo para $castDeviceName",
+                    color = Color.White,
+                    fontSize = (13f * fontScale).sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = fontFamily,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = currentVideo?.title ?: "Vídeo",
+                    color = Color.LightGray,
+                    fontSize = (11f * fontScale).sp,
+                    fontFamily = fontFamily,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        } else {
+            // ExoPlayer Video View
+            AndroidView(
+                factory = { c ->
+                    PlayerView(c).apply {
+                        player = videoPlayerManager.exoPlayer
+                        useController = false
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                    }
+                },
+                update = { view ->
+                    view.player = videoPlayerManager.exoPlayer
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
 
         // Top Video Title Bar Overlay
         Row(
@@ -496,6 +538,9 @@ fun FullscreenLandscapeVideoPlayer(
         String.format(java.util.Locale.US, "-%02d:%02d", remainingSecs / 60, remainingSecs % 60)
     }
 
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    val isCasting = com.marcioamaro.mediapod.player.AudioRouteManager.getInstance(ctx).isCastingActive()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -507,23 +552,60 @@ fun FullscreenLandscapeVideoPlayer(
                 showControls = !showControls
             }
     ) {
-        // 100% Fullscreen Video surface without any chassis
-        AndroidView(
-            factory = { ctx ->
-                PlayerView(ctx).apply {
-                    player = videoPlayerManager.exoPlayer
-                    useController = false
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-                }
-            },
-            update = { view ->
-                view.player = videoPlayerManager.exoPlayer
-            },
-            modifier = Modifier.fillMaxSize()
-        )
+        if (isCasting) {
+            val castDeviceName = com.marcioamaro.mediapod.player.AudioRouteManager.getInstance(ctx)
+                .getActiveCastDeviceName() ?: "Google Cast"
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFF141414))
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CastConnected,
+                    contentDescription = null,
+                    tint = backlightHighlight,
+                    modifier = Modifier.size(56.dp)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Transmitindo para $castDeviceName",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = currentVideo?.title ?: "Vídeo",
+                    color = Color.LightGray,
+                    fontSize = 13.sp,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        } else {
+            // 100% Fullscreen Video surface without any chassis
+            AndroidView(
+                factory = { c ->
+                    PlayerView(c).apply {
+                        player = videoPlayerManager.exoPlayer
+                        useController = false
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                    }
+                },
+                update = { view ->
+                    view.player = videoPlayerManager.exoPlayer
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
 
         // Calcula cor e tint do botão Play no escopo da função para reutilização
         val playBtnBg = backlightHighlight.copy(alpha = 0.85f)
