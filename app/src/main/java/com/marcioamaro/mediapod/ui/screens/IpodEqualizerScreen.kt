@@ -35,6 +35,8 @@ fun IpodEqualizerScreen(
     onSelectPreset: (String) -> Unit,
     bandLevels: List<Float>, // 5 bands in dB (-12 to +12)
     onBandLevelChange: (Int, Float) -> Unit,
+    isLoudnessEnabled: Boolean = false,
+    onToggleLoudness: ((Boolean) -> Unit)? = null,
     backlightBg: Color,
     backlightTextPrimary: Color,
     backlightTextSecondary: Color,
@@ -45,7 +47,7 @@ fun IpodEqualizerScreen(
 ) {
     val presets = listOf(
         "Flat", "Rock", "Pop", "Bass Booster", "Voz / Podcast", 
-        "Jazz", "Clássica", "Eletrônica", "Blues", "Personalizado"
+        "Jazz", "Clássica", "Eletrônica", "Blues", "Loudness", "Personalizado"
     )
 
     val bandLabels = listOf("60 Hz", "230 Hz", "910 Hz", "3.6 kHz", "14 kHz")
@@ -113,6 +115,66 @@ fun IpodEqualizerScreen(
             }
         }
 
+        // 1.1 DSP Loudness / Normalização de Áudio Retrô
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(4.dp))
+                .background(Color(0x22000000))
+                .border(1.dp, backlightHighlight.copy(alpha = if (isLoudnessEnabled) 0.5f else 0.25f), RoundedCornerShape(4.dp))
+                .padding(horizontal = 10.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "DSP Loudness (Normalização)",
+                        color = if (isLoudnessEnabled) backlightTextPrimary else backlightTextSecondary,
+                        fontSize = (10.5f * fontScale).sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily
+                    )
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Text(
+                        text = "[+4 dB AGC]",
+                        color = if (isLoudnessEnabled) backlightHighlight else backlightTextSecondary.copy(alpha = 0.5f),
+                        fontSize = 8.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = fontFamily
+                    )
+                }
+                Text(
+                    text = "Nivela rádios baixas e comprime picos",
+                    color = backlightTextSecondary.copy(alpha = 0.8f),
+                    fontSize = 8.5.sp,
+                    fontFamily = fontFamily
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(if (isLoudnessEnabled) backlightHighlight else Color(0x33000000))
+                    .border(
+                        1.dp,
+                        if (isLoudnessEnabled) backlightTextPrimary else backlightTextSecondary.copy(alpha = 0.5f),
+                        RoundedCornerShape(4.dp)
+                    )
+                    .clickable { onToggleLoudness?.invoke(!isLoudnessEnabled) }
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = if (isLoudnessEnabled) "[ ON ]" else "[ OFF ]",
+                    color = if (isLoudnessEnabled) Color.White else backlightTextSecondary,
+                    fontSize = 9.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = fontFamily
+                )
+            }
+        }
+
         // 2. Presets de Áudio (Seleção Retrô)
         Column {
             Row(
@@ -137,6 +199,7 @@ fun IpodEqualizerScreen(
                     currentPreset.contains("Clássica", ignoreCase = true) -> "[Dinâmica Ampla]"
                     currentPreset.contains("Eletr", ignoreCase = true) -> "[Graves & Agudos]"
                     currentPreset.contains("Blues", ignoreCase = true) -> "[Orgânico Acústico]"
+                    currentPreset.contains("Loud", ignoreCase = true) -> "[DSP Loudness +4dB]"
                     else -> "[Ajuste Livre]"
                 }
                 Text(

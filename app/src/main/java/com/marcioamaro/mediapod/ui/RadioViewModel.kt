@@ -203,14 +203,29 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     val audioPositionMs = playerManager.audioPositionMs
     val audioDurationMs = playerManager.audioDurationMs
 
-    // Global Equalizer
+    // Global Equalizer & DSP Loudness
     val isEqualizerEnabled = playerManager.isEqualizerEnabled
+    val isLoudnessEnabled = playerManager.isLoudnessEnabled
+    val loudnessGainMb = playerManager.loudnessGainMb
     val equalizerPreset = playerManager.equalizerPreset
     val equalizerBands = playerManager.equalizerBands
 
     fun setEqualizerEnabled(enabled: Boolean) {
         playerManager.setEqualizerEnabled(enabled)
         soundAndHaptics.performClickHaptic()
+    }
+
+    fun setLoudnessEnabled(enabled: Boolean) {
+        playerManager.setLoudnessEnabled(enabled)
+        soundAndHaptics.performClickHaptic()
+    }
+
+    fun toggleLoudness() {
+        setLoudnessEnabled(!isLoudnessEnabled.value)
+    }
+
+    fun setLoudnessGain(gainMb: Int) {
+        playerManager.setLoudnessGain(gainMb)
     }
 
     fun setEqualizerPreset(preset: String) {
@@ -1665,6 +1680,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         playerManager.updatePlaylist(fullList)
 
         prefs.saveLastPlayedStation(radio)
+        prefs.saveLastQueueSource(source.name)
         prefs.addRecentStation(radio)
         _uiState.value = _uiState.value.copy(
             recentsList = prefs.getRecentStations(),
@@ -1677,6 +1693,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
 
     fun playStation(station: RadioStation, explicitList: List<RadioStation>? = null) {
         val currentScreen = _uiState.value.currentScreen
+        val savedQueueSource = prefs.getLastQueueSource()
         val fullList = when {
             explicitList != null && explicitList.isNotEmpty() -> explicitList
             currentScreen == IpodScreenDestination.FAVORITES -> favorites.value
@@ -1688,6 +1705,8 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                 IpodScreenDestination.TOP_BRAZIL,
                 IpodScreenDestination.TOP_WORLD
             ) && _uiState.value.stationsList.isNotEmpty() -> _uiState.value.stationsList
+            savedQueueSource == "FAVORITES" && favorites.value.any { it.id == station.id } -> favorites.value
+            savedQueueSource == "RECENTS" && _uiState.value.recentsList.any { it.id == station.id } -> _uiState.value.recentsList
             _uiState.value.stationsList.any { it.id == station.id } -> _uiState.value.stationsList
             favorites.value.any { it.id == station.id } -> favorites.value
             _uiState.value.recentsList.any { it.id == station.id } -> _uiState.value.recentsList
@@ -1701,6 +1720,10 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
             currentScreen == IpodScreenDestination.SEARCH || _uiState.value.searchQuery.isNotBlank() -> QueueSource.SEARCH
             currentScreen in listOf(IpodScreenDestination.TOP_BRAZIL, IpodScreenDestination.TOP_WORLD) -> QueueSource.RANKING
             currentScreen in listOf(IpodScreenDestination.STATIONS_BY_GENRE, IpodScreenDestination.STATIONS_BY_COUNTRY) -> QueueSource.CATEGORY
+            savedQueueSource == "FAVORITES" -> QueueSource.FAVORITES
+            savedQueueSource == "RECENTS" -> QueueSource.RECENTS
+            savedQueueSource == "RANKING" -> QueueSource.RANKING
+            savedQueueSource == "CATEGORY" -> QueueSource.CATEGORY
             else -> QueueSource.GLOBAL
         }
 

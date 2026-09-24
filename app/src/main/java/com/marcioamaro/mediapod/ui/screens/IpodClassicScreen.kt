@@ -178,6 +178,8 @@ fun IpodClassicScreen(
     onSelectEqualizerPreset: (String) -> Unit = {},
     equalizerBands: List<Float> = listOf(0f, 0f, 0f, 0f, 0f),
     onEqualizerBandLevelChange: (Int, Float) -> Unit = { _, _ -> },
+    isLoudnessEnabled: Boolean = false,
+    onToggleLoudness: (Boolean) -> Unit = {},
     availableAudioDevices: List<com.marcioamaro.mediapod.player.AudioRouteDevice> = emptyList(),
     selectedAudioDevice: com.marcioamaro.mediapod.player.AudioRouteDevice? = null,
     onSelectAudioDevice: (com.marcioamaro.mediapod.player.AudioRouteDevice) -> Unit = {},
@@ -1362,6 +1364,7 @@ fun IpodClassicScreen(
                                 )
                             }
                             IpodScreenDestination.EQUALIZER -> {
+                                val currentLoudness = viewModel?.isLoudnessEnabled?.collectAsState()?.value ?: isLoudnessEnabled
                                 IpodEqualizerScreen(
                                     isEnabled = isEqualizerEnabled,
                                     onToggleEnabled = onToggleEqualizerEnabled,
@@ -1369,6 +1372,14 @@ fun IpodClassicScreen(
                                     onSelectPreset = onSelectEqualizerPreset,
                                     bandLevels = equalizerBands,
                                     onBandLevelChange = onEqualizerBandLevelChange,
+                                    isLoudnessEnabled = currentLoudness,
+                                    onToggleLoudness = { enabled ->
+                                        if (viewModel != null) {
+                                            viewModel.setLoudnessEnabled(enabled)
+                                        } else {
+                                            onToggleLoudness(enabled)
+                                        }
+                                    },
                                     backlightBg = backlightBg,
                                     backlightTextPrimary = backlightTextPrimary,
                                     backlightTextSecondary = backlightTextSecondary,
@@ -3765,7 +3776,7 @@ private fun IpodAboutScreen(
 
             // Data da versão aaaa.mm.dd e número da versão
             Text(
-                text = "2026.09.24 - Versão 0.3.14 (96)",
+                text = "2026.09.24 - Versão 0.3.15 (97)",
                 color = backlightTextSecondary,
                 fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Bold,

@@ -145,6 +145,7 @@ fun MainScreen(viewModel: RadioViewModel) {
     val isEqualizerEnabled by viewModel.isEqualizerEnabled.collectAsState()
     val equalizerPreset by viewModel.equalizerPreset.collectAsState()
     val equalizerBands by viewModel.equalizerBands.collectAsState()
+    val isLoudnessEnabled by viewModel.isLoudnessEnabled.collectAsState()
     val availableAudioDevices by viewModel.availableAudioDevices.collectAsState()
     val selectedAudioDevice by viewModel.selectedAudioDevice.collectAsState()
 
@@ -589,6 +590,8 @@ fun MainScreen(viewModel: RadioViewModel) {
                                 onSelectEqualizerPreset = { viewModel.setEqualizerPreset(it) },
                                 equalizerBands = equalizerBands,
                                 onEqualizerBandLevelChange = { idx, lvl -> viewModel.setEqualizerBandLevel(idx, lvl) },
+                                isLoudnessEnabled = isLoudnessEnabled,
+                                onToggleLoudness = { viewModel.setLoudnessEnabled(it) },
                                 availableAudioDevices = availableAudioDevices,
                                 selectedAudioDevice = selectedAudioDevice,
                                 onSelectAudioDevice = { dev -> viewModel.selectAudioDevice(dev) },

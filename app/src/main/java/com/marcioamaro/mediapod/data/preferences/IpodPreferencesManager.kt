@@ -88,6 +88,7 @@ class IpodPreferencesManager private constructor(context: Context) {
         private const val KEY_BRICK_HIGH_SCORES_JSON = "key_brick_high_scores_json"
         private const val KEY_RANDOM_HARDWARE_COLORS_ENABLED = "key_random_hardware_colors_enabled"
         private const val KEY_IS_24H_CLOCK = "key_is_24h_clock"
+        private const val KEY_LAST_QUEUE_SOURCE = "key_last_queue_source"
         private const val MAX_RECENTS = 20
 
         @Volatile
@@ -173,6 +174,14 @@ class IpodPreferencesManager private constructor(context: Context) {
         } catch (_: Exception) {
             null
         }
+    }
+
+    fun saveLastQueueSource(source: String) {
+        prefs.edit().putString(KEY_LAST_QUEUE_SOURCE, source).apply()
+    }
+
+    fun getLastQueueSource(): String {
+        return prefs.getString(KEY_LAST_QUEUE_SOURCE, "GLOBAL") ?: "GLOBAL"
     }
 
     // Last podcast persistence

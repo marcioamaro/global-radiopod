@@ -7,6 +7,8 @@ import com.marcioamaro.mediapod.R
 import android.media.AudioManager
 import android.media.AudioFocusRequest
 import android.media.audiofx.Equalizer
+import android.media.audiofx.LoudnessEnhancer
+import androidx.media3.exoplayer.analytics.AnalyticsListener
 import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Build
@@ -177,8 +179,10 @@ class RadioPlayerManager private constructor(private val context: Context) {
     private val _audioDurationMs = MutableStateFlow(0L)
     val audioDurationMs: StateFlow<Long> = _audioDurationMs.asStateFlow()
 
-    // Global Equalizer Engine (Rádio ao Vivo e MP3 Local)
+    // Global Equalizer & DSP Loudness Engine (Rádio ao Vivo e MP3 Local)
     private var equalizer: Equalizer? = null
+    private var loudnessEnhancer: LoudnessEnhancer? = null
+    private var currentAudioSessionId: Int = C.AUDIO_SESSION_ID_UNSET
 
     val EQUALIZER_PRESETS: Map<String, List<Float>> = linkedMapOf(
         "Flat" to listOf(0.0f, 0.0f, 0.0f, 0.0f, 0.0f),
@@ -190,6 +194,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
         "Clássica" to listOf(4.0f, 2.0f, -0.5f, 2.5f, 4.0f),
         "Eletrônica" to listOf(6.0f, 4.0f, -1.0f, 3.0f, 5.5f),
         "Blues" to listOf(3.0f, 2.0f, 1.0f, 2.5f, 3.0f),
+        "Loudness" to listOf(6.0f, 2.5f, 0.0f, 2.0f, 5.0f),
         "Personalizado" to listOf(0.0f, 0.0f, 0.0f, 0.0f, 0.0f)
     )
 
@@ -197,6 +202,12 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
     private val _isEqualizerEnabled = MutableStateFlow(eqPrefs.getBoolean("eq_enabled", true))
     val isEqualizerEnabled: StateFlow<Boolean> = _isEqualizerEnabled.asStateFlow()
+
+    private val _isLoudnessEnabled = MutableStateFlow(eqPrefs.getBoolean("loudness_enabled", false))
+    val isLoudnessEnabled: StateFlow<Boolean> = _isLoudnessEnabled.asStateFlow()
+
+    private val _loudnessGainMb = MutableStateFlow(eqPrefs.getInt("loudness_gain", 400)) // +4.0 dB
+    val loudnessGainMb: StateFlow<Int> = _loudnessGainMb.asStateFlow()
 
     private val _equalizerPreset = MutableStateFlow(eqPrefs.getString("eq_preset", "Rock") ?: "Rock")
     val equalizerPreset: StateFlow<String> = _equalizerPreset.asStateFlow()
@@ -467,6 +478,10 @@ class RadioPlayerManager private constructor(private val context: Context) {
                                 cancelBufferingWatchdog()
                                 streamingTimeoutJob?.cancel()
                                 reconnectJob?.cancel()
+                                val sid = audioSessionId
+                                if (sid != C.AUDIO_SESSION_ID_UNSET && sid != 0 && sid != currentAudioSessionId) {
+                                    attachAudioEffects(sid)
+                                }
                                 if (playWhenReady) {
                                     _playbackStatus.value = RadioPlaybackStatus.PLAYING
                                     acquireLocks()
@@ -617,13 +632,13 @@ class RadioPlayerManager private constructor(private val context: Context) {
                     @androidx.media3.common.util.UnstableApi
                     override fun onAudioSessionIdChanged(audioSessionId: Int) {
                         if (audioSessionId != C.AUDIO_SESSION_ID_UNSET) {
-                            initEqualizer(audioSessionId)
+                            attachAudioEffects(audioSessionId)
                         }
                     }
                 })
                 val sid = audioSessionId
                 if (sid != C.AUDIO_SESSION_ID_UNSET) {
-                    initEqualizer(sid)
+                    attachAudioEffects(sid)
                 }
             }
     }
@@ -1528,6 +1543,13 @@ class RadioPlayerManager private constructor(private val context: Context) {
         }
     }
 
+    fun attachAudioEffects(audioSessionId: Int) {
+        if (audioSessionId == C.AUDIO_SESSION_ID_UNSET || audioSessionId == 0) return
+        currentAudioSessionId = audioSessionId
+        initEqualizer(audioSessionId)
+        initLoudness(audioSessionId)
+    }
+
     private fun initEqualizer(audioSessionId: Int) {
         try {
             equalizer?.release()
@@ -1537,6 +1559,39 @@ class RadioPlayerManager private constructor(private val context: Context) {
             applyEqualizerToHardware()
         } catch (e: Exception) {
             android.util.Log.w("RadioPlayerManager", "Could not attach hardware Equalizer", e)
+        }
+    }
+
+    private fun initLoudness(audioSessionId: Int) {
+        try {
+            loudnessEnhancer?.release()
+            loudnessEnhancer = LoudnessEnhancer(audioSessionId).apply {
+                setTargetGain(_loudnessGainMb.value)
+                enabled = _isLoudnessEnabled.value
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("RadioPlayerManager", "Could not attach hardware LoudnessEnhancer", e)
+        }
+    }
+
+    fun setLoudnessEnabled(enabled: Boolean) {
+        _isLoudnessEnabled.value = enabled
+        eqPrefs.edit().putBoolean("loudness_enabled", enabled).commit()
+        try {
+            loudnessEnhancer?.enabled = enabled
+        } catch (e: Exception) {
+            android.util.Log.w("RadioPlayerManager", "Failed to toggle LoudnessEnhancer", e)
+        }
+    }
+
+    fun setLoudnessGain(gainMb: Int) {
+        val safeGain = gainMb.coerceIn(0, 1200) // 0 a +12 dB
+        _loudnessGainMb.value = safeGain
+        eqPrefs.edit().putInt("loudness_gain", safeGain).commit()
+        try {
+            loudnessEnhancer?.setTargetGain(safeGain)
+        } catch (e: Exception) {
+            android.util.Log.w("RadioPlayerManager", "Failed to set LoudnessEnhancer gain", e)
         }
     }
 
@@ -1581,11 +1636,16 @@ class RadioPlayerManager private constructor(private val context: Context) {
             presetName.contains("Clássica", ignoreCase = true) || presetName.contains("Classica", ignoreCase = true) -> "Clássica"
             presetName.contains("Eletr", ignoreCase = true) || presetName.contains("Dance", ignoreCase = true) -> "Eletrônica"
             presetName.contains("Blues", ignoreCase = true) -> "Blues"
+            presetName.contains("Loud", ignoreCase = true) -> "Loudness"
             else -> "Personalizado"
         }
 
         _equalizerPreset.value = canonicalName
         eqPrefs.edit().putString("eq_preset", canonicalName).commit()
+
+        if (canonicalName == "Loudness") {
+            setLoudnessEnabled(true)
+        }
 
         if (canonicalName != "Personalizado") {
             val presetBands = EQUALIZER_PRESETS[canonicalName] ?: listOf(0f, 0f, 0f, 0f, 0f)

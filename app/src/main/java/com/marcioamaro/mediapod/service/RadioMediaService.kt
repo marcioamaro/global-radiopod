@@ -1120,6 +1120,10 @@ class RadioMediaService : MediaLibraryService() {
                 .add(Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
                 .build()
 
+            if (isAndroidAutoController(session, controller)) {
+                autoPlayForAndroidAutoIfAllowed()
+            }
+
             return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
                 .setAvailableSessionCommands(sessionCommands)
                 .setAvailablePlayerCommands(playerCommands)
@@ -1281,11 +1285,11 @@ class RadioMediaService : MediaLibraryService() {
         }
 
         private fun isAndroidAutoController(session: MediaSession, controller: MediaSession.ControllerInfo): Boolean {
-            val pkg = controller.packageName
-            val isAutoPkg = pkg == "com.google.android.projection.gearhead" ||
-                    pkg == "com.android.car.media" ||
-                    pkg == "com.google.android.carassistant" ||
-                    pkg.startsWith("com.google.android.apps.automotive")
+            val pkg = controller.packageName.lowercase()
+            val isAutoPkg = pkg.contains("gearhead") ||
+                    pkg.contains("car") ||
+                    pkg.contains("auto") ||
+                    pkg.contains("bluetooth")
             val isAutoCompanion = try {
                 session.isAutoCompanionController(controller)
             } catch (_: Throwable) {
@@ -1294,8 +1298,42 @@ class RadioMediaService : MediaLibraryService() {
             return isAutoPkg || isAutoCompanion
         }
 
+        private fun restoreNavigationContextForStation(station: RadioStation) {
+            val ipodPrefs = IpodPreferencesManager.getInstance(applicationContext)
+            val sourceStr = ipodPrefs.getLastQueueSource()
+            val coordinator = (applicationContext as? com.marcioamaro.mediapod.RadioApp)?.playbackCoordinator
+
+            serviceScope.launch(Dispatchers.IO) {
+                val favs = repository.getFavoritesDirect()
+                val recents = ipodPrefs.getRecentStations()
+                val (queueSource, activeList) = when (sourceStr) {
+                    "FAVORITES" -> {
+                        if (favs.isNotEmpty()) Pair(com.marcioamaro.mediapod.player.context.QueueSource.FAVORITES, favs)
+                        else Pair(com.marcioamaro.mediapod.player.context.QueueSource.GLOBAL, CuratedData.CURATED_GLOBAL_STATIONS)
+                    }
+                    "RECENTS" -> {
+                        if (recents.isNotEmpty()) Pair(com.marcioamaro.mediapod.player.context.QueueSource.RECENTS, recents)
+                        else Pair(com.marcioamaro.mediapod.player.context.QueueSource.GLOBAL, CuratedData.CURATED_GLOBAL_STATIONS)
+                    }
+                    else -> {
+                        if (favs.any { it.id == station.id }) Pair(com.marcioamaro.mediapod.player.context.QueueSource.FAVORITES, favs)
+                        else if (recents.any { it.id == station.id }) Pair(com.marcioamaro.mediapod.player.context.QueueSource.RECENTS, recents)
+                        else Pair(com.marcioamaro.mediapod.player.context.QueueSource.GLOBAL, CuratedData.CURATED_GLOBAL_STATIONS)
+                    }
+                }
+                withContext(Dispatchers.Main) {
+                    playerManager.updatePlaylist(activeList)
+                    coordinator?.setNavigationContext(
+                        com.marcioamaro.mediapod.player.context.NavigationContext(
+                            source = queueSource,
+                            items = activeList.map { stationToQueueItem(it) }
+                        )
+                    )
+                }
+            }
+        }
+
         private fun autoPlayForAndroidAutoIfAllowed() {
-            if (playerManager.playbackStatus.value == RadioPlaybackStatus.PLAYING) return
             val ipodPrefs = IpodPreferencesManager.getInstance(applicationContext)
             // Reproduz automaticamente no Android Auto apenas se a preferência do usuário estiver ativa
             if (!ipodPrefs.isAutoPlayOnLaunch) return
@@ -1303,48 +1341,38 @@ class RadioMediaService : MediaLibraryService() {
             val currentStation = playerManager.currentStation.value
             val currentPodcast = playerManager.currentPodcastEpisode.value
 
-            if (currentStation == null && currentPodcast == null) {
-                val lastMediaType = ipodPrefs.getLastMediaType()
-                val lastStation = ipodPrefs.getLastPlayedStation()
-                val lastPodcast = ipodPrefs.getLastPlayedPodcast()
+            if (playerManager.playbackStatus.value == RadioPlaybackStatus.PLAYING) {
+                updateNotification()
+                return
+            }
 
-                if (lastMediaType == "PODCAST" && lastPodcast != null) {
-                    playerManager.playPodcastEpisode(lastPodcast.first, lastPodcast.second)
-                } else if (lastStation != null) {
-                    playerManager.playStation(lastStation)
-                } else if (lastPodcast != null) {
-                    playerManager.playPodcastEpisode(lastPodcast.first, lastPodcast.second)
-                }
-            } else if (playerManager.playbackStatus.value != RadioPlaybackStatus.PLAYING) {
-                playerManager.resume()
+            if (currentStation != null) {
+                playerManager.playStation(currentStation)
+                return
+            }
+
+            if (currentPodcast != null) {
+                val show = ipodPrefs.getLastPlayedPodcast()?.second
+                playerManager.playPodcastEpisode(currentPodcast, show)
+                return
+            }
+
+            val lastMediaType = ipodPrefs.getLastMediaType()
+            val lastStation = ipodPrefs.getLastPlayedStation()
+            val lastPodcast = ipodPrefs.getLastPlayedPodcast()
+
+            if (lastMediaType == "PODCAST" && lastPodcast != null) {
+                playerManager.playPodcastEpisode(lastPodcast.first, lastPodcast.second)
+            } else if (lastStation != null) {
+                restoreNavigationContextForStation(lastStation)
+                playerManager.playStation(lastStation)
+            } else if (lastPodcast != null) {
+                playerManager.playPodcastEpisode(lastPodcast.first, lastPodcast.second)
             }
         }
 
         private fun autoPlayLastMediaIfIdle() {
-            if (playerManager.playbackStatus.value == RadioPlaybackStatus.PLAYING) return
-            // Respeita pausa intencional do usuário: não retoma reprodução sem comando explícito
-            if (playerManager.userInitiatedPause) return
-            val ipodPrefs = IpodPreferencesManager.getInstance(applicationContext)
-            if (!ipodPrefs.isAutoPlayOnLaunch) return
-
-            val currentStation = playerManager.currentStation.value
-            val currentPodcast = playerManager.currentPodcastEpisode.value
-
-            if (currentStation == null && currentPodcast == null) {
-                val lastMediaType = ipodPrefs.getLastMediaType()
-                val lastStation = ipodPrefs.getLastPlayedStation()
-                val lastPodcast = ipodPrefs.getLastPlayedPodcast()
-
-                if (lastMediaType == "PODCAST" && lastPodcast != null) {
-                    playerManager.playPodcastEpisode(lastPodcast.first, lastPodcast.second)
-                } else if (lastStation != null) {
-                    playerManager.playStation(lastStation)
-                } else if (lastPodcast != null) {
-                    playerManager.playPodcastEpisode(lastPodcast.first, lastPodcast.second)
-                }
-            } else if (playerManager.playbackStatus.value != RadioPlaybackStatus.PLAYING) {
-                playerManager.resume()
-            }
+            autoPlayForAndroidAutoIfAllowed()
         }
 
         override fun onGetLibraryRoot(
@@ -1685,6 +1713,7 @@ class RadioMediaService : MediaLibraryService() {
                                             items = favs.map { stationToQueueItem(it) }
                                         )
                                     )
+                                    IpodPreferencesManager.getInstance(applicationContext).saveLastQueueSource("FAVORITES")
                                 }
                                 val fullQueue = if (favs.isNotEmpty()) {
                                     favs.map { createStationCardItem(it, gridExtras, "radio_fav_${it.id}") }
@@ -1711,6 +1740,7 @@ class RadioMediaService : MediaLibraryService() {
                                             items = recents.map { stationToQueueItem(it) }
                                         )
                                     )
+                                    IpodPreferencesManager.getInstance(applicationContext).saveLastQueueSource("RECENTS")
                                 }
                                 val fullQueue = if (recents.isNotEmpty()) {
                                     recents.map { createStationCardItem(it, gridExtras, "radio_rec_${it.id}") }
@@ -1743,6 +1773,7 @@ class RadioMediaService : MediaLibraryService() {
                                             items = activeList.map { stationToQueueItem(it) }
                                         )
                                     )
+                                    IpodPreferencesManager.getInstance(applicationContext).saveLastQueueSource("GLOBAL")
                                 }
                                 val fullQueue = activeList.map { createStationCardItem(it, gridExtras, "radio_${it.id}") }
                                 future.set(MediaSession.MediaItemsWithStartPosition(fullQueue, matchIndex, 0))
@@ -1796,8 +1827,9 @@ class RadioMediaService : MediaLibraryService() {
             controller: MediaSession.ControllerInfo
         ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
             autoPlayLastMediaIfIdle()
-            val currentStation = playerManager.currentStation.value
-            val currentPodcast = playerManager.currentPodcastEpisode.value
+            val ipodPrefs = IpodPreferencesManager.getInstance(applicationContext)
+            val currentStation = playerManager.currentStation.value ?: ipodPrefs.getLastPlayedStation()
+            val currentPodcast = playerManager.currentPodcastEpisode.value ?: ipodPrefs.getLastPlayedPodcast()?.first
             val gridExtras = createContentStyleExtras(isGrid = true)
             if (currentStation != null) {
                 val item = createStationCardItem(currentStation, gridExtras, "radio_${currentStation.id}")
