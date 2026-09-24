@@ -16,6 +16,8 @@ import com.marcioamaro.mediapod.data.model.PodcastShow
 import com.marcioamaro.mediapod.data.repository.LibraryKind
 import com.marcioamaro.mediapod.data.repository.MediaLibraryRepository
 import com.marcioamaro.mediapod.ui.components.MediaItemActions
+import com.marcioamaro.mediapod.ui.components.LcdPlaylistPalette
+import com.marcioamaro.mediapod.ui.components.LcdPlaylistModalHost
 import com.marcioamaro.mediapod.ui.screens.IpodPodcastEpisodesScreen
 import org.junit.Assert.*
 import org.junit.Rule
@@ -68,15 +70,20 @@ class MediaLibraryComposeTest {
         context.getSharedPreferences("media_library", Context.MODE_PRIVATE).edit().clear().commit()
         val repo = MediaLibraryRepository(context)
         compose.setContent {
-            MaterialTheme { Row { MediaItemActions(repo, LibraryKind.VIDEO, "VIDEO:/Movies/clip.mp4", null, Color.Black) } }
+            MaterialTheme {
+                LcdPlaylistModalHost {
+                    Row { MediaItemActions(repo, LibraryKind.VIDEO, "VIDEO:/Movies/clip.mp4", null, Color.Black, LcdPlaylistPalette(Color.Black, Color.White, Color.LightGray, Color.Cyan)) }
+                }
+            }
         }
         compose.onNodeWithContentDescription("Favoritar").assertHeightIsAtLeast(48.dp).performClick()
         assertTrue("VIDEO:/Movies/clip.mp4" in repo.state.value.favorites)
         compose.onNodeWithContentDescription("Opções do arquivo").assertHeightIsAtLeast(48.dp).performClick()
-        compose.onNodeWithText("Adicionar à playlist").performClick()
-        compose.onNodeWithText("+ Criar playlist").performClick()
+        compose.onNodeWithText("OPÇÕES DO ARQUIVO").assertExists()
+        compose.onNodeWithText("ADICIONAR À PLAYLIST").performClick()
+        compose.onNodeWithText("CRIAR PLAYLIST").performClick()
         compose.onNodeWithText("Nome").performTextInput("Cinema")
-        compose.onNodeWithText("Salvar").performClick()
+        compose.onNodeWithText("SALVAR").performClick()
         assertEquals("Cinema", repo.state.value.playlists.single().name)
         assertEquals(listOf("VIDEO:/Movies/clip.mp4"), repo.state.value.playlists.single().keys)
     }

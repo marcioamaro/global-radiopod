@@ -1,6 +1,10 @@
 package com.marcioamaro.mediapod.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,8 +12,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.marcioamaro.mediapod.data.model.*
 import com.marcioamaro.mediapod.data.repository.*
 import com.marcioamaro.mediapod.ui.IpodScreenDestination
@@ -17,7 +25,16 @@ import com.marcioamaro.mediapod.ui.RadioViewModel
 import com.marcioamaro.mediapod.ui.components.*
 
 @Composable
-fun PersonalLibraryScreen(viewModel: RadioViewModel) {
+fun PersonalLibraryScreen(
+    viewModel: RadioViewModel,
+    background: Color,
+    primary: Color,
+    secondary: Color,
+    highlight: Color,
+    fontFamily: FontFamily,
+    fontScale: Float,
+    isBold: Boolean
+) {
     val context = LocalContext.current
     val podcasts = viewModel.podcastRepo
     val media = remember(context) { MediaLibraryRepository.getInstance(context) }
@@ -64,11 +81,14 @@ fun PersonalLibraryScreen(viewModel: RadioViewModel) {
         viewModel.playPodcastEpisode(episode, show, queue)
         viewModel.navigateTo(IpodScreenDestination.PODCAST_NOW_PLAYING)
     }
-    LazyColumn(Modifier.fillMaxSize().padding(8.dp)) {
+    LazyColumn(Modifier.fillMaxSize().background(background).border(1.dp, highlight.copy(alpha = 0.45f), RoundedCornerShape(6.dp)).padding(8.dp)) {
         item {
-            Row(Modifier.horizontalScroll(rememberScrollState())) {
+            Text("MINHA BIBLIOTECA", color = primary, fontFamily = fontFamily, fontWeight = if (isBold) FontWeight.Black else FontWeight.Bold, fontSize = (13f * fontScale).sp, modifier = Modifier.padding(bottom = 8.dp))
+            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             listOf(context.getString(com.marcioamaro.mediapod.R.string.library_continue), context.getString(com.marcioamaro.mediapod.R.string.library_bookmarks), context.getString(com.marcioamaro.mediapod.R.string.library_subscriptions), context.getString(com.marcioamaro.mediapod.R.string.library_smart), context.getString(com.marcioamaro.mediapod.R.string.library_discover)).forEachIndexed { index, label ->
-                TextButton(onClick = { tab = index }) { Text(if (tab == index) "• $label" else label) }
+                val selected = tab == index
+                Text(label.uppercase(), color = if (selected) background else primary, fontFamily = fontFamily, fontWeight = if (selected || isBold) FontWeight.Bold else FontWeight.Normal, fontSize = (10f * fontScale).sp,
+                    modifier = Modifier.heightIn(min = 44.dp).background(if (selected) highlight else primary.copy(alpha = 0.08f), RoundedCornerShape(4.dp)).border(1.dp, if (selected) highlight else secondary.copy(alpha = 0.6f), RoundedCornerShape(4.dp)).clickable { tab = index }.padding(horizontal = 10.dp, vertical = 12.dp))
             }
             }
         }

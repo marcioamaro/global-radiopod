@@ -36,6 +36,9 @@ Validar fisicamente o Cast de MP3 e vídeo local em TV/Nest Mini com o aparelho 
 - Corrigido: `debug` usa `debugConfig`; os botões Favoritar e Opções da biblioteca têm alvo de 48 dp com ícones de 17 dp; APKs/AABs/ZIP legados saíram do índice e permanecem locais, protegidos por `.gitignore`.
 - O refactor incompleto de `IpodClassicScreen.kt`, que bloqueava a compilação, foi retirado sem afetar as alterações de Cast. `:app:assembleRelease` concluiu e gerou somente o APK 0.3.9 (91) em `app/build/outputs/apk/release/app-release.apk`.
 - Geografia: Rádio Evangelizar Família foi corrigida para Curitiba/PR a partir da página oficial da emissora; restam 523 entradas sem localidade confirmada.
+- Playlists: as interações de criar, renomear, escolher, mover e remover agora usam modal LCD com cores do tema selecionado; `MediaLibraryComposeTest` passou (3/3) e o APK release 0.3.9 foi recompilado.
+- Biblioteca e Configurações: Minha biblioteca usa moldura LCD, abas e fonte/escala ativas; atualização de catálogo e diagnóstico passaram a usar controles LCD. `MediaLibraryComposeTest` passou (3/3).
+- Modal de playlists: a UI deixou de usar `Dialog` do Android e passou a ser hospedada no conteúdo LCD de `IpodClassicScreen`; ela recebe o limite do visor e não cobre a carcaça ou a roda. `MediaLibraryComposeTest` passou (3/3); `:app:compileDebugKotlin` e `:app:assembleRelease` passaram. APK release 0.3.9 (91) atualizado.
 
 
 ## Verificação

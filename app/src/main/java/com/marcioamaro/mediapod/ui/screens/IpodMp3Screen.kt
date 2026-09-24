@@ -50,7 +50,7 @@ fun IpodMp3FoldersScreen(
             .fillMaxSize()
             .background(backlightBg)
     ) {
-        library?.let { com.marcioamaro.mediapod.ui.components.MediaLibraryToolbar(it, com.marcioamaro.mediapod.data.repository.LibraryKind.AUDIO, collectionPath, backlightTextPrimary) }
+        library?.let { com.marcioamaro.mediapod.ui.components.MediaLibraryToolbar(it, com.marcioamaro.mediapod.data.repository.LibraryKind.AUDIO, collectionPath, backlightTextPrimary, com.marcioamaro.mediapod.ui.components.LcdPlaylistPalette(backlightBg, backlightTextPrimary, backlightTextSecondary, backlightHighlight)) }
         // Header
         Row(
             modifier = Modifier
@@ -166,7 +166,7 @@ fun IpodMp3TracksListScreen(
             .fillMaxSize()
             .background(backlightBg)
     ) {
-        library?.let { com.marcioamaro.mediapod.ui.components.MediaLibraryToolbar(it, com.marcioamaro.mediapod.data.repository.LibraryKind.AUDIO, collectionPath, backlightTextPrimary) }
+        library?.let { com.marcioamaro.mediapod.ui.components.MediaLibraryToolbar(it, com.marcioamaro.mediapod.data.repository.LibraryKind.AUDIO, collectionPath, backlightTextPrimary, com.marcioamaro.mediapod.ui.components.LcdPlaylistPalette(backlightBg, backlightTextPrimary, backlightTextSecondary, backlightHighlight)) }
         // Header
         Row(
             modifier = Modifier
@@ -256,7 +256,7 @@ fun IpodMp3TracksListScreen(
                         }
                         library?.let { com.marcioamaro.mediapod.ui.components.MediaItemActions(it,
                             com.marcioamaro.mediapod.data.repository.LibraryKind.AUDIO, track.libraryKey(), collectionPath,
-                            if (isSelected) Color.White else backlightTextPrimary) }
+                            if (isSelected) Color.White else backlightTextPrimary, com.marcioamaro.mediapod.ui.components.LcdPlaylistPalette(backlightBg, backlightTextPrimary, backlightTextSecondary, backlightHighlight)) }
                     }
                 }
             }

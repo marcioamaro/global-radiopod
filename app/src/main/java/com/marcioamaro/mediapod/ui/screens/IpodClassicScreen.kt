@@ -501,10 +501,11 @@ fun IpodClassicScreen(
 
                     // Active Screen Content
                     Box(modifier = Modifier.fillMaxSize()) {
-                        when (uiState.currentScreen) {
+                        com.marcioamaro.mediapod.ui.components.LcdPlaylistModalHost {
+                            when (uiState.currentScreen) {
                             IpodScreenDestination.PERSONAL_LIBRARY -> {
-                                com.marcioamaro.mediapod.ui.components.LcdFeatureTheme(backlightBg, backlightTextPrimary) {
-                                    if (viewModel != null) PersonalLibraryScreen(viewModel)
+                                com.marcioamaro.mediapod.ui.components.LcdFeatureTheme(backlightBg, backlightTextPrimary, fontFamily, fontScale, isBold) {
+                                    if (viewModel != null) PersonalLibraryScreen(viewModel, backlightBg, backlightTextPrimary, backlightTextSecondary, backlightHighlight, fontFamily, fontScale, isBold)
                                 }
                             }
                             IpodScreenDestination.MAIN_MENU -> {
@@ -1407,6 +1408,7 @@ fun IpodClassicScreen(
                                     isBold = isBold,
                                     onShowChassisBack = onShowChassisBack
                                 )
+                            }
                             }
                         }
                     }
@@ -3627,9 +3629,9 @@ private fun IpodSettingsScreen(
                     }
                 }
 
-                com.marcioamaro.mediapod.ui.components.LcdFeatureTheme(backlightBg, backlightTextPrimary) {
-                    com.marcioamaro.mediapod.ui.components.CatalogUpdateControl()
-                    com.marcioamaro.mediapod.ui.components.DiagnosticsControl()
+                com.marcioamaro.mediapod.ui.components.LcdFeatureTheme(backlightBg, backlightTextPrimary, fontFamily, fontScale, isBold) {
+                    com.marcioamaro.mediapod.ui.components.CatalogUpdateControl(backlightBg, backlightTextPrimary, backlightTextSecondary, backlightHighlight, fontFamily, fontScale, isBold)
+                    com.marcioamaro.mediapod.ui.components.DiagnosticsControl(backlightBg, backlightTextPrimary, backlightTextSecondary, backlightHighlight, fontFamily, fontScale, isBold)
                     com.marcioamaro.mediapod.ui.components.DataUsageControl()
                 }
 
