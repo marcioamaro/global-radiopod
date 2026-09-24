@@ -21,8 +21,8 @@
 -keep interface androidx.car.app.** { *; }
 
 # Data Models, Room & Moshi Reflection
--keep class com.example.data.model.** { *; }
--keep class com.example.data.db.** { *; }
+-keep class com.marcioamaro.mediapod.data.model.** { *; }
+-keep class com.marcioamaro.mediapod.data.db.** { *; }
 -keep @androidx.room.Entity class * { *; }
 -keep @androidx.room.Dao interface * { *; }
 -keepclassmembers class * extends androidx.room.RoomDatabase { *; }
@@ -38,12 +38,12 @@
 -keepclassmembers class kotlinx.coroutines.** { *; }
 
 # Keep service and receiver declarations
--keep class com.example.service.RadioMediaService { *; }
+-keep class com.marcioamaro.mediapod.service.RadioMediaService { *; }
 
 # ViewModels and Lifecycle reflection/factory compatibility
 -keep class * extends androidx.lifecycle.ViewModel {
     <init>(...);
     <init>(android.app.Application);
 }
--keep class com.example.ui.onboarding.** { *; }
+-keep class com.marcioamaro.mediapod.ui.onboarding.** { *; }
 
