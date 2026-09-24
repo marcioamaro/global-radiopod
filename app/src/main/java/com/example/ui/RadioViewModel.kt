@@ -12,6 +12,8 @@ import com.example.data.preferences.IpodWheelPreset
 import com.example.data.repository.CountryCategory
 import com.example.data.repository.CuratedData
 import com.example.data.repository.GenreCategory
+import com.example.data.repository.libraryKey
+import com.example.data.repository.LibraryKind
 import com.example.data.repository.PodcastRankingRepository
 import com.example.data.repository.RadioRankingRepository
 import com.example.data.repository.RadioRepository
@@ -38,6 +40,7 @@ import kotlinx.coroutines.launch
 
 enum class IpodScreenDestination {
     MAIN_MENU,
+    PERSONAL_LIBRARY,
     RADIO_MENU,
     NOW_PLAYING_RDS,
     FAVORITES,
@@ -167,6 +170,8 @@ data class UiState(
     val podcastCountries: List<com.example.data.model.PodcastCountry> = emptyList(),
     val customPodcasts: List<com.example.data.model.PodcastShow> = emptyList(),
     val podcastSearchQuery: String = "",
+    val podcastSearchResults: List<com.example.data.model.PodcastShow> = emptyList(),
+    val isPodcastSearchLoading: Boolean = false,
     val isPodcastLoading: Boolean = false,
     // MP3 Player Local Media
     val localAudioFolders: List<com.example.data.model.MediaFolder> = emptyList(),
@@ -434,7 +439,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     fun loadPodcastTopBrazil() {
         _uiState.value = _uiState.value.copy(isPodcastLoading = true)
         viewModelScope.launch {
-            val shows = PodcastRankingRepository.getInstance(radioApp).getTopPodcastsBrazil(100)
+            val shows = PodcastRankingRepository.getInstance(radioApp).getTopPodcastsBrazil(20)
             _uiState.value = _uiState.value.copy(
                 podcastShows = shows,
                 activeCategoryName = "Top Podcasts Brasil",
@@ -446,7 +451,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     fun loadPodcastTopWorld() {
         _uiState.value = _uiState.value.copy(isPodcastLoading = true)
         viewModelScope.launch {
-            val shows = PodcastRankingRepository.getInstance(radioApp).getTopPodcastsWorld(100)
+            val shows = PodcastRankingRepository.getInstance(radioApp).getTopPodcastsWorld(20)
             _uiState.value = _uiState.value.copy(
                 podcastShows = shows,
                 activeCategoryName = "Top Podcasts Mundial",
@@ -489,27 +494,33 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private var podcastSearchJob: kotlinx.coroutines.Job? = null
+
     fun searchPodcasts(query: String) {
-        _uiState.value = _uiState.value.copy(podcastSearchQuery = query)
-        if (query.isBlank()) {
-            _uiState.value = _uiState.value.copy(
-                podcastShows = emptyList(),
-                isPodcastLoading = false
-            )
-            return
-        }
-        _uiState.value = _uiState.value.copy(isPodcastLoading = true)
-        viewModelScope.launch {
+        podcastSearchJob?.cancel()
+        _uiState.value = _uiState.value.copy(podcastSearchQuery = query,
+            podcastSearchResults = emptyList(), isPodcastSearchLoading = true, selectedIndex = 0)
+        podcastSearchJob = viewModelScope.launch {
+            val local = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+                podcastRepo.searchCatalog(query)
+            }
+            _uiState.value = _uiState.value.copy(podcastSearchResults = local,
+                isPodcastSearchLoading = query.isNotBlank())
+            if (query.isBlank()) return@launch
+            kotlinx.coroutines.delay(300)
             val shows = podcastRepo.searchPodcasts(query)
+            if (_uiState.value.podcastSearchQuery != query) return@launch
             _uiState.value = _uiState.value.copy(
-                podcastShows = shows,
-                activeCategoryName = "Busca: $query",
-                isPodcastLoading = false
+                podcastSearchResults = shows,
+                isPodcastSearchLoading = false
             )
         }
     }
 
-    fun selectPodcastShow(show: com.example.data.model.PodcastShow) {
+    fun selectPodcastShow(show: com.example.data.model.PodcastShow): Boolean {
+        if (show.feedUrl.isBlank()) {
+            return false
+        }
         _uiState.value = _uiState.value.copy(
             currentPodcastShow = show,
             podcastEpisodes = emptyList(),
@@ -518,18 +529,24 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val episodes = podcastRepo.getEpisodes(show)
             _uiState.value = _uiState.value.copy(
-                podcastEpisodes = episodes,
+                podcastEpisodes = episodes.map { it.copy(isPlayed = podcastRepo.isEpisodePlayed(it.id)) },
                 isPodcastLoading = false
             )
         }
+        return true
+    }
+
+    fun togglePodcastPlayed(episode: com.example.data.model.PodcastEpisode) {
+        podcastRepo.markEpisodePlayed(episode.id, !podcastRepo.isEpisodePlayed(episode.id))
     }
 
     fun playPodcastEpisode(
         episode: com.example.data.model.PodcastEpisode,
-        explicitShow: com.example.data.model.PodcastShow? = null
+        explicitShow: com.example.data.model.PodcastShow? = null,
+        queue: List<com.example.data.model.PodcastEpisode> = emptyList()
     ) {
         val show = explicitShow ?: _uiState.value.currentPodcastShow
-        playerManager.playPodcastEpisode(episode, show)
+        playerManager.playPodcastEpisode(episode, show, queue)
         if (show != null) {
             viewModelScope.launch {
                 podcastRepo.addToRecents(show)
@@ -649,9 +666,31 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     // Holds the playback queue corresponding to the last list user played from
     private var playbackQueue: List<RadioStation> = emptyList()
 
+    val mediaLibrary = com.example.data.repository.MediaLibraryRepository.getInstance(radioApp)
+    private var audioPlaybackQueue = emptyList<com.example.data.model.LocalAudioTrack>()
+    private var videoPlaybackQueue = emptyList<com.example.data.model.LocalVideoTrack>()
+
     private val navigationHistory = ArrayDeque<IpodScreenDestination>()
 
     init {
+        viewModelScope.launch {
+            mediaLibrary.state.collect {
+                when (_uiState.value.currentScreen) {
+                    IpodScreenDestination.MP3_FOLDERS -> loadAudioFolders()
+                    IpodScreenDestination.VIDEO_FOLDERS -> loadVideoFolders()
+                    IpodScreenDestination.MP3_TRACKS_LIST -> _uiState.value.currentAudioFolder?.let { selectAudioFolder(it, false) }
+                    IpodScreenDestination.VIDEO_LIST -> _uiState.value.currentVideoFolder?.let { selectVideoFolder(it, false) }
+                    else -> Unit
+                }
+            }
+        }
+        viewModelScope.launch {
+            podcastRepo.playedEpisodeIds.collect { ids ->
+                _uiState.value = _uiState.value.copy(
+                    podcastEpisodes = _uiState.value.podcastEpisodes.map { it.copy(isPlayed = it.id in ids) }
+                )
+            }
+        }
         // Restore sound and haptics preferences
         soundAndHaptics.isSoundEnabled = prefs.isSoundEnabled
         soundAndHaptics.isHapticsEnabled = prefs.isHapticsEnabled
@@ -673,6 +712,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         // Wire folder-spanning navigation callbacks
         playerManager.onFolderWrapNext = { nextLocalTrackWithFolderWrap() }
         playerManager.onFolderWrapPrev = { prevLocalTrackWithFolderWrap() }
+        videoPlayerManager.onVideoEnded = { nextVideoWithFolderWrap() }
 
         // Load stations
         loadTopStations()
@@ -973,6 +1013,10 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
             customCenterButtonColor = prefs.customCenterButtonColor,
             fontSizeScale = prefs.fontSizeScale,
             isFontBold = prefs.isFontBold,
+            customYouTubeVideos = prefs.getYouTubeVideos(),
+            customPodcasts = podcastRepo.getCustomPodcasts(),
+            customStations = prefs.getCustomStations(),
+            recentsList = prefs.getRecentStations(),
             is24HourClock = prefs.is24HourClock
         )
     }
@@ -1010,6 +1054,16 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         soundAndHaptics.performClickHaptic()
     }
 
+    private fun refreshVisibleLibrary() {
+        when (_uiState.value.currentScreen) {
+            IpodScreenDestination.MP3_FOLDERS -> loadAudioFolders()
+            IpodScreenDestination.VIDEO_FOLDERS -> loadVideoFolders()
+            IpodScreenDestination.MP3_TRACKS_LIST -> _uiState.value.currentAudioFolder?.let { selectAudioFolder(it, false) }
+            IpodScreenDestination.VIDEO_LIST -> _uiState.value.currentVideoFolder?.let { selectVideoFolder(it, false) }
+            else -> Unit
+        }
+    }
+
     fun navigateTo(screen: IpodScreenDestination) {
         if (_uiState.value.isHoldLocked) return
         if (screen != _uiState.value.currentScreen) {
@@ -1018,6 +1072,8 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                 currentScreen = screen,
                 selectedIndex = 0
             )
+            refreshVisibleLibrary()
+            if (screen == IpodScreenDestination.PODCASTS_SEARCH) searchPodcasts(_uiState.value.podcastSearchQuery)
             soundAndHaptics.performClickHaptic()
         }
     }
@@ -1030,12 +1086,14 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                 currentScreen = prev,
                 selectedIndex = 0
             )
+            refreshVisibleLibrary()
             soundAndHaptics.performClickHaptic()
         } else if (_uiState.value.currentScreen != IpodScreenDestination.MAIN_MENU) {
             _uiState.value = _uiState.value.copy(
                 currentScreen = IpodScreenDestination.MAIN_MENU,
                 selectedIndex = 0
             )
+            refreshVisibleLibrary()
             soundAndHaptics.performClickHaptic()
         }
     }
@@ -1105,6 +1163,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         soundAndHaptics.performHeavyHaptic()
 
         when (currentScreen) {
+            IpodScreenDestination.PERSONAL_LIBRARY -> Unit
             IpodScreenDestination.MAIN_MENU -> {
                 when (index) {
                     0 -> navigateTo(IpodScreenDestination.RADIO_MENU)
@@ -1128,7 +1187,8 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                     9 -> enterDockMode()
                     10 -> navigateTo(IpodScreenDestination.SETTINGS_THEMES)
                     11 -> navigateTo(IpodScreenDestination.ABOUT)
-                    12 -> exitApplication()
+                    12 -> navigateTo(IpodScreenDestination.PERSONAL_LIBRARY)
+                    13 -> exitApplication()
                 }
             }
             IpodScreenDestination.AUDIO_OUTPUT_MENU -> {
@@ -1210,34 +1270,35 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                     val customIdx = index - 1
                     val list = _uiState.value.customPodcasts
                     if (customIdx in list.indices) {
-                        selectPodcastShow(list[customIdx])
-                        navigateTo(IpodScreenDestination.PODCAST_EPISODES_LIST)
+                        if (selectPodcastShow(list[customIdx])) navigateTo(IpodScreenDestination.PODCAST_EPISODES_LIST)
                     }
                 }
             }
             IpodScreenDestination.PODCASTS_TOP_BRAZIL,
             IpodScreenDestination.PODCASTS_TOP_WORLD,
             IpodScreenDestination.PODCASTS_BY_CATEGORY,
-            IpodScreenDestination.PODCASTS_BY_COUNTRY,
-            IpodScreenDestination.PODCASTS_SEARCH -> {
+            IpodScreenDestination.PODCASTS_BY_COUNTRY -> {
                 val list = _uiState.value.podcastShows
                 if (index in list.indices) {
-                    selectPodcastShow(list[index])
+                    if (selectPodcastShow(list[index])) navigateTo(IpodScreenDestination.PODCAST_EPISODES_LIST)
+                }
+            }
+            IpodScreenDestination.PODCASTS_SEARCH -> {
+                val list = _uiState.value.podcastSearchResults
+                if (index in list.indices && selectPodcastShow(list[index])) {
                     navigateTo(IpodScreenDestination.PODCAST_EPISODES_LIST)
                 }
             }
             IpodScreenDestination.PODCASTS_FAVORITES -> {
                 val list = podcastFavorites.value
                 if (index in list.indices) {
-                    selectPodcastShow(list[index])
-                    navigateTo(IpodScreenDestination.PODCAST_EPISODES_LIST)
+                    if (selectPodcastShow(list[index])) navigateTo(IpodScreenDestination.PODCAST_EPISODES_LIST)
                 }
             }
             IpodScreenDestination.PODCASTS_RECENTS -> {
                 val list = podcastRecents.value
                 if (index in list.indices) {
-                    selectPodcastShow(list[index])
-                    navigateTo(IpodScreenDestination.PODCAST_EPISODES_LIST)
+                    if (selectPodcastShow(list[index])) navigateTo(IpodScreenDestination.PODCAST_EPISODES_LIST)
                 }
             }
             IpodScreenDestination.PODCASTS_CATEGORIES -> {
@@ -1271,16 +1332,10 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
             IpodScreenDestination.MP3_FOLDERS -> {
-                if (index == 0) {
-                    loadAllAudioTracks()
+                val folders = _uiState.value.localAudioFolders
+                if (index in folders.indices) {
+                    selectAudioFolder(folders[index])
                     navigateTo(IpodScreenDestination.MP3_TRACKS_LIST)
-                } else {
-                    val folderIndex = index - 1
-                    val folders = _uiState.value.localAudioFolders
-                    if (folderIndex in folders.indices) {
-                        selectAudioFolder(folders[folderIndex])
-                        navigateTo(IpodScreenDestination.MP3_TRACKS_LIST)
-                    }
                 }
             }
             IpodScreenDestination.MP3_TRACKS_LIST -> {
@@ -1294,16 +1349,10 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                 playerManager.togglePlayPause()
             }
             IpodScreenDestination.VIDEO_FOLDERS -> {
-                if (index == 0) {
-                    loadAllVideoTracks()
+                val folders = _uiState.value.localVideoFolders
+                if (index in folders.indices) {
+                    selectVideoFolder(folders[index])
                     navigateTo(IpodScreenDestination.VIDEO_LIST)
-                } else {
-                    val folderIndex = index - 1
-                    val folders = _uiState.value.localVideoFolders
-                    if (folderIndex in folders.indices) {
-                        selectVideoFolder(folders[folderIndex])
-                        navigateTo(IpodScreenDestination.VIDEO_LIST)
-                    }
                 }
             }
             IpodScreenDestination.VIDEO_LIST -> {
@@ -1546,104 +1595,21 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun nextLocalTrackWithFolderWrap() {
-        viewModelScope.launch {
-            val current = playerManager.currentLocalAudio.value ?: return@launch
-            val queue = _uiState.value.localAudioTracks
-            val currentIndex = queue.indexOfFirst { it.id == current.id }
-            if (currentIndex in 0 until queue.size - 1) {
-                playLocalAudio(queue[currentIndex + 1], queue)
-            } else {
-                val folders = _uiState.value.localAudioFolders
-                if (folders.isNotEmpty()) {
-                    val currentFolderIndex = folders.indexOfFirst { it.name.equals(current.folderName, true) }
-                    val nextFolderIndex = if (currentFolderIndex >= 0) (currentFolderIndex + 1) % folders.size else 0
-                    val nextFolder = folders[nextFolderIndex]
-                    val tracks = localMediaRepo.getTracksByFolder(nextFolder.name)
-                    if (tracks.isNotEmpty()) {
-                        _uiState.value = _uiState.value.copy(currentAudioFolder = nextFolder, localAudioTracks = tracks)
-                        playLocalAudio(tracks.first(), tracks)
-                    }
-                } else if (queue.isNotEmpty()) {
-                    playLocalAudio(queue.first(), queue)
-                }
-            }
-        }
+    fun nextLocalTrackWithFolderWrap() = stepAudioQueue(1)
+    fun prevLocalTrackWithFolderWrap() = stepAudioQueue(-1)
+    private fun stepAudioQueue(delta: Int) {
+        val queue = audioPlaybackQueue
+        if (queue.isEmpty()) return
+        val index = queue.indexOfFirst { it.id == playerManager.currentLocalAudio.value?.id }
+        playLocalAudio(queue[Math.floorMod(index + delta, queue.size)], queue)
     }
-
-    fun prevLocalTrackWithFolderWrap() {
-        viewModelScope.launch {
-            val current = playerManager.currentLocalAudio.value ?: return@launch
-            val queue = _uiState.value.localAudioTracks
-            val currentIndex = queue.indexOfFirst { it.id == current.id }
-            if (currentIndex > 0) {
-                playLocalAudio(queue[currentIndex - 1], queue)
-            } else {
-                val folders = _uiState.value.localAudioFolders
-                if (folders.isNotEmpty()) {
-                    val currentFolderIndex = folders.indexOfFirst { it.name.equals(current.folderName, true) }
-                    val prevFolderIndex = if (currentFolderIndex > 0) currentFolderIndex - 1 else folders.size - 1
-                    val prevFolder = folders[prevFolderIndex]
-                    val tracks = localMediaRepo.getTracksByFolder(prevFolder.name)
-                    if (tracks.isNotEmpty()) {
-                        _uiState.value = _uiState.value.copy(currentAudioFolder = prevFolder, localAudioTracks = tracks)
-                        playLocalAudio(tracks.last(), tracks)
-                    }
-                } else if (queue.isNotEmpty()) {
-                    playLocalAudio(queue.last(), queue)
-                }
-            }
-        }
-    }
-
-    fun nextVideoWithFolderWrap() {
-        viewModelScope.launch {
-            val current = videoPlayerManager.currentVideo.value ?: return@launch
-            val queue = _uiState.value.localVideoTracks
-            val currentIndex = queue.indexOfFirst { it.id == current.id }
-            if (currentIndex in 0 until queue.size - 1) {
-                playLocalVideo(queue[currentIndex + 1])
-            } else {
-                val folders = _uiState.value.localVideoFolders
-                if (folders.isNotEmpty()) {
-                    val currentFolderIndex = folders.indexOfFirst { it.name.equals(current.folderName, true) }
-                    val nextFolderIndex = if (currentFolderIndex >= 0) (currentFolderIndex + 1) % folders.size else 0
-                    val nextFolder = folders[nextFolderIndex]
-                    val videos = localMediaRepo.getVideosByFolder(nextFolder.name)
-                    if (videos.isNotEmpty()) {
-                        _uiState.value = _uiState.value.copy(currentVideoFolder = nextFolder, localVideoTracks = videos)
-                        playLocalVideo(videos.first())
-                    }
-                } else if (queue.isNotEmpty()) {
-                    playLocalVideo(queue.first())
-                }
-            }
-        }
-    }
-
-    fun prevVideoWithFolderWrap() {
-        viewModelScope.launch {
-            val current = videoPlayerManager.currentVideo.value ?: return@launch
-            val queue = _uiState.value.localVideoTracks
-            val currentIndex = queue.indexOfFirst { it.id == current.id }
-            if (currentIndex > 0) {
-                playLocalVideo(queue[currentIndex - 1])
-            } else {
-                val folders = _uiState.value.localVideoFolders
-                if (folders.isNotEmpty()) {
-                    val currentFolderIndex = folders.indexOfFirst { it.name.equals(current.folderName, true) }
-                    val prevFolderIndex = if (currentFolderIndex > 0) currentFolderIndex - 1 else folders.size - 1
-                    val prevFolder = folders[prevFolderIndex]
-                    val videos = localMediaRepo.getVideosByFolder(prevFolder.name)
-                    if (videos.isNotEmpty()) {
-                        _uiState.value = _uiState.value.copy(currentVideoFolder = prevFolder, localVideoTracks = videos)
-                        playLocalVideo(videos.last())
-                    }
-                } else if (queue.isNotEmpty()) {
-                    playLocalVideo(queue.last())
-                }
-            }
-        }
+    fun nextVideoWithFolderWrap() = stepVideoQueue(1)
+    fun prevVideoWithFolderWrap() = stepVideoQueue(-1)
+    private fun stepVideoQueue(delta: Int) {
+        val queue = videoPlaybackQueue
+        if (queue.isEmpty()) return
+        val index = queue.indexOfFirst { it.id == videoPlayerManager.currentVideo.value?.id }
+        playLocalVideo(queue[Math.floorMod(index + delta, queue.size)])
     }
 
     fun onRadioClicked(radio: RadioStation, source: QueueSource, fullList: List<RadioStation>) {
@@ -1800,7 +1766,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
             activeCategoryName = "Top Mundial"
         )
         viewModelScope.launch {
-            val stations = RadioRankingRepository.getInstance().getTopWorld(limit = 100)
+            val stations = RadioRankingRepository.getInstance().getTopWorld(limit = 20)
             val favIds = repository.getFavoriteIdsSet()
             val mapped = stations.map { it.copy(isFavorite = favIds.contains(it.id)) }
             _uiState.value = _uiState.value.copy(
@@ -1825,7 +1791,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
 
     fun onSearchQueryChanged(query: String) {
         _uiState.value = _uiState.value.copy(searchQuery = query)
-        executeSearch()
+        executeSearch(debounce = true)
     }
 
     fun onSearchCountryChanged(countryCode: String) {
@@ -1900,12 +1866,12 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
             ?: CountryCategory("BR", "Brasil", "🇧🇷", "América do Sul")
         _uiState.value = _uiState.value.copy(
             activeCountry = brazil,
-            activeCategoryName = "Top Brasil (100 Melhores)",
+            activeCategoryName = "Top 20 Brasil",
             isLoadingList = true,
             stationsList = emptyList()
         )
         viewModelScope.launch {
-            val stations = RadioRankingRepository.getInstance().getTopBrazil(limit = 100)
+            val stations = RadioRankingRepository.getInstance().getTopBrazil(limit = 20)
             val favIds = repository.getFavoriteIdsSet()
             val mapped = stations.map { it.copy(isFavorite = favIds.contains(it.id)) }
             _uiState.value = _uiState.value.copy(
@@ -1916,7 +1882,10 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun executeSearch() {
+    private var radioSearchJob: kotlinx.coroutines.Job? = null
+
+    fun executeSearch(debounce: Boolean = false) {
+        radioSearchJob?.cancel()
         val query = _uiState.value.searchQuery.trim()
         val currentScreen = _uiState.value.currentScreen
 
@@ -1934,18 +1903,21 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         val state = _uiState.value.searchStateCode
         val city = _uiState.value.searchCity
 
-        viewModelScope.launch {
+        radioSearchJob = viewModelScope.launch {
+            if (debounce) kotlinx.coroutines.delay(250)
             _uiState.value = _uiState.value.copy(isLoadingList = true)
             val results = if (query.isBlank() && currentScreen == IpodScreenDestination.STATIONS_BY_COUNTRY && _uiState.value.activeCountry != null) {
                 repository.getStationsByCountry(_uiState.value.activeCountry!!.code)
             } else if (query.isBlank() && currentScreen == IpodScreenDestination.STATIONS_BY_GENRE && _uiState.value.activeGenre != null) {
                 repository.getStationsByGenre(_uiState.value.activeGenre!!.tag)
-            } else if (query.isBlank() && currentScreen == IpodScreenDestination.TOP_BRAZIL) {
-                val stations = RadioRankingRepository.getInstance().getTopBrazil(limit = 100)
+            } else if (currentScreen == IpodScreenDestination.TOP_BRAZIL) {
+                val stations = RadioRankingRepository.getInstance().getTopBrazil(limit = 20)
+                    .filter { com.example.util.RadioSearchEngine.matchesMultiToken(it, query) }
                 val favIds = repository.getFavoriteIdsSet()
                 stations.map { it.copy(isFavorite = favIds.contains(it.id)) }
-            } else if (query.isBlank() && currentScreen == IpodScreenDestination.TOP_WORLD) {
-                val stations = RadioRankingRepository.getInstance().getTopWorld(limit = 100)
+            } else if (currentScreen == IpodScreenDestination.TOP_WORLD) {
+                val stations = RadioRankingRepository.getInstance().getTopWorld(limit = 20)
+                    .filter { com.example.util.RadioSearchEngine.matchesMultiToken(it, query) }
                 val favIds = repository.getFavoriteIdsSet()
                 stations.map { it.copy(isFavorite = favIds.contains(it.id)) }
             } else {
@@ -1961,8 +1933,8 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
             val categoryName = when (currentScreen) {
                 IpodScreenDestination.STATIONS_BY_COUNTRY -> _uiState.value.activeCountry?.name ?: "País"
                 IpodScreenDestination.STATIONS_BY_GENRE -> _uiState.value.activeGenre?.name ?: "Gênero"
-                IpodScreenDestination.TOP_BRAZIL -> "Top Brasil (100 Melhores)"
-                IpodScreenDestination.TOP_WORLD -> "Top Mundial (100 Melhores)"
+                IpodScreenDestination.TOP_BRAZIL -> "Top 20 Brasil"
+                IpodScreenDestination.TOP_WORLD -> "Top 20 Mundial"
                 else -> if (query.isNotBlank()) "Busca: $query" else "Busca"
             }
 
@@ -2045,7 +2017,8 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     fun loadAudioFolders() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoadingList = true)
-            val folders = localMediaRepo.getAudioFolders()
+            val allTracks = localMediaRepo.getAllAudioTracks()
+            val folders = mediaLibrary.folders(LibraryKind.AUDIO, localMediaRepo.getAudioFolders(), allTracks.map { it.libraryKey() }.toSet())
             _uiState.value = _uiState.value.copy(
                 isLoadingList = false,
                 localAudioFolders = folders
@@ -2053,17 +2026,26 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun selectAudioFolder(folder: com.example.data.model.MediaFolder) {
+    fun selectAudioFolder(folder: com.example.data.model.MediaFolder, resetSelection: Boolean = true) {
+        val selectedFolder = if (folder.path.startsWith("playlist:")) {
+            val playlist = mediaLibrary.state.value.playlists.firstOrNull { "playlist:${it.id}" == folder.path }
+            if (playlist == null) { navigateBack(); return }
+            folder.copy(name = "Playlist · ${playlist.name}")
+        } else folder
         _uiState.value = _uiState.value.copy(
-            currentAudioFolder = folder,
+            currentAudioFolder = selectedFolder,
+            selectedIndex = if (resetSelection) 0 else _uiState.value.selectedIndex,
             isLoadingList = true,
-            localAudioTracks = emptyList()
+            localAudioTracks = if (resetSelection) emptyList() else _uiState.value.localAudioTracks
         )
         viewModelScope.launch {
-            val tracks = localMediaRepo.getTracksByFolder(folder.name)
+            val tracks = if (folder.path.startsWith("library:") || folder.path.startsWith("playlist:")) {
+                mediaLibrary.select(folder.path, localMediaRepo.getAllAudioTracks()) { it.libraryKey() }
+            } else localMediaRepo.getTracksByFolder(folder.name, folder.path)
             _uiState.value = _uiState.value.copy(
                 isLoadingList = false,
-                localAudioTracks = tracks
+                localAudioTracks = tracks,
+                selectedIndex = _uiState.value.selectedIndex.coerceIn(0, (tracks.size - 1).coerceAtLeast(0))
             )
         }
     }
@@ -2078,7 +2060,8 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
             val tracks = localMediaRepo.getAllAudioTracks()
             _uiState.value = _uiState.value.copy(
                 isLoadingList = false,
-                localAudioTracks = tracks
+                localAudioTracks = tracks,
+                selectedIndex = _uiState.value.selectedIndex.coerceIn(0, (tracks.size - 1).coerceAtLeast(0))
             )
         }
     }
@@ -2086,7 +2069,8 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     fun playLocalAudio(track: com.example.data.model.LocalAudioTrack, queue: List<com.example.data.model.LocalAudioTrack> = emptyList()) {
         videoPlayerManager.pause()
         _uiState.value = _uiState.value.copy(currentYouTubeVideo = null)
-        playerManager.playLocalAudio(track, queue)
+        audioPlaybackQueue = queue.ifEmpty { _uiState.value.localAudioTracks }.ifEmpty { listOf(track) }
+        playerManager.playLocalAudio(track, audioPlaybackQueue)
         soundAndHaptics.performHeavyHaptic()
 
         // Background online artwork search fallback if local artwork is missing
@@ -2101,7 +2085,8 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     fun loadVideoFolders() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoadingList = true)
-            val folders = localMediaRepo.getVideoFolders()
+            val allVideos = localMediaRepo.getAllVideoTracks()
+            val folders = mediaLibrary.folders(LibraryKind.VIDEO, localMediaRepo.getVideoFolders(), allVideos.map { it.libraryKey() }.toSet())
             _uiState.value = _uiState.value.copy(
                 isLoadingList = false,
                 localVideoFolders = folders
@@ -2109,17 +2094,26 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun selectVideoFolder(folder: com.example.data.model.MediaFolder) {
+    fun selectVideoFolder(folder: com.example.data.model.MediaFolder, resetSelection: Boolean = true) {
+        val selectedFolder = if (folder.path.startsWith("playlist:")) {
+            val playlist = mediaLibrary.state.value.playlists.firstOrNull { "playlist:${it.id}" == folder.path }
+            if (playlist == null) { navigateBack(); return }
+            folder.copy(name = "Playlist · ${playlist.name}")
+        } else folder
         _uiState.value = _uiState.value.copy(
-            currentVideoFolder = folder,
+            currentVideoFolder = selectedFolder,
+            selectedIndex = if (resetSelection) 0 else _uiState.value.selectedIndex,
             isLoadingList = true,
-            localVideoTracks = emptyList()
+            localVideoTracks = if (resetSelection) emptyList() else _uiState.value.localVideoTracks
         )
         viewModelScope.launch {
-            val videos = localMediaRepo.getVideosByFolder(folder.name)
+            val videos = if (folder.path.startsWith("library:") || folder.path.startsWith("playlist:")) {
+                mediaLibrary.select(folder.path, localMediaRepo.getAllVideoTracks()) { it.libraryKey() }
+            } else localMediaRepo.getVideosByFolder(folder.name, folder.path)
             _uiState.value = _uiState.value.copy(
                 isLoadingList = false,
-                localVideoTracks = videos
+                localVideoTracks = videos,
+                selectedIndex = _uiState.value.selectedIndex.coerceIn(0, (videos.size - 1).coerceAtLeast(0))
             )
         }
     }
@@ -2134,7 +2128,8 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
             val videos = localMediaRepo.getAllVideoTracks()
             _uiState.value = _uiState.value.copy(
                 isLoadingList = false,
-                localVideoTracks = videos
+                localVideoTracks = videos,
+                selectedIndex = _uiState.value.selectedIndex.coerceIn(0, (videos.size - 1).coerceAtLeast(0))
             )
         }
     }
@@ -2142,6 +2137,9 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
     fun playLocalVideo(video: com.example.data.model.LocalVideoTrack) {
         playerManager.pause()
         playerManager.setActiveMediaType(ActiveMediaType.LOCAL_VIDEO)
+        if (videoPlaybackQueue.none { it.id == video.id } || _uiState.value.currentScreen == IpodScreenDestination.VIDEO_LIST) {
+            videoPlaybackQueue = _uiState.value.localVideoTracks.ifEmpty { listOf(video) }
+        }
         videoPlayerManager.playVideo(video)
         soundAndHaptics.performHeavyHaptic()
     }
@@ -2169,7 +2167,8 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun getItemCountForCurrentScreen(): Int {
         return when (_uiState.value.currentScreen) {
-            IpodScreenDestination.MAIN_MENU -> 13
+            IpodScreenDestination.PERSONAL_LIBRARY -> 0
+            IpodScreenDestination.MAIN_MENU -> 14
             IpodScreenDestination.AUDIO_OUTPUT_MENU -> audioRouteManager.availableDevices.value.size
             IpodScreenDestination.RADIO_MENU -> 9
             IpodScreenDestination.PODCASTS_MENU -> 9
@@ -2185,17 +2184,17 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
             IpodScreenDestination.PODCASTS_TOP_BRAZIL,
             IpodScreenDestination.PODCASTS_TOP_WORLD,
             IpodScreenDestination.PODCASTS_BY_CATEGORY,
-            IpodScreenDestination.PODCASTS_BY_COUNTRY,
-            IpodScreenDestination.PODCASTS_SEARCH -> _uiState.value.podcastShows.size
+            IpodScreenDestination.PODCASTS_BY_COUNTRY -> _uiState.value.podcastShows.size
+            IpodScreenDestination.PODCASTS_SEARCH -> _uiState.value.podcastSearchResults.size
             IpodScreenDestination.PODCASTS_CATEGORIES -> _uiState.value.podcastCategories.size
             IpodScreenDestination.PODCASTS_COUNTRIES -> _uiState.value.podcastCountries.size
             IpodScreenDestination.PODCAST_EPISODES_LIST -> _uiState.value.podcastEpisodes.size
             IpodScreenDestination.PODCAST_NOW_PLAYING -> 0
             IpodScreenDestination.PODCAST_CHAPTERS -> playerManager.currentPodcastChapters.value.size
-            IpodScreenDestination.MP3_FOLDERS -> _uiState.value.localAudioFolders.size + 1
+            IpodScreenDestination.MP3_FOLDERS -> _uiState.value.localAudioFolders.size
             IpodScreenDestination.MP3_TRACKS_LIST -> _uiState.value.localAudioTracks.size
             IpodScreenDestination.MP3_NOW_PLAYING -> 0
-            IpodScreenDestination.VIDEO_FOLDERS -> _uiState.value.localVideoFolders.size + 1
+            IpodScreenDestination.VIDEO_FOLDERS -> _uiState.value.localVideoFolders.size
             IpodScreenDestination.VIDEO_LIST -> _uiState.value.localVideoTracks.size
             IpodScreenDestination.VIDEO_PLAYER -> 0
             IpodScreenDestination.FAVORITES -> favorites.value.size
@@ -2213,6 +2212,13 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
             IpodScreenDestination.NOW_PLAYING_RDS,
             IpodScreenDestination.ABOUT -> 0
         }
+    }
+
+    override fun onCleared() {
+        videoPlayerManager.onVideoEnded = null
+        playerManager.onFolderWrapNext = null
+        playerManager.onFolderWrapPrev = null
+        super.onCleared()
     }
 
     private fun getActiveStationList(): List<RadioStation> {

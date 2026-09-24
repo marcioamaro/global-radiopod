@@ -124,7 +124,8 @@ fun IpodPodcastShowsScreen(
     fontScale: Float,
     isBold: Boolean,
     onClearAll: (() -> Unit)? = null,
-    clearAllLabel: String = "Limpar Histórico Recente"
+    clearAllLabel: String = "Limpar Histórico Recente",
+    rankingInfo: com.example.data.repository.RankingInfo? = null
 ) {
     val bwColorMatrix = remember { ColorMatrix().apply { setToSaturation(0f) } }
 
@@ -134,6 +135,7 @@ fun IpodPodcastShowsScreen(
             .background(backlightBg)
             .padding(horizontal = 6.dp, vertical = 2.dp)
     ) {
+        rankingInfo?.let { com.example.ui.components.RankingSourceHeader(it, backlightTextPrimary) }
         if (onClearAll != null && shows.isNotEmpty()) {
             Row(
                 modifier = Modifier
@@ -192,7 +194,7 @@ fun IpodPodcastShowsScreen(
         } else if (shows.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
-                    text = "Nenhum podcast encontrado",
+                    text = if (rankingInfo?.available == false) "Não foi possível carregar o Top 20.\nExplore os podcasts por país ou pela busca." else "Nenhum podcast encontrado",
                     color = backlightTextSecondary,
                     fontSize = (11f * fontScale).sp,
                     fontFamily = fontFamily
@@ -237,7 +239,7 @@ fun IpodPodcastShowsScreen(
 
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = show.title,
+                                text = if (rankingInfo != null && show.rankPosition != null) "${show.rankPosition}. ${show.title}" else show.title,
                                 color = if (isSelected) Color.White else backlightTextPrimary,
                                 fontSize = (11f * fontScale).sp,
                                 fontWeight = if (isBold) FontWeight.Bold else FontWeight.Medium,
@@ -246,6 +248,7 @@ fun IpodPodcastShowsScreen(
                                 overflow = TextOverflow.Ellipsis
                             )
                             val metaParts = mutableListOf<String>()
+                            if (show.feedUrl.isBlank()) metaParts.add("Episódios indisponíveis")
                             if (show.author.isNotBlank()) metaParts.add(show.author)
                             if (show.episodeCount > 0) metaParts.add("${show.episodeCount} ep")
                             if (show.latestReleaseDate.isNotBlank()) metaParts.add(show.latestReleaseDate)
@@ -290,7 +293,8 @@ fun IpodPodcastEpisodesScreen(
     backlightHighlight: Color,
     fontFamily: FontFamily,
     fontScale: Float,
-    isBold: Boolean
+    isBold: Boolean,
+    onTogglePlayed: (PodcastEpisode) -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -372,12 +376,13 @@ fun IpodPodcastEpisodesScreen(
                             }
                         }
 
-                        Icon(
-                            imageVector = Icons.Default.PlayArrow,
-                            contentDescription = "Reproduzir",
-                            tint = if (isSelected) Color.White else backlightTextPrimary,
-                            modifier = Modifier.size(16.dp)
-                        )
+                        com.example.ui.components.PodcastDownloadControl(ep)
+                        IconButton(onClick = { onTogglePlayed(ep) }, modifier = Modifier.size(48.dp)) {
+                            com.example.ui.components.LcdEarIcon(
+                                color = if (isSelected) Color.White else backlightTextPrimary,
+                                played = ep.isPlayed
+                            )
+                        }
                     }
                 }
             }
@@ -567,6 +572,7 @@ fun IpodPodcastNowPlayingScreen(
         }
 
         // Timeline Progress Bar & Time Stamps com suporte a touch-to-seek e scrubbing
+        episode?.let { com.example.ui.components.AddBookmarkControl(it, positionMs) }
         Column(modifier = Modifier.fillMaxWidth()) {
             IpodInteractiveProgressBar(
                 positionMs = positionMs,
@@ -987,7 +993,7 @@ fun IpodPodcastSearchScreen(
                 .height(48.dp),
             placeholder = {
                 Text(
-                    text = "Buscar podcasts no iTunes...",
+                    text = "Buscar em toda a base...",
                     fontSize = (11f * fontScale).sp,
                     color = backlightTextSecondary.copy(alpha = 0.7f),
                     fontFamily = fontFamily
@@ -1038,7 +1044,7 @@ fun IpodPodcastSearchScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = if (searchQuery.isBlank()) "DIGITE PARA BUSCAR" else "RESULTADOS ITUNES",
+                text = if (searchQuery.isBlank()) "TODOS OS PODCASTS" else "RESULTADOS DA BUSCA",
                 color = backlightTextSecondary,
                 fontSize = (8.5f * fontScale).sp,
                 fontWeight = FontWeight.Bold,
@@ -1055,7 +1061,7 @@ fun IpodPodcastSearchScreen(
 
         Spacer(modifier = Modifier.height(3.dp))
 
-        if (isLoading) {
+        if (isLoading && shows.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     CircularProgressIndicator(
@@ -1065,7 +1071,7 @@ fun IpodPodcastSearchScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Buscando podcasts no iTunes...",
+                        text = "Buscando podcasts...",
                         color = backlightTextPrimary,
                         fontSize = (10f * fontScale).sp,
                         fontFamily = fontFamily

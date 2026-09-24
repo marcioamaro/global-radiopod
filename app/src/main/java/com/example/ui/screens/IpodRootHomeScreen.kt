@@ -66,7 +66,8 @@ fun IpodRootHomeScreen(
         RootMenuItem(stringResource(R.string.menu_dock_mode), Icons.Default.Schedule, 9),
         RootMenuItem(stringResource(R.string.menu_settings), Icons.Default.Settings, 10),
         RootMenuItem(stringResource(R.string.menu_about), Icons.Default.Info, 11),
-        RootMenuItem(stringResource(R.string.menu_close_app), Icons.Default.PowerSettingsNew, 12)
+        RootMenuItem(stringResource(R.string.library_title), Icons.Default.Bookmarks, 12),
+        RootMenuItem(stringResource(R.string.menu_close_app), Icons.Default.PowerSettingsNew, 13)
     )
 
     val listState = rememberLazyListState()

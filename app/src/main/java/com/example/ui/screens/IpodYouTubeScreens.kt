@@ -686,12 +686,6 @@ fun IpodAddYouTubeUrlScreen(
  * - Não remove nem oculta anúncios oficiais
  * - Permite botão de Cast para transmissão na rede local (Smart TVs, Chromecast)
  */
-class YouTubeJsBridge(private val onPositionUpdate: (Int) -> Unit) {
-    @android.webkit.JavascriptInterface
-    fun onTimeUpdate(seconds: Int) {
-        onPositionUpdate(seconds)
-    }
-}
 
 internal fun buildYouTubePlayerHtml(videoId: String, startSeconds: Int): String {
     return """
@@ -944,7 +938,7 @@ fun IpodYouTubePlayerScreen(
                 AndroidView(
                     modifier = Modifier.fillMaxSize(),
                     factory = { ctx ->
-                        WebView(ctx).apply {
+                        com.example.ui.components.YouTubeWebView(ctx, onTimeUpdate).apply {
                             layoutParams = ViewGroup.LayoutParams(
                                 ViewGroup.LayoutParams.MATCH_PARENT,
                                 ViewGroup.LayoutParams.MATCH_PARENT
@@ -960,7 +954,7 @@ fun IpodYouTubePlayerScreen(
                                 cacheMode = WebSettings.LOAD_DEFAULT
                                 userAgentString = userAgentString.replace("; wv", "")
                             }
-                            addJavascriptInterface(YouTubeJsBridge(onTimeUpdate), "AndroidBridge")
+                            
                             webViewClient = object : WebViewClient() {
                                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                                     isLoading = true
@@ -997,7 +991,7 @@ fun IpodYouTubePlayerScreen(
 
                                 override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                                     val url = request?.url?.toString() ?: return false
-                                    return !(url.startsWith("http://") || url.startsWith("https://"))
+                                    return !com.example.util.YouTubeNavigationPolicy.allowsNavigation(url)
                                 }
                             }
                             android.webkit.CookieManager.getInstance().setAcceptCookie(true)
@@ -1085,7 +1079,7 @@ fun FullscreenLandscapeYouTubePlayer(
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { ctx ->
-                    WebView(ctx).apply {
+                    com.example.ui.components.YouTubeWebView(ctx, onTimeUpdate).apply {
                         layoutParams = ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.MATCH_PARENT
@@ -1101,11 +1095,11 @@ fun FullscreenLandscapeYouTubePlayer(
                             cacheMode = WebSettings.LOAD_DEFAULT
                             userAgentString = userAgentString.replace("; wv", "")
                         }
-                        addJavascriptInterface(YouTubeJsBridge(onTimeUpdate), "AndroidBridge")
+                        
                         webViewClient = object : WebViewClient() {
                             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                                 val url = request?.url?.toString() ?: return false
-                                return !(url.startsWith("http://") || url.startsWith("https://"))
+                                return !com.example.util.YouTubeNavigationPolicy.allowsNavigation(url)
                             }
                         }
                         android.webkit.CookieManager.getInstance().setAcceptCookie(true)

@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.data.model.LocalAudioTrack
 import com.example.data.model.MediaFolder
+import com.example.data.repository.libraryKey
 import com.example.ui.components.IpodInteractiveProgressBar
 
 @Composable
@@ -40,13 +41,16 @@ fun IpodMp3FoldersScreen(
     backlightHighlight: Color,
     fontFamily: FontFamily,
     fontScale: Float,
-    isBold: Boolean
+    isBold: Boolean,
+    library: com.example.data.repository.MediaLibraryRepository? = null,
+    collectionPath: String? = null
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(backlightBg)
     ) {
+        library?.let { com.example.ui.components.MediaLibraryToolbar(it, com.example.data.repository.LibraryKind.AUDIO, collectionPath, backlightTextPrimary) }
         // Header
         Row(
             modifier = Modifier
@@ -63,7 +67,7 @@ fun IpodMp3FoldersScreen(
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-                text = "Pastas de Músicas (${folders.size})",
+                text = "Biblioteca de músicas",
                 color = backlightTextPrimary,
                 fontSize = (13f * fontScale).sp,
                 fontWeight = if (isBold) FontWeight.Black else FontWeight.Bold,
@@ -153,13 +157,16 @@ fun IpodMp3TracksListScreen(
     backlightHighlight: Color,
     fontFamily: FontFamily,
     fontScale: Float,
-    isBold: Boolean
+    isBold: Boolean,
+    library: com.example.data.repository.MediaLibraryRepository? = null,
+    collectionPath: String? = null
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(backlightBg)
     ) {
+        library?.let { com.example.ui.components.MediaLibraryToolbar(it, com.example.data.repository.LibraryKind.AUDIO, collectionPath, backlightTextPrimary) }
         // Header
         Row(
             modifier = Modifier
@@ -247,6 +254,9 @@ fun IpodMp3TracksListScreen(
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
+                        library?.let { com.example.ui.components.MediaItemActions(it,
+                            com.example.data.repository.LibraryKind.AUDIO, track.libraryKey(), collectionPath,
+                            if (isSelected) Color.White else backlightTextPrimary) }
                     }
                 }
             }

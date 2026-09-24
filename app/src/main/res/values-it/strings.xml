@@ -21,8 +21,8 @@
     <string name="radio_now_playing">In Riproduzione</string>
     <string name="radio_favorites">Preferiti</string>
     <string name="radio_recents">Recenti</string>
-    <string name="radio_top_brazil">Top Brasile (Top 100)</string>
-    <string name="radio_top_world">Top Mondiale (Top 100)</string>
+    <string name="radio_top_brazil">Top 20 Brasile</string>
+    <string name="radio_top_world">Top 20 mondiale</string>
     <string name="radio_genres">Generi &amp; Stili</string>
     <string name="radio_countries">Paesi</string>
     <string name="radio_search">Cerca Stazione</string>
@@ -31,8 +31,8 @@
     <string name="podcast_now_playing">In Riproduzione</string>
     <string name="podcast_favorites">Podcast Preferiti</string>
     <string name="podcast_recents">Podcast Recenti</string>
-    <string name="podcast_top_brazil">Top Brasile (Top 100)</string>
-    <string name="podcast_top_world">Top Mondiale (Top 100)</string>
+    <string name="podcast_top_brazil">Top 20 Brasile</string>
+    <string name="podcast_top_world">Top 20 mondiale</string>
     <string name="podcast_categories">Categorie &amp; Generi</string>
     <string name="podcast_by_country">Per Paese</string>
     <string name="podcast_search">Cerca Podcast</string>

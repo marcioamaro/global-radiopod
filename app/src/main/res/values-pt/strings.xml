@@ -21,8 +21,8 @@
     <string name="radio_now_playing">Agora Tocando</string>
     <string name="radio_favorites">Favoritas</string>
     <string name="radio_recents">Recentes</string>
-    <string name="radio_top_brazil">Top Brasil (1.321 Emissoras)</string>
-    <string name="radio_top_world">Top Mundial</string>
+    <string name="radio_top_brazil">Top 20 Brasil</string>
+    <string name="radio_top_world">Top 20 Mundial</string>
     <string name="radio_genres">Gêneros &amp; Estilos</string>
     <string name="radio_countries">Países</string>
     <string name="radio_search">Buscar Emissora</string>
@@ -31,8 +31,8 @@
     <string name="podcast_now_playing">Agora Tocando</string>
     <string name="podcast_favorites">Podcasts Favoritos</string>
     <string name="podcast_recents">Podcasts Recentes</string>
-    <string name="podcast_top_brazil">Top Brasil (100 Melhores)</string>
-    <string name="podcast_top_world">Top Mundial (100 Melhores)</string>
+    <string name="podcast_top_brazil">Top 20 Brasil</string>
+    <string name="podcast_top_world">Top 20 Mundial</string>
     <string name="podcast_categories">Categorias &amp; Gêneros</string>
     <string name="podcast_by_country">Por País</string>
     <string name="podcast_search">Buscar Podcast</string>
@@ -187,7 +187,7 @@
     <string name="settings_dock_show_seconds_title">Exibir Segundos (:ss)</string>
     <string name="settings_dock_show_seconds_desc">Contagem de segundos com transição contínua ao lado da hora</string>
     <string name="settings_group_backup_title">Cópia de Segurança Protegida</string>
-    <string name="settings_backup_desc">Salve ou recupere todas as suas preferências, favoritos e estações em um arquivo protegido exclusivo do app.</string>
+    <string name="settings_backup_desc">Salve preferências, rádios, podcasts ouvidos, URLs do YouTube, favoritos, recentes e playlists. Arquivos de música e vídeo não são copiados; mantenha-os nos mesmos locais ao restaurar.</string>
     <string name="settings_backup_export_btn">Salvar Backup</string>
     <string name="settings_backup_restore_btn">Recuperar Backup</string>
     <string name="settings_backup_success_msg">Backup recuperado com sucesso!</string>

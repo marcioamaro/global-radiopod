@@ -401,7 +401,7 @@ fun MainScreen(viewModel: RadioViewModel) {
         if (isYouTubePlayerActive && uiState.currentYouTubeVideo != null) {
             val video = uiState.currentYouTubeVideo!!
             val startSeconds = viewModel.youTubePlaybackPositionSeconds
-            val wv = WebView(context).apply {
+            val wv = com.example.ui.components.YouTubeWebView(context) { viewModel.updateYouTubePlaybackPosition(it) }.apply {
                 layoutParams = android.view.ViewGroup.LayoutParams(
                     android.view.ViewGroup.LayoutParams.MATCH_PARENT,
                     android.view.ViewGroup.LayoutParams.MATCH_PARENT
@@ -417,16 +417,12 @@ fun MainScreen(viewModel: RadioViewModel) {
                     cacheMode = WebSettings.LOAD_DEFAULT
                     userAgentString = userAgentString.replace("; wv", "")
                 }
-                addJavascriptInterface(
-                    com.example.ui.screens.YouTubeJsBridge { s -> viewModel.updateYouTubePlaybackPosition(s) },
-                    "AndroidBridge"
-                )
                 android.webkit.CookieManager.getInstance().setAcceptCookie(true)
                 android.webkit.CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
                 webViewClient = object : WebViewClient() {
                     override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                         val url = request?.url?.toString() ?: return false
-                        return !(url.startsWith("http://") || url.startsWith("https://"))
+                        return !com.example.util.YouTubeNavigationPolicy.allowsNavigation(url)
                     }
 
                     override fun onPageFinished(view: WebView?, url: String?) {

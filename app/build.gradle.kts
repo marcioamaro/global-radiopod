@@ -19,8 +19,8 @@ android {
     applicationId = "com.marcioamaro.mediapod"
     minSdk = 24
     targetSdk = 36
-    versionCode = 84
-    versionName = "0.3.2"
+    versionCode = 89
+    versionName = "0.3.7"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -34,11 +34,9 @@ android {
 
   val releaseStorePassword = System.getenv("MEDIAPOD_KEYSTORE_PASSWORD")
     ?: localProps.getProperty("mediapod.keystore.password")
-    ?: "MediaPod2026Key!"
 
   val releaseKeyPassword = System.getenv("MEDIAPOD_KEY_PASSWORD")
     ?: localProps.getProperty("mediapod.key.password")
-    ?: "MediaPod2026Key!"
 
   val releaseKeyAlias = System.getenv("MEDIAPOD_KEY_ALIAS")
     ?: localProps.getProperty("mediapod.key.alias")
@@ -78,6 +76,7 @@ android {
     buildConfig = true
   }
   testOptions { unitTests { isIncludeAndroidResources = true } }
+  sourceSets.getByName("test").resources.srcDir("src/main/assets")
   dependenciesInfo {
     includeInApk = false
     includeInBundle = true

@@ -21,8 +21,8 @@
     <string name="radio_now_playing">再生中</string>
     <string name="radio_favorites">お気に入り</string>
     <string name="radio_recents">最近再生した局</string>
-    <string name="radio_top_brazil">ブラジル人気局（1,307局）</string>
-    <string name="radio_top_world">世界の人気局</string>
+    <string name="radio_top_brazil">ブラジル トップ20</string>
+    <string name="radio_top_world">世界 トップ20</string>
     <string name="radio_genres">ジャンル＆スタイル</string>
     <string name="radio_countries">国・地域</string>
     <string name="radio_search">放送局を検索</string>
@@ -31,8 +31,8 @@
     <string name="podcast_now_playing">再生中</string>
     <string name="podcast_favorites">お気に入りポッドキャスト</string>
     <string name="podcast_recents">最近のポッドキャスト</string>
-    <string name="podcast_top_brazil">ブラジル トップ100</string>
-    <string name="podcast_top_world">世界 トップ100</string>
+    <string name="podcast_top_brazil">ブラジル トップ20</string>
+    <string name="podcast_top_world">世界 トップ20</string>
     <string name="podcast_categories">カテゴリー＆ジャンル</string>
     <string name="podcast_by_country">国別</string>
     <string name="podcast_search">ポッドキャストを検索</string>

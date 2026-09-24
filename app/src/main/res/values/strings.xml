@@ -21,8 +21,8 @@
     <string name="radio_now_playing">Now Playing</string>
     <string name="radio_favorites">Favorites</string>
     <string name="radio_recents">Recents</string>
-    <string name="radio_top_brazil">Top Brazil (1,307 Stations)</string>
-    <string name="radio_top_world">Top World</string>
+    <string name="radio_top_brazil">Top 20 Brazil</string>
+    <string name="radio_top_world">Top 20 Worldwide</string>
     <string name="radio_genres">Genres &amp; Styles</string>
     <string name="radio_countries">Countries</string>
     <string name="radio_search">Search Station</string>
@@ -31,8 +31,8 @@
     <string name="podcast_now_playing">Now Playing</string>
     <string name="podcast_favorites">Favorite Podcasts</string>
     <string name="podcast_recents">Recent Podcasts</string>
-    <string name="podcast_top_brazil">Top Brazil (Top 100)</string>
-    <string name="podcast_top_world">Top Worldwide (Top 100)</string>
+    <string name="podcast_top_brazil">Top 20 Brazil</string>
+    <string name="podcast_top_world">Top 20 Worldwide</string>
     <string name="podcast_categories">Categories &amp; Genres</string>
     <string name="podcast_by_country">By Country</string>
     <string name="podcast_search">Search Podcast</string>
@@ -187,7 +187,7 @@
     <string name="settings_dock_show_seconds_title">Display Seconds (:ss)</string>
     <string name="settings_dock_show_seconds_desc">Continuous seconds count smoothly displayed beside the clock</string>
     <string name="settings_group_backup_title">Protected Backup &amp; Restore</string>
-    <string name="settings_backup_desc">Save or restore your stations, favorites, and settings securely in an app-protected file.</string>
+    <string name="settings_backup_desc">Back up preferences, stations, played podcasts, YouTube URLs, favorites, recents and playlists. Music and video files are not copied; keep them in the same locations when restoring.</string>
     <string name="settings_backup_export_btn">Export Backup</string>
     <string name="settings_backup_restore_btn">Restore Backup</string>
     <string name="settings_backup_success_msg">Backup restored successfully!</string>

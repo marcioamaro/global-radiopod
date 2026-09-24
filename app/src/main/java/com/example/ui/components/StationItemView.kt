@@ -58,7 +58,8 @@ fun StationItemView(
     fontFamily: FontFamily = FontFamily.Monospace,
     fontScale: Float = 1.0f,
     isBold: Boolean = true,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    rankPosition: Int? = null
 ) {
     val context = LocalContext.current
 
@@ -143,7 +144,7 @@ fun StationItemView(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = station.name,
+                text = rankPosition?.let { "$it. ${station.name}" } ?: station.name,
                 color = if (isSelected) Color.White else backlightTextPrimary,
                 fontSize = (13.5f * fontScale).sp,
                 fontWeight = if (isSelected || isPlaying || isBold) FontWeight.Black else FontWeight.Bold,

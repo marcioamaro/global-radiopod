@@ -1,5 +1,6 @@
 package com.example.player
 
+import com.example.data.repository.libraryKey
 import android.content.Context
 import android.content.Intent
 import com.example.R
@@ -484,6 +485,10 @@ class RadioPlayerManager private constructor(private val context: Context) {
                             }
                             Player.STATE_ENDED -> {
                                 cancelBufferingWatchdog()
+                                _currentPodcastEpisode.value?.let { episode ->
+                                    com.example.data.repository.PodcastRepository.getInstance(context)
+                                        .markEpisodePlayed(episode.id)
+                                }
                                 if (stopAtEndOfEpisodeOrTrack) {
                                     triggerSleepTimerStop()
                                 } else if (_currentLocalAudio.value != null) {
@@ -540,6 +545,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
                     }
 
                     override fun onPlayerError(error: PlaybackException) {
+                        com.example.util.Diagnostics.record(context, com.example.util.Diagnostics.Event.PLAYBACK_FAILED)
                         cancelBufferingWatchdog()
                         if (userInitiatedPause) return
 
@@ -566,7 +572,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
                             releaseLocks()
                             streamingTimeoutJob?.cancel()
                             _playbackStatus.value = RadioPlaybackStatus.ERROR
-                            _errorMessage.value = "Erro na transmissão: ${error.localizedMessage ?: "Stream indisponível"}"
+                            _errorMessage.value = "Não foi possível reproduzir. Verifique a conexão e tente novamente ou escolha outra fonte."
                         }
                     }
 
@@ -698,6 +704,9 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
     fun getPlayer(): ExoPlayer {
         if (exoPlayer == null) initPlayer()
+        val bitrate = com.example.util.DataUsagePolicy(context).preferredBitrate
+        exoPlayer!!.trackSelectionParameters = exoPlayer!!.trackSelectionParameters.buildUpon()
+            .setMaxAudioBitrate(if (bitrate == 0) Int.MAX_VALUE else bitrate).build()
         return exoPlayer!!
     }
 
@@ -784,6 +793,8 @@ class RadioPlayerManager private constructor(private val context: Context) {
             .setKeepPostFor302Redirects(true)
             .setDefaultRequestProperties(mapOf(
                 "Icy-MetaData" to "1",
+                "Cache-Control" to "no-cache",
+                "Pragma" to "no-cache",
                 "Accept" to "*/*"
             ))
     }
@@ -1169,6 +1180,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
     }
 
     fun playLocalAudio(track: com.example.data.model.LocalAudioTrack, queue: List<com.example.data.model.LocalAudioTrack> = emptyList()) {
+        com.example.data.repository.MediaLibraryRepository.getInstance(context).recordRecent(track.libraryKey())
         requestAudioFocus()
         clearPlayerMetadata()
         try {
@@ -1242,6 +1254,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
             player.setMediaItem(mediaItem)
             player.playlistMetadata = mediaMetadata
             val speed = ipodPrefs.localMediaPlaybackSpeed
+            player.seekTo(com.example.data.repository.MediaLibraryRepository.getInstance(context).position(track.libraryKey()))
             _playbackSpeed.value = speed
             player.playbackParameters = PlaybackParameters(speed, 1.0f)
             _currentPodcastChapters.value = emptyList()
@@ -1323,7 +1336,8 @@ class RadioPlayerManager private constructor(private val context: Context) {
 
         val mediaItem = MediaItem.Builder()
             .setMediaId(episode.id)
-            .setUri(episode.audioUrl)
+            .setUri(com.example.data.download.PodcastDownloadManager.getInstance(context).getLocalFilePath(episode.id)
+                ?.let { Uri.fromFile(java.io.File(it)) } ?: Uri.parse(episode.audioUrl))
             .setMediaMetadata(mediaMetadata)
             .build()
 
@@ -1441,6 +1455,10 @@ class RadioPlayerManager private constructor(private val context: Context) {
                     exoPlayer?.let { p ->
                         val pos = p.currentPosition.coerceAtLeast(0L)
                         _audioPositionMs.value = pos
+                        _currentLocalAudio.value?.let { track ->
+                            com.example.data.repository.MediaLibraryRepository.getInstance(context)
+                                .savePosition(track.libraryKey(), pos, track.durationMs)
+                        }
                         updateCurrentChapter(pos)
                         val dur = p.duration
                         if (dur > 0) {

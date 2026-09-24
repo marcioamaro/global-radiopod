@@ -461,7 +461,7 @@ fun IpodClassicScreen(
                     }
 
                     IpodHeader(
-                        title = getScreenTitle(uiState),
+                        title = if (uiState.currentScreen == IpodScreenDestination.PERSONAL_LIBRARY) stringResource(R.string.library_title) else getScreenTitle(uiState),
                         status = playbackStatus,
                         isHoldLocked = uiState.isHoldLocked,
                         sleepTimerMinutes = sleepTimerMinutes,
@@ -502,6 +502,11 @@ fun IpodClassicScreen(
                     // Active Screen Content
                     Box(modifier = Modifier.fillMaxSize()) {
                         when (uiState.currentScreen) {
+                            IpodScreenDestination.PERSONAL_LIBRARY -> {
+                                com.example.ui.components.LcdFeatureTheme(backlightBg, backlightTextPrimary) {
+                                    if (viewModel != null) PersonalLibraryScreen(viewModel)
+                                }
+                            }
                             IpodScreenDestination.MAIN_MENU -> {
                                 IpodRootHomeScreen(
                                     selectedIndex = uiState.selectedIndex,
@@ -565,6 +570,7 @@ fun IpodClassicScreen(
                             }
                             IpodScreenDestination.MP3_FOLDERS -> {
                                 IpodMp3FoldersScreen(
+                                    library = viewModel?.mediaLibrary,
                                     folders = uiState.localAudioFolders,
                                     selectedIndex = uiState.selectedIndex,
                                     onSelectFolder = onSelectAudioFolder,
@@ -579,6 +585,8 @@ fun IpodClassicScreen(
                             }
                             IpodScreenDestination.MP3_TRACKS_LIST -> {
                                 IpodMp3TracksListScreen(
+                                    library = viewModel?.mediaLibrary,
+                                    collectionPath = uiState.currentAudioFolder?.path,
                                     title = uiState.currentAudioFolder?.name ?: "Todas as Músicas",
                                     tracks = uiState.localAudioTracks,
                                     currentTrackId = currentLocalAudio?.id,
@@ -618,6 +626,7 @@ fun IpodClassicScreen(
                             }
                             IpodScreenDestination.VIDEO_FOLDERS -> {
                                 IpodVideoFoldersScreen(
+                                    library = viewModel?.mediaLibrary,
                                     folders = uiState.localVideoFolders,
                                     selectedIndex = uiState.selectedIndex,
                                     onSelectFolder = onSelectVideoFolder,
@@ -632,6 +641,8 @@ fun IpodClassicScreen(
                             }
                             IpodScreenDestination.VIDEO_LIST -> {
                                 IpodVideoListScreen(
+                                    library = viewModel?.mediaLibrary,
+                                    collectionPath = uiState.currentVideoFolder?.path,
                                     title = uiState.currentVideoFolder?.name ?: "Vídeos",
                                     videos = uiState.localVideoTracks,
                                     currentVideoId = videoPlayerManager?.currentVideo?.collectAsState()?.value?.id,
@@ -740,7 +751,8 @@ fun IpodClassicScreen(
                             }
                             IpodScreenDestination.TOP_BRAZIL -> {
                                 StationsListScreen(
-                                    title = "Top Brasil",
+                                    title = "Top 20 Brasil",
+                                    rankingInfo = com.example.data.repository.PublishedRankings.info("radio_brazil"),
                                     stations = uiState.stationsList,
                                     currentStationId = currentStation?.id,
                                     selectedIndex = uiState.selectedIndex,
@@ -762,7 +774,8 @@ fun IpodClassicScreen(
                             }
                             IpodScreenDestination.TOP_WORLD -> {
                                 StationsListScreen(
-                                    title = "Top Mundial",
+                                    title = "Top 20 Mundial",
+                                    rankingInfo = com.example.data.repository.PublishedRankings.info("radio_world"),
                                     stations = uiState.stationsList,
                                     currentStationId = currentStation?.id,
                                     selectedIndex = uiState.selectedIndex,
@@ -965,11 +978,15 @@ fun IpodClassicScreen(
                                 val favList = viewModel?.podcastFavorites?.collectAsState(initial = emptyList())?.value ?: emptyList()
                                 IpodPodcastShowsScreen(
                                     title = uiState.activeCategoryName,
+                                    rankingInfo = when (uiState.currentScreen) {
+                                        IpodScreenDestination.PODCASTS_TOP_BRAZIL -> com.example.data.repository.PublishedRankings.info("podcast_brazil")
+                                        IpodScreenDestination.PODCASTS_TOP_WORLD -> com.example.data.repository.PublishedRankings.info("podcast_world")
+                                        else -> null
+                                    },
                                     shows = uiState.podcastShows,
                                     selectedIndex = uiState.selectedIndex,
                                     onSelectShow = { show ->
-                                        viewModel?.selectPodcastShow(show)
-                                        onSelectDestination(IpodScreenDestination.PODCAST_EPISODES_LIST)
+                                        if (viewModel?.selectPodcastShow(show) == true) onSelectDestination(IpodScreenDestination.PODCAST_EPISODES_LIST)
                                     },
                                     isFavorite = { id -> favList.any { it.id == id } },
                                     onToggleFavorite = { show -> viewModel?.togglePodcastFavorite(show) },
@@ -988,15 +1005,14 @@ fun IpodClassicScreen(
                                 IpodPodcastSearchScreen(
                                     searchQuery = uiState.podcastSearchQuery,
                                     onSearchQueryChange = { q -> viewModel?.searchPodcasts(q) },
-                                    shows = uiState.podcastShows,
+                                    shows = uiState.podcastSearchResults,
                                     selectedIndex = uiState.selectedIndex,
                                     onSelectShow = { show ->
-                                        viewModel?.selectPodcastShow(show)
-                                        onSelectDestination(IpodScreenDestination.PODCAST_EPISODES_LIST)
+                                        if (viewModel?.selectPodcastShow(show) == true) onSelectDestination(IpodScreenDestination.PODCAST_EPISODES_LIST)
                                     },
                                     isFavorite = { id -> favList.any { it.id == id } },
                                     onToggleFavorite = { show -> viewModel?.togglePodcastFavorite(show) },
-                                    isLoading = uiState.isPodcastLoading,
+                                    isLoading = uiState.isPodcastSearchLoading,
                                     backlightBg = backlightBg,
                                     backlightTextPrimary = backlightTextPrimary,
                                     backlightTextSecondary = backlightTextSecondary,
@@ -1013,8 +1029,7 @@ fun IpodClassicScreen(
                                     shows = favList,
                                     selectedIndex = uiState.selectedIndex,
                                     onSelectShow = { show ->
-                                        viewModel?.selectPodcastShow(show)
-                                        onSelectDestination(IpodScreenDestination.PODCAST_EPISODES_LIST)
+                                        if (viewModel?.selectPodcastShow(show) == true) onSelectDestination(IpodScreenDestination.PODCAST_EPISODES_LIST)
                                     },
                                     isFavorite = { true },
                                     onToggleFavorite = { show -> viewModel?.togglePodcastFavorite(show) },
@@ -1036,8 +1051,7 @@ fun IpodClassicScreen(
                                     shows = recList,
                                     selectedIndex = uiState.selectedIndex,
                                     onSelectShow = { show ->
-                                        viewModel?.selectPodcastShow(show)
-                                        onSelectDestination(IpodScreenDestination.PODCAST_EPISODES_LIST)
+                                        if (viewModel?.selectPodcastShow(show) == true) onSelectDestination(IpodScreenDestination.PODCAST_EPISODES_LIST)
                                     },
                                     isFavorite = { id -> favList.any { it.id == id } },
                                     onToggleFavorite = { show -> viewModel?.togglePodcastFavorite(show) },
@@ -1153,6 +1167,7 @@ fun IpodClassicScreen(
                             IpodScreenDestination.PODCAST_EPISODES_LIST -> {
                                 uiState.currentPodcastShow?.let { show ->
                                     IpodPodcastEpisodesScreen(
+                                        onTogglePlayed = { viewModel?.togglePodcastPlayed(it) },
                                         show = show,
                                         episodes = uiState.podcastEpisodes,
                                         selectedIndex = uiState.selectedIndex,
@@ -1464,13 +1479,14 @@ fun IpodClassicScreen(
 private fun getScreenTitle(uiState: UiState): String {
     return when (uiState.currentScreen) {
         IpodScreenDestination.MAIN_MENU -> "MediaPod + Radio / Podcast"
+        IpodScreenDestination.PERSONAL_LIBRARY -> "Minha biblioteca"
         IpodScreenDestination.AUDIO_OUTPUT_MENU -> "Saída de Áudio"
         IpodScreenDestination.RADIO_MENU -> "Rádio"
         IpodScreenDestination.NOW_PLAYING_RDS -> "Agora Tocando"
         IpodScreenDestination.FAVORITES -> "Favoritos"
         IpodScreenDestination.RECENTS -> "Recentes"
-        IpodScreenDestination.TOP_BRAZIL -> "Top Brasil (100 Melhores)"
-        IpodScreenDestination.TOP_WORLD -> "Top Mundial (100 Melhores)"
+        IpodScreenDestination.TOP_BRAZIL -> "Top 20 Brasil"
+        IpodScreenDestination.TOP_WORLD -> "Top 20 Mundial"
         IpodScreenDestination.GENRES_LIST -> "Gêneros Musicais"
         IpodScreenDestination.STATIONS_BY_GENRE -> uiState.activeGenre?.name ?: "Gênero"
         IpodScreenDestination.COUNTRIES_LIST -> "Países"
@@ -1493,10 +1509,10 @@ private fun getScreenTitle(uiState: UiState): String {
         IpodScreenDestination.PODCAST_EPISODES_LIST -> uiState.currentPodcastShow?.title ?: "Episódios"
         IpodScreenDestination.PODCAST_NOW_PLAYING -> "Agora Tocando (Podcast)"
         IpodScreenDestination.PODCAST_CHAPTERS -> "Capítulos do Podcast"
-        IpodScreenDestination.MP3_FOLDERS -> "Pastas de Músicas"
+        IpodScreenDestination.MP3_FOLDERS -> "Músicas"
         IpodScreenDestination.MP3_TRACKS_LIST -> uiState.currentAudioFolder?.name ?: "Músicas"
         IpodScreenDestination.MP3_NOW_PLAYING -> "Agora Tocando (MP3)"
-        IpodScreenDestination.VIDEO_FOLDERS -> "Pastas de Vídeos"
+        IpodScreenDestination.VIDEO_FOLDERS -> "Vídeos"
         IpodScreenDestination.VIDEO_LIST -> uiState.currentVideoFolder?.name ?: "Vídeos"
         IpodScreenDestination.VIDEO_PLAYER -> "Vídeo Player"
         IpodScreenDestination.YOUTUBE_VIDEOS_LIST -> "Vídeos no YouTube"
@@ -1520,13 +1536,15 @@ fun IpodClassicRadioMenuScreen(
     fontScale: Float,
     isBold: Boolean
 ) {
-    val menuItems = remember {
+    val topBrazilLabel = stringResource(com.example.R.string.radio_top_brazil)
+    val topWorldLabel = stringResource(com.example.R.string.radio_top_world)
+    val menuItems = remember(topBrazilLabel, topWorldLabel) {
         listOf(
             "Agora Tocando" to Icons.Default.PlayArrow,
             "Rádios Favoritas" to Icons.Default.Favorite,
             "Recentes" to Icons.Default.History,
-            "Top Brasil (100 Melhores)" to Icons.Default.Public,
-            "Top Mundial (100 Melhores)" to Icons.Default.Public,
+            topBrazilLabel to Icons.Default.Public,
+            topWorldLabel to Icons.Default.Public,
             "Gêneros Musicais" to Icons.Default.MusicNote,
             "Buscar Estação" to Icons.Default.Search,
             "Minhas Rádios" to Icons.Default.Radio
@@ -2198,42 +2216,10 @@ private fun IpodSettingsScreen(
         )
     }
 
-    val exportLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("application/octet-stream")
-    ) { uri ->
-        if (uri != null) {
-            coroutineScope.launch {
-                val success = BackupRestoreManager.exportBackupToUri(context, uri)
-                if (success) {
-                    backupStatusMessage = context.getString(R.string.settings_backup_export_success_msg)
-                    isBackupError = false
-                } else {
-                    backupStatusMessage = context.getString(R.string.settings_backup_error_msg)
-                    isBackupError = true
-                }
-            }
-        }
-    }
-
-    val restoreLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
-    ) { uri ->
-        if (uri != null) {
-            coroutineScope.launch {
-                val result = BackupRestoreManager.restoreBackupFromUri(context, uri)
-                when (result) {
-                    is BackupRestoreManager.RestoreResult.Success -> {
-                        viewModel?.reloadPreferencesFromStorage()
-                        backupStatusMessage = context.getString(R.string.settings_backup_success_msg)
-                        isBackupError = false
-                    }
-                    is BackupRestoreManager.RestoreResult.Error -> {
-                        backupStatusMessage = result.message
-                        isBackupError = true
-                    }
-                }
-            }
-        }
+    val backupActions = com.example.ui.components.rememberSecureBackupActions { success, message ->
+        backupStatusMessage = message
+        isBackupError = !success
+        if (success) viewModel?.reloadPreferencesFromStorage()
     }
 
     LazyColumn(
@@ -3605,7 +3591,7 @@ private fun IpodSettingsScreen(
                             .background(backlightHighlight.copy(alpha = 0.85f))
                             .clickable {
                                 val timestamp = java.text.SimpleDateFormat("yyyy_MM_dd_HHmmss", java.util.Locale.US).format(java.util.Date())
-                                exportLauncher.launch("Backup_PreferenciasMediaPod_$timestamp.enc")
+                                backupActions.export()
                             }
                             .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
@@ -3626,7 +3612,7 @@ private fun IpodSettingsScreen(
                             .clip(RoundedCornerShape(4.dp))
                             .background(backlightTextPrimary.copy(alpha = 0.18f))
                             .clickable {
-                                restoreLauncher.launch(arrayOf("application/octet-stream", "*/*"))
+                                backupActions.restore()
                             }
                             .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
@@ -3639,6 +3625,12 @@ private fun IpodSettingsScreen(
                             fontFamily = fontFamily
                         )
                     }
+                }
+
+                com.example.ui.components.LcdFeatureTheme(backlightBg, backlightTextPrimary) {
+                    com.example.ui.components.CatalogUpdateControl()
+                    com.example.ui.components.DiagnosticsControl()
+                    com.example.ui.components.DataUsageControl()
                 }
 
                 if (backupStatusMessage != null) {

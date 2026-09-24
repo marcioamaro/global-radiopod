@@ -29,6 +29,7 @@ import androidx.media3.ui.PlayerView
 import com.example.data.model.LocalVideoTrack
 import com.example.data.model.MediaFolder
 import com.example.player.LocalVideoPlayerManager
+import com.example.data.repository.libraryKey
 import com.example.ui.components.IpodInteractiveProgressBar
 
 @Composable
@@ -42,13 +43,16 @@ fun IpodVideoFoldersScreen(
     backlightHighlight: Color,
     fontFamily: FontFamily,
     fontScale: Float,
-    isBold: Boolean
+    isBold: Boolean,
+    library: com.example.data.repository.MediaLibraryRepository? = null,
+    collectionPath: String? = null
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(backlightBg)
     ) {
+        library?.let { com.example.ui.components.MediaLibraryToolbar(it, com.example.data.repository.LibraryKind.VIDEO, collectionPath, backlightTextPrimary) }
         // Header
         Row(
             modifier = Modifier
@@ -65,7 +69,7 @@ fun IpodVideoFoldersScreen(
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-                text = "Pastas de Vídeos (${folders.size})",
+                text = "Biblioteca de vídeos",
                 color = backlightTextPrimary,
                 fontSize = (13f * fontScale).sp,
                 fontWeight = if (isBold) FontWeight.Black else FontWeight.Bold,
@@ -155,13 +159,16 @@ fun IpodVideoListScreen(
     backlightHighlight: Color,
     fontFamily: FontFamily,
     fontScale: Float,
-    isBold: Boolean
+    isBold: Boolean,
+    library: com.example.data.repository.MediaLibraryRepository? = null,
+    collectionPath: String? = null
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(backlightBg)
     ) {
+        library?.let { com.example.ui.components.MediaLibraryToolbar(it, com.example.data.repository.LibraryKind.VIDEO, collectionPath, backlightTextPrimary) }
         // Header
         Row(
             modifier = Modifier
@@ -247,6 +254,9 @@ fun IpodVideoListScreen(
                                 fontFamily = fontFamily
                             )
                         }
+                        library?.let { com.example.ui.components.MediaItemActions(it,
+                            com.example.data.repository.LibraryKind.VIDEO, video.libraryKey(), collectionPath,
+                            if (isSelected) Color.White else backlightTextPrimary) }
                     }
                 }
             }

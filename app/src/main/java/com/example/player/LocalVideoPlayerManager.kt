@@ -1,6 +1,7 @@
 package com.example.player
 
 import android.content.Context
+import com.example.data.repository.libraryKey
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -52,6 +53,7 @@ class LocalVideoPlayerManager private constructor(private val context: Context) 
 
     private val scope = CoroutineScope(Dispatchers.Main + Job())
     private var progressJob: Job? = null
+    var onVideoEnded: (() -> Unit)? = null
 
     init {
         exoPlayer.addListener(object : Player.Listener {
@@ -70,6 +72,7 @@ class LocalVideoPlayerManager private constructor(private val context: Context) 
                 } else if (playbackState == Player.STATE_ENDED) {
                     _isPlaying.value = false
                     stopProgressTracker()
+                    onVideoEnded?.invoke()
                 }
             }
         })
@@ -93,6 +96,10 @@ class LocalVideoPlayerManager private constructor(private val context: Context) 
         progressJob = scope.launch {
             while (isActive) {
                 _currentPositionMs.value = exoPlayer.currentPosition.coerceAtLeast(0L)
+                _currentVideo.value?.let { video ->
+                    com.example.data.repository.MediaLibraryRepository.getInstance(context)
+                        .savePosition(video.libraryKey(), _currentPositionMs.value, video.durationMs)
+                }
                 delay(500)
             }
         }
@@ -104,6 +111,7 @@ class LocalVideoPlayerManager private constructor(private val context: Context) 
     }
 
     fun playVideo(video: LocalVideoTrack) {
+        com.example.data.repository.MediaLibraryRepository.getInstance(context).recordRecent(video.libraryKey())
         // Se já for o mesmo vídeo carregado, mantenha a posição e retome se necessário
         if (_currentVideo.value?.id == video.id && exoPlayer.playbackState != Player.STATE_IDLE) {
             if (!exoPlayer.isPlaying) {
@@ -121,6 +129,7 @@ class LocalVideoPlayerManager private constructor(private val context: Context) 
 
         val mediaItem = MediaItem.fromUri(video.contentUri)
         exoPlayer.setMediaItem(mediaItem)
+        exoPlayer.seekTo(com.example.data.repository.MediaLibraryRepository.getInstance(context).position(video.libraryKey()))
         exoPlayer.prepare()
         val speed = ipodPrefs.localMediaPlaybackSpeed
         _playbackSpeed.value = speed

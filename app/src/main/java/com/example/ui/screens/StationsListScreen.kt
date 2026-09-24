@@ -68,7 +68,8 @@ fun StationsListScreen(
     isBold: Boolean = true,
     onClearAll: (() -> Unit)? = null,
     clearAllLabel: String = "Limpar Histórico Recente",
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    rankingInfo: com.example.data.repository.RankingInfo? = null
 ) {
     val displayedStations = remember(stations, searchQuery) {
         if (searchQuery.isBlank()) {
@@ -85,7 +86,8 @@ fun StationsListScreen(
             .padding(horizontal = 6.dp, vertical = 4.dp)
             .testTag("stations_list_screen")
     ) {
-        if (showSearchBar) {
+        rankingInfo?.let { com.example.ui.components.RankingSourceHeader(it, backlightTextPrimary) }
+        if (showSearchBar && rankingInfo?.available != false) {
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = onSearchQueryChange,
@@ -218,7 +220,7 @@ fun StationsListScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = if (searchQuery.isNotBlank()) "Nenhuma rádio encontrada para \"$searchQuery\"" else "Lista vazia",
+                        text = if (rankingInfo?.available == false) "Não foi possível carregar o Top 20" else if (searchQuery.isNotBlank()) "Nenhuma rádio encontrada para \"$searchQuery\"" else "Lista vazia",
                         color = backlightTextPrimary,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
@@ -226,7 +228,7 @@ fun StationsListScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = if (searchQuery.isNotBlank()) "Tente buscar com outro termo ou limpe a busca" else "Aguardando carregamento de frequências...",
+                        text = if (rankingInfo?.available == false) "As rádios continuam disponíveis na busca e por país." else if (searchQuery.isNotBlank()) "Tente buscar com outro termo ou limpe a busca" else "Aguardando carregamento de frequências...",
                         color = backlightTextSecondary,
                         fontSize = 10.5.sp,
                         textAlign = TextAlign.Center
@@ -246,6 +248,7 @@ fun StationsListScreen(
                 val isRecents = title.contains("Recentes", ignoreCase = true)
                 StationItemView(
                     station = station,
+                    rankPosition = if (rankingInfo != null) station.rankPosition else null,
                     isSelected = isSelected,
                     isPlaying = station.id == currentStationId,
                     isFavorite = isFav,
