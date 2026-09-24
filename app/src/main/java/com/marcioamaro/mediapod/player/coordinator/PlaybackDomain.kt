@@ -111,18 +111,36 @@ data class UnifiedPlaybackState(
     val error: ClassifiedPlaybackError? = null,
     val lastChangeCause: String = "INIT"
 ) {
+    /**
+     * Indica se há um próximo item disponível.
+     * Para rádios ao vivo (isLiveStream=true) com fila de origem: SEMPRE true (loop circular).
+     * Para podcasts/áudio local: segue o RepeatMode.
+     */
     val hasNext: Boolean
-        get() = when (repeatMode) {
-            QueueRepeatMode.ALL -> queue.isNotEmpty()
-            QueueRepeatMode.ONE -> currentItem != null
-            QueueRepeatMode.OFF -> queueIndex in 0 until (queue.size - 1)
+        get() {
+            // Rádio ao vivo com contexto de lista → loop circular sempre habilitado
+            if (currentItem?.isLiveStream == true && queue.size > 1) return true
+            return when (repeatMode) {
+                QueueRepeatMode.ALL -> queue.isNotEmpty()
+                QueueRepeatMode.ONE -> currentItem != null
+                QueueRepeatMode.OFF -> queueIndex in 0 until (queue.size - 1)
+            }
         }
 
+    /**
+     * Indica se há um item anterior disponível.
+     * Para rádios ao vivo (isLiveStream=true) com fila de origem: SEMPRE true (loop circular).
+     * Para podcasts/áudio local: segue o RepeatMode.
+     */
     val hasPrevious: Boolean
-        get() = when (repeatMode) {
-            QueueRepeatMode.ALL -> queue.isNotEmpty()
-            QueueRepeatMode.ONE -> currentItem != null
-            QueueRepeatMode.OFF -> queueIndex > 0
+        get() {
+            // Rádio ao vivo com contexto de lista → loop circular sempre habilitado
+            if (currentItem?.isLiveStream == true && queue.size > 1) return true
+            return when (repeatMode) {
+                QueueRepeatMode.ALL -> queue.isNotEmpty()
+                QueueRepeatMode.ONE -> currentItem != null
+                QueueRepeatMode.OFF -> queueIndex > 0
+            }
         }
 
     val isPlaying: Boolean
