@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.res.Configuration
 import android.view.WindowManager
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -143,7 +144,72 @@ fun DockModeScreen(
         label = "pixel_shift_y"
     )
 
-    // 4. Dynamic Dimming & Extra Dim (Cabeceira Noturna)
+    // 4. Anti burn-in dedicado ao relógio: o conjunto relógio/data percorre a tela
+    // continuamente, de forma independente do pixel shift aplicado ao conteúdo todo.
+    // A barra de controles troca de extremidade no mesmo intervalo de 60 segundos.
+    var controlsAtTop by remember { mutableStateOf(false) }
+    var clockBounceTargetX by remember { mutableStateOf(0f) }
+    var clockBounceTargetY by remember { mutableStateOf(0f) }
+    val clockBounceLimitX = (configuration.screenWidthDp * 0.20f).dp
+    val clockBounceLimitY = (configuration.screenHeightDp * 0.20f).dp
+
+    LaunchedEffect(Unit) {
+        while (isActive) {
+            delay(60_000L)
+            controlsAtTop = !controlsAtTop
+        }
+    }
+
+    LaunchedEffect(clockBounceLimitX, clockBounceLimitY) {
+        // 3,5 dp a cada ~33 ms equivale a aproximadamente 105 dp/s.
+        val step = 3.5f
+        var directionX = 1f
+        var directionY = 1f
+        var x = clockBounceTargetX.coerceIn(-clockBounceLimitX.value, clockBounceLimitX.value)
+        var y = clockBounceTargetY.coerceIn(-clockBounceLimitY.value, clockBounceLimitY.value)
+
+        while (isActive) {
+            var nextX = x + step * directionX
+            var nextY = y + step * directionY
+            if (nextX >= clockBounceLimitX.value || nextX <= -clockBounceLimitX.value) {
+                directionX *= -1f
+                nextX = nextX.coerceIn(-clockBounceLimitX.value, clockBounceLimitX.value)
+            }
+            if (nextY >= clockBounceLimitY.value || nextY <= -clockBounceLimitY.value) {
+                directionY *= -1f
+                nextY = nextY.coerceIn(-clockBounceLimitY.value, clockBounceLimitY.value)
+            }
+            x = nextX
+            y = nextY
+            clockBounceTargetX = x
+            clockBounceTargetY = y
+            delay(33L)
+        }
+    }
+
+    val animatedClockBounceX by animateDpAsState(
+        targetValue = clockBounceTargetX.dp,
+        animationSpec = tween(durationMillis = 45, easing = LinearEasing),
+        label = "clock_bounce_x"
+    )
+    val animatedClockBounceY by animateDpAsState(
+        targetValue = clockBounceTargetY.dp,
+        animationSpec = tween(durationMillis = 45, easing = LinearEasing),
+        label = "clock_bounce_y"
+    )
+    val animatedClockBaseY by animateDpAsState(
+        targetValue = (if (controlsAtTop) configuration.screenHeightDp * 0.22f else -configuration.screenHeightDp * 0.22f).dp,
+        animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing),
+        label = "clock_half_screen_position"
+    )
+    val animatedControlsOffsetY by animateDpAsState(
+        // A barra começa no rodapé; este deslocamento a leva ao topo respeitando o padding.
+        targetValue = if (controlsAtTop) -(configuration.screenHeightDp - 112).coerceAtLeast(0).dp else 0.dp,
+        animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing),
+        label = "dock_controls_position"
+    )
+
+    // 5. Dynamic Dimming & Extra Dim (Cabeceira Noturna)
     var lastInteractionTime by remember { mutableStateOf(System.currentTimeMillis()) }
     var isDimmed by remember { mutableStateOf(false) }
     var isExtraDim by remember { mutableStateOf(false) }
@@ -287,10 +353,17 @@ fun DockModeScreen(
                         val maxAllowed = maxW / (if (dockShowSeconds) 4.2f else 3.0f)
                         val effectiveHourFontSize = calculated.coerceAtMost(maxAllowed)
 
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
+                        Box(
+                            modifier = Modifier.offset(
+                                x = animatedClockBounceX,
+                                y = animatedClockBaseY + animatedClockBounceY
+                            ),
+                            contentAlignment = Alignment.Center
                         ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Center,
@@ -322,13 +395,14 @@ fun DockModeScreen(
                                 }
                             }
                             Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = currentDateStr,
-                                color = secondaryColor.copy(alpha = 0.9f),
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Medium,
-                                textAlign = TextAlign.Center
-                            )
+                                Text(
+                                    text = currentDateStr,
+                                    color = secondaryColor.copy(alpha = 0.9f),
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                         }
                     }
                 }
@@ -348,10 +422,17 @@ fun DockModeScreen(
                     val maxAllowed = maxW / (if (dockShowSeconds) 3.6f else 2.6f)
                     val effectiveHourFontSize = calculated.coerceAtMost(maxAllowed)
 
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                    Box(
+                        modifier = Modifier.offset(
+                            x = animatedClockBounceX,
+                            y = animatedClockBaseY + animatedClockBounceY
+                        ),
+                        contentAlignment = Alignment.Center
                     ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center,
@@ -383,13 +464,14 @@ fun DockModeScreen(
                             }
                         }
                         Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = currentDateStr,
-                            color = secondaryColor.copy(alpha = 0.9f),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            textAlign = TextAlign.Center
-                        )
+                            Text(
+                                text = currentDateStr,
+                                color = secondaryColor.copy(alpha = 0.9f),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             }
@@ -399,6 +481,7 @@ fun DockModeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
+                    .offset(y = animatedControlsOffsetY)
                     .clip(RoundedCornerShape(18.dp))
                     .background(Color(0xFF0D0D0D))
                     .border(1.dp, Color(0xFF222222), RoundedCornerShape(18.dp))

@@ -91,3 +91,7 @@ regressões pertinentes e gerar APK/AAB; não publicar automaticamente.
   11. [P3 BAIXO] 9 ocorrências de `Log.w` com emojis em `RadioMediaService` convertidas para `Log.d` protegidas por `BuildConfig.DEBUG`.
   12. [P3 BAIXO] `Handler` legado em `AppRestartHelper` substituído por `CoroutineScope(Dispatchers.Main).launch { delay(250L) ... }`.
   13. Suíte de testes unitários `:app:testDebugUnitTest` 100% aprovada (206 testes, 0 falhas) e APK release gerado com sucesso via `:app:assembleRelease` em `app/build/outputs/apk/release/app-release.apk` (13,8 MB, versão 0.3.14 / 96).
+
+- 24/09/2026 — Dock Mode AMOLED: `DockModeScreen.kt` passou a deslocar relógio e data juntos em bounce contínuo (~105 dp/s, reflexão em ±20% da tela), independente do pixel shift global. A barra de controles alterna entre rodapé e topo a cada 60 s, com transição de 600 ms; o relógio migra para a metade oposta. `:app:compileDebugKotlin` aprovado. Falta somente validação visual/física em aparelho AMOLED.
+
+- 24/09/2026 — Release 0.3.16 (98): `:app:assembleRelease` aprovado. APK assinado em `app/build/outputs/apk/release/app-release.apk`; `output-metadata.json` confirma versão 0.3.16 (98).

@@ -6,7 +6,7 @@ execução autorizada. Confira alterações locais antes de editar. Não reinici
 zero nem suponha que uma tarefa em andamento terminou.
 
 ## Estado atual
-- Base: MediaPod Android Kotlin/Compose; versão 0.3.11, código 93.
+- Base: MediaPod Android Kotlin/Compose; versão 0.3.16, código 98.
 - Projeto: `D:\\global-radiopod - Copia`; shell PowerShell.
 - Alterações anteriores extensas e não commitadas: preservar.
 - Pedido prioritário concluído: rótulos Top 20, busca independente dos Tops e build 0.3.6 (88).
@@ -28,12 +28,10 @@ zero nem suponha que uma tarefa em andamento terminou.
   8. Validação automatizada: 205 testes unitários passaram (0 falhas) e APK debug compilado (`app/build/outputs/apk/debug/app-debug.apk`).
 
 ## Próximo passo concreto
-Auditoria arquitetural (itens 1 a 12) concluída e validada (24/09/2026).
-Versão 0.3.14 (96) compilada com sucesso em `app/build/outputs/apk/release/app-release.apk`.
-Próximos passos em ordem de prioridade:
-1. Validar fisicamente a reprodução de áudio e teste de autoplay em dispositivo real.
-2. Continuar a auditoria geográfica do item 08 com fontes verificáveis das emissoras restantes.
-3. Obter aprovação explícita do titular para envio remoto (`git push origin internaciona`).
+Validar visualmente em aparelho AMOLED o Dock Mode por ao menos dois ciclos de 60 s:
+confirmar o bounce contínuo do conjunto relógio/data, a reflexão dentro da área útil e
+a alternância animada dos controles entre rodapé e topo. Em seguida, validar
+fisicamente a reprodução de áudio e autoplay.
 
 ## Avaliação local — 24/09/2026
 - `python scripts/check_project.py` aprovado: 41.551 rádios, quatro rankings Top 20, 74 recursos de texto em sete idiomas e backup automático desativado.
@@ -52,6 +50,18 @@ Próximos passos em ordem de prioridade:
   2. Autoplay auditado e corrigido em `RadioMediaService.kt`: conexão de controladores genéricos (ex: Bluetooth ou barra de sistema navegando raiz) não dispara mais reprodução forçada em `onGetLibraryRoot`; conexão ao Android Auto respeita estritamente a preferência do usuário `isAutoPlayOnLaunch` configurada; `autoPlayLastMediaIfIdle` respeita `userInitiatedPause` do `RadioPlayerManager`.
   3. Marcações de Podcast (`PODCAST_BOOKMARKS` e `PODCAST_BOOKMARKS_LIST`): navegação hierárquica em árvore de 2 níveis (Nível 1: Pastas/Programas -> Nível 2: Lista de marcações) 100% operável via Click Wheel (`SelectableLazyColumn`); botão de marcar em largura total na tela de reprodução e janela `BookmarkEditor` totalmente contida no visor LCD com tema retrô ativo, compatível com a suíte de acessibilidade.
   4. Validação completa: `:app:compileDebugKotlin` e `:app:testDebugUnitTest` passaram (206 testes unitários, 0 falhas).
+
+- Dock Mode AMOLED Anti Burn-In (24/09/2026): o relógio e a data compartilham um
+  `Box` com offset de bounce próprio, a aproximadamente 105 dp/s e reflexão em
+  limites de ±20% da tela. O pixel shift global continua separado. A barra de
+  controles inicia no rodapé e alterna com o topo a cada 60 s em 600 ms; o relógio
+  anima para a metade oposta. `:app:compileDebugKotlin` passou. A validação visual
+  em hardware AMOLED continua pendente e não foi marcada como executada.
+
+- Release 0.3.16 (98) — 24/09/2026: versão incrementada e
+  `:app:assembleRelease` concluído com sucesso. O APK release assinado está em
+  `app/build/outputs/apk/release/app-release.apk`, confirmado por
+  `output-metadata.json`.
 
 
 ## Verificação
