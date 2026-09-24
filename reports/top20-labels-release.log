@@ -1,0 +1,68 @@
+
+D:\global-radiopod - Copia>if "Windows_NT" == "Windows_NT" setlocal
+
+D:\global-radiopod - Copia>set DIRNAME=D:\global-radiopod - Copia\ 
+
+D:\global-radiopod - Copia>if "D:\global-radiopod - Copia\" == "" set DIRNAME=. 
+
+D:\global-radiopod - Copia>set APP_BASE_NAME=gradlew 
+
+D:\global-radiopod - Copia>set APP_HOME=D:\global-radiopod - Copia\ 
+
+D:\global-radiopod - Copia>for %i in ("D:\global-radiopod - Copia\") do set APP_HOME=%~fi 
+
+D:\global-radiopod - Copia>set APP_HOME=D:\global-radiopod - Copia\ 
+
+D:\global-radiopod - Copia>set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m" 
+
+D:\global-radiopod - Copia>if defined JAVA_HOME goto findJavaFromJavaHome 
+
+D:\global-radiopod - Copia>set JAVA_HOME=C:\Program Files\Android\Android Studio\jbr 
+
+D:\global-radiopod - Copia>set JAVA_EXE=C:\Program Files\Android\Android Studio\jbr/bin/java.exe 
+
+D:\global-radiopod - Copia>if exist "C:\Program Files\Android\Android Studio\jbr/bin/java.exe" goto execute 
+
+D:\global-radiopod - Copia>"C:\Program Files\Android\Android Studio\jbr/bin/java.exe" "-Xmx64m" "-Xms64m"   "-Dorg.gradle.appname=gradlew" -jar "D:\global-radiopod - Copia\\gradle\wrapper\gradle-wrapper.jar" :app:assembleRelease :app:bundleRelease 
+Calculating task graph as configuration cache cannot be reused because file 'app\build.gradle.kts' has changed.
+> Task :app:preBuild UP-TO-DATE
+> Task :app:generateReleaseAssets UP-TO-DATE
+> Task :app:preReleaseBuild UP-TO-DATE
+> Task :app:extractProguardFiles UP-TO-DATE
+> Task :app:processReleaseGoogleServices UP-TO-DATE
+> Task :app:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :app:checkReleaseDuplicateClasses UP-TO-DATE
+> Task :app:mergeReleaseNativeLibs UP-TO-DATE
+> Task :app:stripReleaseDebugSymbols UP-TO-DATE
+> Task :app:extractReleaseNativeSymbolTables UP-TO-DATE
+> Task :app:mergeReleaseNativeDebugMetadata NO-SOURCE
+> Task :app:javaPreCompileRelease UP-TO-DATE
+> Task :app:mergeReleaseArtProfile UP-TO-DATE
+> Task :app:checkReleaseAarMetadata UP-TO-DATE
+> Task :app:generateReleaseResources
+> Task :app:generateReleaseBuildConfig
+> Task :app:mapReleaseSourceSetPaths
+> Task :app:processReleaseNavigationResources
+> Task :app:compileReleaseNavigationResources UP-TO-DATE
+> Task :app:createReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksRelease UP-TO-DATE
+> Task :app:processReleaseMainManifest
+> Task :app:processReleaseManifest
+> Task :app:processReleaseManifestForPackage
+> Task :app:mergeReleaseStartupProfile UP-TO-DATE
+> Task :app:mergeReleaseAssets UP-TO-DATE
+> Task :app:compressReleaseAssets UP-TO-DATE
+> Task :app:extractReleaseVersionControlInfo UP-TO-DATE
+> Task :app:validateSigningRelease UP-TO-DATE
+> Task :app:writeReleaseAppMetadata UP-TO-DATE
+> Task :app:writeReleaseSigningConfigVersions UP-TO-DATE
+> Task :app:collectReleaseDependencies UP-TO-DATE
+> Task :app:configureReleaseDependencies UP-TO-DATE
+> Task :app:parseReleaseIntegrityConfig UP-TO-DATE
+> Task :app:packageReleaseResources
+> Task :app:parseReleaseLocalResources
+> Task :app:generateReleaseRFile UP-TO-DATE
+> Task :app:mergeReleaseResources
+> Task :app:kspReleaseKotlin
+> Task :app:processReleaseResources
+> Task :app:compileReleaseKotlin

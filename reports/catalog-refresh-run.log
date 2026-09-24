@@ -2,3 +2,534 @@ Discovery nl1 ClientConnectorDNSError Cannot connect to host nl1.api.radio-brows
 Discovery de1 ClientResponseError 502, message='Bad Gateway', url='https://de1.api.radio-browser.info/json/stations/search?hidebroken=true&limit=100000'
 Discovery at1 ClientConnectorDNSError Cannot connect to host at1.api.radio-browser.info:443 ssl:default [getaddrinfo failed]
 Discovered: 59498 Existing: 10542
+Unique to validate: 45781
+Validated 100 / 45781
+Validated 200 / 45781
+Validated 300 / 45781
+Validated 400 / 45781
+Validated 500 / 45781
+Validated 600 / 45781
+Validated 700 / 45781
+Validated 800 / 45781
+Validated 900 / 45781
+Validated 1000 / 45781
+Validated 1100 / 45781
+Validated 1200 / 45781
+Exception in callback _ProactorBasePipeTransport._call_connection_lost(None)
+handle: <Handle _ProactorBasePipeTransport._call_connection_lost(None)>
+Traceback (most recent call last):
+  File "C:\Users\marci\AppData\Local\Programs\Python\Python312\Lib\asyncio\events.py", line 88, in _run
+    self._context.run(self._callback, *self._args)
+  File "C:\Users\marci\AppData\Local\Programs\Python\Python312\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
+    self._sock.shutdown(socket.SHUT_RDWR)
+ConnectionResetError: [WinError 10054] Foi for�ado o cancelamento de uma conex�o existente pelo host remoto
+Validated 1300 / 45781
+Validated 1400 / 45781
+Exception in callback _ProactorBasePipeTransport._call_connection_lost(None)
+handle: <Handle _ProactorBasePipeTransport._call_connection_lost(None)>
+Traceback (most recent call last):
+  File "C:\Users\marci\AppData\Local\Programs\Python\Python312\Lib\asyncio\events.py", line 88, in _run
+    self._context.run(self._callback, *self._args)
+  File "C:\Users\marci\AppData\Local\Programs\Python\Python312\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
+    self._sock.shutdown(socket.SHUT_RDWR)
+ConnectionResetError: [WinError 10054] Foi for�ado o cancelamento de uma conex�o existente pelo host remoto
+Validated 1500 / 45781
+Validated 1600 / 45781
+Validated 1700 / 45781
+Validated 1800 / 45781
+Validated 1900 / 45781
+Validated 2000 / 45781
+Validated 2100 / 45781
+Validated 2200 / 45781
+Validated 2300 / 45781
+Validated 2400 / 45781
+Validated 2500 / 45781
+Validated 2600 / 45781
+Validated 2700 / 45781
+Validated 2800 / 45781
+Validated 2900 / 45781
+Validated 3000 / 45781
+Validated 3100 / 45781
+Validated 3200 / 45781
+Validated 3300 / 45781
+Validated 3400 / 45781
+Validated 3500 / 45781
+Validated 3600 / 45781
+Validated 3700 / 45781
+Validated 3800 / 45781
+Validated 3900 / 45781
+Validated 4000 / 45781
+Validated 4100 / 45781
+Validated 4200 / 45781
+Validated 4300 / 45781
+Validated 4400 / 45781
+Validated 4500 / 45781
+Validated 4600 / 45781
+Validated 4700 / 45781
+Validated 4800 / 45781
+Validated 4900 / 45781
+Validated 5000 / 45781
+Validated 5100 / 45781
+Validated 5200 / 45781
+Validated 5300 / 45781
+Validated 5400 / 45781
+Validated 5500 / 45781
+Validated 5600 / 45781
+Validated 5700 / 45781
+Validated 5800 / 45781
+Validated 5900 / 45781
+Validated 6000 / 45781
+Validated 6100 / 45781
+Validated 6200 / 45781
+Validated 6300 / 45781
+Validated 6400 / 45781
+Validated 6500 / 45781
+Validated 6600 / 45781
+Validated 6700 / 45781
+Validated 6800 / 45781
+Validated 6900 / 45781
+Validated 7000 / 45781
+Validated 7100 / 45781
+Validated 7200 / 45781
+Validated 7300 / 45781
+Validated 7400 / 45781
+Validated 7500 / 45781
+Validated 7600 / 45781
+Validated 7700 / 45781
+Validated 7800 / 45781
+Validated 7900 / 45781
+Validated 8000 / 45781
+Validated 8100 / 45781
+Validated 8200 / 45781
+Validated 8300 / 45781
+Validated 8400 / 45781
+Validated 8500 / 45781
+Validated 8600 / 45781
+Validated 8700 / 45781
+Validated 8800 / 45781
+Validated 8900 / 45781
+Validated 9000 / 45781
+Validated 9100 / 45781
+Validated 9200 / 45781
+Validated 9300 / 45781
+Validated 9400 / 45781
+Validated 9500 / 45781
+Validated 9600 / 45781
+Validated 9700 / 45781
+Validated 9800 / 45781
+Validated 9900 / 45781
+Validated 10000 / 45781
+Validated 10100 / 45781
+Validated 10200 / 45781
+Validated 10300 / 45781
+Validated 10400 / 45781
+Validated 10500 / 45781
+Validated 10600 / 45781
+Validated 10700 / 45781
+Validated 10800 / 45781
+Validated 10900 / 45781
+Validated 11000 / 45781
+Validated 11100 / 45781
+Validated 11200 / 45781
+Validated 11300 / 45781
+Validated 11400 / 45781
+Validated 11500 / 45781
+Validated 11600 / 45781
+Validated 11700 / 45781
+Validated 11800 / 45781
+Validated 11900 / 45781
+Validated 12000 / 45781
+Validated 12100 / 45781
+Validated 12200 / 45781
+Validated 12300 / 45781
+Validated 12400 / 45781
+Validated 12500 / 45781
+Validated 12600 / 45781
+Validated 12700 / 45781
+Validated 12800 / 45781
+Validated 12900 / 45781
+Validated 13000 / 45781
+Validated 13100 / 45781
+Validated 13200 / 45781
+Validated 13300 / 45781
+Validated 13400 / 45781
+Validated 13500 / 45781
+Validated 13600 / 45781
+Validated 13700 / 45781
+Validated 13800 / 45781
+Validated 13900 / 45781
+Validated 14000 / 45781
+Validated 14100 / 45781
+Validated 14200 / 45781
+Validated 14300 / 45781
+Validated 14400 / 45781
+Validated 14500 / 45781
+Validated 14600 / 45781
+Validated 14700 / 45781
+Validated 14800 / 45781
+Validated 14900 / 45781
+Validated 15000 / 45781
+Validated 15100 / 45781
+Validated 15200 / 45781
+Validated 15300 / 45781
+Validated 15400 / 45781
+Validated 15500 / 45781
+Validated 15600 / 45781
+Validated 15700 / 45781
+Validated 15800 / 45781
+Validated 15900 / 45781
+Validated 16000 / 45781
+Validated 16100 / 45781
+Validated 16200 / 45781
+Validated 16300 / 45781
+Validated 16400 / 45781
+Validated 16500 / 45781
+Validated 16600 / 45781
+Validated 16700 / 45781
+Validated 16800 / 45781
+Validated 16900 / 45781
+Validated 17000 / 45781
+Validated 17100 / 45781
+Validated 17200 / 45781
+Validated 17300 / 45781
+Validated 17400 / 45781
+Validated 17500 / 45781
+Validated 17600 / 45781
+Validated 17700 / 45781
+Validated 17800 / 45781
+Validated 17900 / 45781
+Validated 18000 / 45781
+Validated 18100 / 45781
+Validated 18200 / 45781
+Validated 18300 / 45781
+Validated 18400 / 45781
+Validated 18500 / 45781
+Validated 18600 / 45781
+Validated 18700 / 45781
+Validated 18800 / 45781
+Validated 18900 / 45781
+Validated 19000 / 45781
+Validated 19100 / 45781
+Validated 19200 / 45781
+Validated 19300 / 45781
+Validated 19400 / 45781
+Validated 19500 / 45781
+Validated 19600 / 45781
+Validated 19700 / 45781
+Validated 19800 / 45781
+Validated 19900 / 45781
+Validated 20000 / 45781
+Validated 20100 / 45781
+Validated 20200 / 45781
+Validated 20300 / 45781
+Validated 20400 / 45781
+Validated 20500 / 45781
+Validated 20600 / 45781
+Validated 20700 / 45781
+Validated 20800 / 45781
+Validated 20900 / 45781
+Validated 21000 / 45781
+Validated 21100 / 45781
+Validated 21200 / 45781
+Validated 21300 / 45781
+Validated 21400 / 45781
+Validated 21500 / 45781
+Validated 21600 / 45781
+Validated 21700 / 45781
+Validated 21800 / 45781
+Validated 21900 / 45781
+Validated 22000 / 45781
+Validated 22100 / 45781
+Validated 22200 / 45781
+Validated 22300 / 45781
+Validated 22400 / 45781
+Validated 22500 / 45781
+Validated 22600 / 45781
+Validated 22700 / 45781
+Validated 22800 / 45781
+Validated 22900 / 45781
+Validated 23000 / 45781
+Validated 23100 / 45781
+Validated 23200 / 45781
+Validated 23300 / 45781
+Validated 23400 / 45781
+Validated 23500 / 45781
+Validated 23600 / 45781
+Validated 23700 / 45781
+Validated 23800 / 45781
+Validated 23900 / 45781
+Validated 24000 / 45781
+Validated 24100 / 45781
+Validated 24200 / 45781
+Validated 24300 / 45781
+Validated 24400 / 45781
+Validated 24500 / 45781
+Validated 24600 / 45781
+Validated 24700 / 45781
+Validated 24800 / 45781
+Validated 24900 / 45781
+Validated 25000 / 45781
+Validated 25100 / 45781
+Validated 25200 / 45781
+Validated 25300 / 45781
+Validated 25400 / 45781
+Exception in callback _ProactorBasePipeTransport._call_connection_lost(None)
+handle: <Handle _ProactorBasePipeTransport._call_connection_lost(None)>
+Traceback (most recent call last):
+  File "C:\Users\marci\AppData\Local\Programs\Python\Python312\Lib\asyncio\events.py", line 88, in _run
+    self._context.run(self._callback, *self._args)
+  File "C:\Users\marci\AppData\Local\Programs\Python\Python312\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
+    self._sock.shutdown(socket.SHUT_RDWR)
+ConnectionResetError: [WinError 10054] Foi for�ado o cancelamento de uma conex�o existente pelo host remoto
+Validated 25500 / 45781
+Exception in callback _ProactorBasePipeTransport._call_connection_lost(None)
+handle: <Handle _ProactorBasePipeTransport._call_connection_lost(None)>
+Traceback (most recent call last):
+  File "C:\Users\marci\AppData\Local\Programs\Python\Python312\Lib\asyncio\events.py", line 88, in _run
+    self._context.run(self._callback, *self._args)
+  File "C:\Users\marci\AppData\Local\Programs\Python\Python312\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
+    self._sock.shutdown(socket.SHUT_RDWR)
+ConnectionResetError: [WinError 10054] Foi for�ado o cancelamento de uma conex�o existente pelo host remoto
+Validated 25600 / 45781
+Validated 25700 / 45781
+Validated 25800 / 45781
+Validated 25900 / 45781
+Validated 26000 / 45781
+Validated 26100 / 45781
+Validated 26200 / 45781
+Validated 26300 / 45781
+Validated 26400 / 45781
+Validated 26500 / 45781
+Validated 26600 / 45781
+Validated 26700 / 45781
+Validated 26800 / 45781
+Validated 26900 / 45781
+Validated 27000 / 45781
+Validated 27100 / 45781
+Validated 27200 / 45781
+Validated 27300 / 45781
+Validated 27400 / 45781
+Validated 27500 / 45781
+Validated 27600 / 45781
+Validated 27700 / 45781
+Validated 27800 / 45781
+Validated 27900 / 45781
+Validated 28000 / 45781
+Validated 28100 / 45781
+Validated 28200 / 45781
+Validated 28300 / 45781
+Validated 28400 / 45781
+Validated 28500 / 45781
+Validated 28600 / 45781
+Validated 28700 / 45781
+Validated 28800 / 45781
+Validated 28900 / 45781
+Validated 29000 / 45781
+Validated 29100 / 45781
+Validated 29200 / 45781
+Validated 29300 / 45781
+Validated 29400 / 45781
+Validated 29500 / 45781
+Validated 29600 / 45781
+Validated 29700 / 45781
+Validated 29800 / 45781
+Validated 29900 / 45781
+Validated 30000 / 45781
+Validated 30100 / 45781
+Validated 30200 / 45781
+Validated 30300 / 45781
+Validated 30400 / 45781
+Validated 30500 / 45781
+Validated 30600 / 45781
+Validated 30700 / 45781
+Validated 30800 / 45781
+Validated 30900 / 45781
+Validated 31000 / 45781
+Validated 31100 / 45781
+Validated 31200 / 45781
+Validated 31300 / 45781
+Validated 31400 / 45781
+Validated 31500 / 45781
+Validated 31600 / 45781
+Validated 31700 / 45781
+Validated 31800 / 45781
+Validated 31900 / 45781
+Validated 32000 / 45781
+Validated 32100 / 45781
+Validated 32200 / 45781
+Validated 32300 / 45781
+Validated 32400 / 45781
+Validated 32500 / 45781
+Validated 32600 / 45781
+Validated 32700 / 45781
+Validated 32800 / 45781
+Validated 32900 / 45781
+Validated 33000 / 45781
+Validated 33100 / 45781
+Validated 33200 / 45781
+Validated 33300 / 45781
+Validated 33400 / 45781
+Validated 33500 / 45781
+Exception in callback _ProactorBasePipeTransport._call_connection_lost(ConnectionResetError())
+handle: <Handle _ProactorBasePipeTransport._call_connection_lost(ConnectionResetError())>
+Traceback (most recent call last):
+  File "C:\Users\marci\AppData\Local\Programs\Python\Python312\Lib\asyncio\events.py", line 88, in _run
+    self._context.run(self._callback, *self._args)
+  File "C:\Users\marci\AppData\Local\Programs\Python\Python312\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
+    self._sock.shutdown(socket.SHUT_RDWR)
+ConnectionResetError: [WinError 10054] Foi for�ado o cancelamento de uma conex�o existente pelo host remoto
+Exception in callback _ProactorBasePipeTransport._call_connection_lost(ConnectionResetError())
+handle: <Handle _ProactorBasePipeTransport._call_connection_lost(ConnectionResetError())>
+Traceback (most recent call last):
+  File "C:\Users\marci\AppData\Local\Programs\Python\Python312\Lib\asyncio\events.py", line 88, in _run
+    self._context.run(self._callback, *self._args)
+  File "C:\Users\marci\AppData\Local\Programs\Python\Python312\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
+    self._sock.shutdown(socket.SHUT_RDWR)
+ConnectionResetError: [WinError 10054] Foi for�ado o cancelamento de uma conex�o existente pelo host remoto
+Validated 33600 / 45781
+Validated 33700 / 45781
+Validated 33800 / 45781
+Validated 33900 / 45781
+Validated 34000 / 45781
+Exception in callback _ProactorBasePipeTransport._call_connection_lost(ConnectionResetError())
+handle: <Handle _ProactorBasePipeTransport._call_connection_lost(ConnectionResetError())>
+Traceback (most recent call last):
+  File "C:\Users\marci\AppData\Local\Programs\Python\Python312\Lib\asyncio\events.py", line 88, in _run
+    self._context.run(self._callback, *self._args)
+  File "C:\Users\marci\AppData\Local\Programs\Python\Python312\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
+    self._sock.shutdown(socket.SHUT_RDWR)
+ConnectionResetError: [WinError 10054] Foi for�ado o cancelamento de uma conex�o existente pelo host remoto
+Exception in callback _ProactorBasePipeTransport._call_connection_lost(ConnectionResetError())
+handle: <Handle _ProactorBasePipeTransport._call_connection_lost(ConnectionResetError())>
+Traceback (most recent call last):
+  File "C:\Users\marci\AppData\Local\Programs\Python\Python312\Lib\asyncio\events.py", line 88, in _run
+    self._context.run(self._callback, *self._args)
+  File "C:\Users\marci\AppData\Local\Programs\Python\Python312\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
+    self._sock.shutdown(socket.SHUT_RDWR)
+ConnectionResetError: [WinError 10054] Foi for�ado o cancelamento de uma conex�o existente pelo host remoto
+Validated 34100 / 45781
+Validated 34200 / 45781
+Validated 34300 / 45781
+Validated 34400 / 45781
+Validated 34500 / 45781
+Validated 34600 / 45781
+Validated 34700 / 45781
+Validated 34800 / 45781
+Validated 34900 / 45781
+Validated 35000 / 45781
+Validated 35100 / 45781
+Validated 35200 / 45781
+Validated 35300 / 45781
+Validated 35400 / 45781
+Validated 35500 / 45781
+Validated 35600 / 45781
+Validated 35700 / 45781
+Validated 35800 / 45781
+Validated 35900 / 45781
+Validated 36000 / 45781
+Validated 36100 / 45781
+Validated 36200 / 45781
+Validated 36300 / 45781
+Validated 36400 / 45781
+Validated 36500 / 45781
+Validated 36600 / 45781
+Validated 36700 / 45781
+Validated 36800 / 45781
+Validated 36900 / 45781
+Validated 37000 / 45781
+Validated 37100 / 45781
+Validated 37200 / 45781
+Validated 37300 / 45781
+Validated 37400 / 45781
+Validated 37500 / 45781
+Validated 37600 / 45781
+Exception in callback _ProactorBasePipeTransport._call_connection_lost(None)
+handle: <Handle _ProactorBasePipeTransport._call_connection_lost(None)>
+Traceback (most recent call last):
+  File "C:\Users\marci\AppData\Local\Programs\Python\Python312\Lib\asyncio\events.py", line 88, in _run
+    self._context.run(self._callback, *self._args)
+  File "C:\Users\marci\AppData\Local\Programs\Python\Python312\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
+    self._sock.shutdown(socket.SHUT_RDWR)
+ConnectionResetError: [WinError 10054] Foi for�ado o cancelamento de uma conex�o existente pelo host remoto
+Validated 37700 / 45781
+Validated 37800 / 45781
+Validated 37900 / 45781
+Validated 38000 / 45781
+Validated 38100 / 45781
+Validated 38200 / 45781
+Validated 38300 / 45781
+Validated 38400 / 45781
+Validated 38500 / 45781
+Validated 38600 / 45781
+Validated 38700 / 45781
+Validated 38800 / 45781
+Validated 38900 / 45781
+Validated 39000 / 45781
+Validated 39100 / 45781
+Validated 39200 / 45781
+Validated 39300 / 45781
+Validated 39400 / 45781
+Validated 39500 / 45781
+Validated 39600 / 45781
+Validated 39700 / 45781
+Validated 39800 / 45781
+Validated 39900 / 45781
+Validated 40000 / 45781
+Validated 40100 / 45781
+Validated 40200 / 45781
+Validated 40300 / 45781
+Validated 40400 / 45781
+Validated 40500 / 45781
+Validated 40600 / 45781
+Validated 40700 / 45781
+Validated 40800 / 45781
+Validated 40900 / 45781
+Validated 41000 / 45781
+Validated 41100 / 45781
+Validated 41200 / 45781
+Validated 41300 / 45781
+Validated 41400 / 45781
+Validated 41500 / 45781
+Validated 41600 / 45781
+Validated 41700 / 45781
+Validated 41800 / 45781
+Validated 41900 / 45781
+Validated 42000 / 45781
+Validated 42100 / 45781
+Validated 42200 / 45781
+Validated 42300 / 45781
+Validated 42400 / 45781
+Validated 42500 / 45781
+Validated 42600 / 45781
+Validated 42700 / 45781
+Validated 42800 / 45781
+Validated 42900 / 45781
+Validated 43000 / 45781
+Validated 43100 / 45781
+Validated 43200 / 45781
+Validated 43300 / 45781
+Validated 43400 / 45781
+Validated 43500 / 45781
+Validated 43600 / 45781
+Validated 43700 / 45781
+Validated 43800 / 45781
+Validated 43900 / 45781
+Validated 44000 / 45781
+Validated 44100 / 45781
+Validated 44200 / 45781
+Validated 44300 / 45781
+Validated 44400 / 45781
+Validated 44500 / 45781
+Validated 44600 / 45781
+Validated 44700 / 45781
+Validated 44800 / 45781
+Validated 44900 / 45781
+Validated 45000 / 45781
+Validated 45100 / 45781
+Validated 45200 / 45781
+Validated 45300 / 45781
+Validated 45400 / 45781
+Validated 45500 / 45781
+Validated 45600 / 45781
+Validated 45700 / 45781
+{"original": 10542, "discovered": 59498, "tested": 45781, "accepted": 41538, "added": 32300, "rejected": 3857, "duplicates": 24645, "atual_valid": false, "checked_at": "2026-09-22T16:25:38.509120+00:00"}

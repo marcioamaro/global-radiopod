@@ -1,0 +1,7 @@
+4336:
+com.sun.tools.attach.AttachNotSupportedException: Acesso negado
+	at jdk.attach/sun.tools.attach.VirtualMachineImpl.<init>(Unknown Source)
+	at jdk.attach/sun.tools.attach.AttachProviderImpl.attachVirtualMachine(Unknown Source)
+	at jdk.attach/com.sun.tools.attach.VirtualMachine.attach(Unknown Source)
+	at jdk.jcmd/sun.tools.jcmd.JCmd.executeCommandForPid(Unknown Source)
+	at jdk.jcmd/sun.tools.jcmd.JCmd.main(Unknown Source)

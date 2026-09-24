@@ -1,0 +1,7 @@
+Radio: 38 / 40
+{'key': 'radio_brazil', 'rank': 8, 'title': 'R�dio Metropolitana 98.5 FM', 'ok': False, 'errors': ['HTTP 401']}
+{'key': 'radio_world', 'rank': 4, 'title': 'RMC FR', 'ok': False, 'errors': ['Cannot connect to host audio.bfmtv.com:443 ssl:default [getaddrinfo failed]']}
+Podcasts: 37 / 40
+{'title': 'O Assunto', 'feed': 'https://www.omnycontent.com/d/playlist/651a251e-06e1-47e0-9336-ac5a00f41628/04561b43-753d-4784-8e19-ac8b00e86411/3036d550-85b2-4301-b1e4-ac8b00e8641f/podcast.rss', 'ok': False}
+{'title': 'NerdCast', 'feed': 'https://feeds.megaphone.fm/JNPD6227286900', 'ok': False}
+{'title': 'The Daily', 'feed': 'https://feeds.simplecast.com/54nAGcIl', 'ok': False}

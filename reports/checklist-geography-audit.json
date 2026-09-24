@@ -1,0 +1,3724 @@
+{
+  "reference": "https://servicodados.ibge.gov.br/api/v1/localidades/municipios",
+  "corrections": [
+    {
+      "id": "popular_br_415775",
+      "before": [
+        "",
+        ""
+      ],
+      "after": [
+        "São Paulo",
+        "SP"
+      ],
+      "source": "https://mytuner-radio.com/pt/radio/radio-transcontinental-fm-415775/"
+    },
+    {
+      "id": "popular_br_438923",
+      "before": [
+        "",
+        ""
+      ],
+      "after": [
+        "São Paulo",
+        "SP"
+      ],
+      "source": "https://mytuner-radio.com/pt/radio/radio-deus-e-amor-438923/"
+    },
+    {
+      "id": "popular_br_475640",
+      "before": [
+        "",
+        ""
+      ],
+      "after": [
+        "São Paulo",
+        "SP"
+      ],
+      "source": "https://mytuner-radio.com/pt/radio/radio-gospel-adoracao-475640/"
+    },
+    {
+      "id": "popular_br_478293",
+      "before": [
+        "",
+        ""
+      ],
+      "after": [
+        "São Paulo",
+        "SP"
+      ],
+      "source": "https://mytuner-radio.com/pt/radio/sertanejo-fm-478293/"
+    }
+  ],
+  "unverified": [
+    {
+      "id": "br_sp_054",
+      "name": "Rádio Saudade FM 99.7",
+      "city": "Santos, Sao Paulo Brazil",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sp_008",
+      "name": "Rádio Transamérica Hits (Barreiras)",
+      "city": "Barreiras",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sp_056",
+      "name": "bandnews fm sp",
+      "city": "State of São Paulo",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sp_025",
+      "name": "Rádio Anos 80",
+      "city": "São Paulo SP",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rn_098",
+      "name": "Rádio I Love anos 80's",
+      "city": "Porto Alegre",
+      "state": "RN",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_rádio_evangelizar_famlia_30dbdd",
+      "name": "Rádio Evangelizar Família",
+      "city": "Paranáá",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_rádio_seara_1027_fm_fbc200",
+      "name": "Rádio Seara 102.7 FM",
+      "city": "Cearáá",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sp_137",
+      "name": "Jovem Pan News",
+      "city": "São Paulo SP",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_mg_161",
+      "name": "Rádio Café Viola",
+      "city": "Minas Gerais Brasil",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sp_219",
+      "name": "Radio Alto Piranhas",
+      "city": "Cajazeiras",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sp_231",
+      "name": "SAD MUSIC l Radio RighRise (Compre sua Radio - Instagram:@jpdofunk.ofc",
+      "city": "São Paulo SP",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sp_250",
+      "name": "FM93 Fortaleza",
+      "city": "Fortaleza",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sp_307",
+      "name": "Rádio Liderança FM",
+      "city": "Fortaleza",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rn_324",
+      "name": "Indie 98",
+      "city": "Sorocaba",
+      "state": "RN",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rn_359",
+      "name": "Mundo Livre FM",
+      "city": "Curitiba",
+      "state": "RN",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pa_381",
+      "name": "Tribuna soft FM 90,1",
+      "city": "ParanááBrazil",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_ce_385",
+      "name": "Rádio 89 FM",
+      "city": "Fortaleza, Cearáá",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pa_408",
+      "name": "Grauna FM 95,5",
+      "city": "ParanááBrazil",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pi_470",
+      "name": "Rádio Boa fm",
+      "city": "Brasil ,Piauíi ,Brasil",
+      "state": "PI",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pa_424",
+      "name": "Radio Paiquerê",
+      "city": "Londrina, Paranáá",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pa_449",
+      "name": "RC FM 98,1",
+      "city": "ParanááBrazil",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pr_427",
+      "name": "Alpha FM 90.1 Curitiba p PR",
+      "city": "ParanááBrazil",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_mg_436",
+      "name": "Rádio Inconfidência FM 100,9",
+      "city": "Minas Gerais Brasil",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pa_452",
+      "name": "Ilha do Mel FM",
+      "city": "ParanááBrazil",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sp_455",
+      "name": "Rádio Brazil Imperial",
+      "city": "State of São Paulo",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pi_458",
+      "name": "Mix Fm Teresina",
+      "city": "Piauíí ,Teresina",
+      "state": "PI",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "dial_radio-massa-97-7-fm",
+      "name": "Rádio Massa 97.7 FM",
+      "city": "Curitiba",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sp_494",
+      "name": "FM Liberdade 101,1",
+      "city": "Patos de Minas, MG",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_ce_498",
+      "name": "Rádio Verdinha 92.5 FM",
+      "city": "Fortaleza, Cearáá",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_mg_574",
+      "name": "Rádio Jornal da Manhã Uberaba",
+      "city": "Minas Gerais Brasil",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pa_526",
+      "name": "Pão Diário",
+      "city": "ParanááBrazil",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sp_546",
+      "name": "Nossa FM 105,9",
+      "city": "Patos de Minas, MG",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_ce_545",
+      "name": "Rádio Atlântico Sul FM",
+      "city": "Fortaleza, Cearáá",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_mg_580",
+      "name": "Luz de zambi",
+      "city": "Minas Gerais Brasil",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_rádio_universitria_fm_107_bb36d3",
+      "name": "Rádio universitária FM 107.9",
+      "city": "Cearáá",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_jaguaribe_fm_b7fa3c",
+      "name": "Jaguaribe FM",
+      "city": "Cearáa",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_rádio_nao_vitoriosa_d649e7",
+      "name": "Rádio Nação Vitoriosa",
+      "city": "Piauíi",
+      "state": "PI",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_ouro_verde_fm_easy_1055_6116ad",
+      "name": "Ouro Verde FM Easy 105.5",
+      "city": "Paranáa",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_fm_rio_jaguaribe_1045_ac3e37",
+      "name": "FM Rio Jaguaribe 104.5",
+      "city": "Cearáá",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_jovem_pan_1013_fm_maring_f9008d",
+      "name": "Jovem pan 101,3 FM Maringá",
+      "city": "Paranáa",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_ativa_fm_1055_96dff1",
+      "name": "Ativa FM 105.5",
+      "city": "Paranáá",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_alternativa_educadora_fm_a96f0e",
+      "name": "Alternativa Educadora FM HD - Baixio CE",
+      "city": "Cearáá",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_cacais_fm_b06e5e",
+      "name": "Cacais FM",
+      "city": "Piauíi",
+      "state": "PI",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_jovem_pan_fm_curitiba_10_66cb72",
+      "name": "Jovem pan FM Curitiba 103,9",
+      "city": "Paranáa",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_radio_rck_3336d7",
+      "name": "Radio RCK+",
+      "city": "Cearáá",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_rádio_dracena_b23256",
+      "name": "Rádio Dracena",
+      "city": "sa",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_curitiba_parana_evangelizar",
+      "name": "Rádio Evangelizar",
+      "city": "Curitiba Paraná",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_parana_brazil_grauna_fm_95_5",
+      "name": "Grauna FM 95,5",
+      "city": "Paraná(Brazil)",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_taubate_sp_metropolitana_101_9",
+      "name": "Rádio Metropolitana 101.9",
+      "city": "Taubaté, SP",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_taubate_sp_jovem_pan_98_3_tauba",
+      "name": "Jovem Pan 98.3 - Taubaté, SP",
+      "city": "Taubaté, SP",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sao_paulo_brazi_calhambeque",
+      "name": "Radio Calhambeque",
+      "city": "Sao Paulo (Brazil)",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_patos_de_minas__cafe_modao",
+      "name": "Rádio Café Modão",
+      "city": "Patos de Minas , Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sao_paulo_brazi_ternura",
+      "name": "Ternura FM",
+      "city": "Sao Paulo (Brazil)",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sao_paulo_brazi_rodeio",
+      "name": "Rádio Rodeio Fm",
+      "city": "Sao Paulo (Brazil)",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sao_paulo_brazi_amigos_do_samba",
+      "name": "Rádio Amigos do Samba",
+      "city": "Sao Paulo (Brazil)",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_piaui_teresina_nacao_vitoriosa",
+      "name": "Rádio Nação Vitoriosa",
+      "city": "Piauí ,Teresina",
+      "state": "PI",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_brasil_piaui_br_nacao_vitoriosa",
+      "name": "Rádio Nação Vitoriosa",
+      "city": "Brasil ,Piaui ,Brasil",
+      "state": "PI",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_osasco_sao_paul_nova_difusora_osasco",
+      "name": "Nova Difusora - Osasco/SP - 79.9MHz",
+      "city": "Osasco, São Paulo",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_online_secular",
+      "name": "Rádio secular",
+      "city": "Online",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_fortaleza_ceara_100",
+      "name": "Rádio 100 FM",
+      "city": "Fortaleza, Ceará",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_patos_de_minas__cafe_viola",
+      "name": "Rádio Café Viola",
+      "city": "Patos de Minas, Minas Gerais Brasil",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sao_paulo_brazi_otima_89_1",
+      "name": "Rádio Ótima 89.1 FM",
+      "city": "Sao Paulo (Brazil)",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_espirio_ms_87_9_fm_mimoso_do",
+      "name": "Rádio MS 87.9 FM - Mimoso do Sul",
+      "city": "espirio",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sao_paulo_brazi_exaltacao",
+      "name": "Rádio Exaltação",
+      "city": "Sao Paulo (Brazil)",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sao_paulo_sp_adega_onn",
+      "name": "Rádio Adega Onn",
+      "city": "São Paulo SP",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sao_raimundo_no_cultura_105_9",
+      "name": "Rádio Cultura 105.9 FM",
+      "city": "São Raimundo Nonato, Piauí, Brasil",
+      "state": "PI",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_parana_brazil_massa_fm_maringa",
+      "name": "Massa FM Maringá",
+      "city": "Paraná(Brazil)",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sao_paulo_brazi_pioneira_online",
+      "name": "PIONEIRA ONLINE",
+      "city": "Sao Paulo (Brazil)",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_fortaleza_ceara_tropical_fm_98_7",
+      "name": "Radio Tropical Fm 98,7",
+      "city": "Fortaleza, Ceará",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_br_assembleia_minas_ger",
+      "name": "Rádio Assembleia Minas Gerais",
+      "city": "Minas Gerais Brasil",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sao_paulo_brazi_underplay",
+      "name": "Underplay",
+      "city": "Sao Paulo (Brazil)",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_fortaleza_ceara_doval",
+      "name": "Web Rádio Doval",
+      "city": "Fortaleza, Ceará",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_bras_cidade_99_5",
+      "name": "Rádio cidade 99.5 FM",
+      "city": "Pernambuco ,Brasil",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_mi_tropical_diamantina",
+      "name": "Rádio Tropical Diamantina",
+      "city": "Mi",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_s_o_paulo_r_dio_019",
+      "name": "R�dio 019",
+      "city": "S�o Paulo",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sao_paulo_brazi_365",
+      "name": "Radio 365",
+      "city": "Sao Paulo (Brazil)",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_verde_oliva_tre_verde_oliva_tres_cor",
+      "name": "Rádio Verde Oliva - Três Corações",
+      "city": "Verde Oliva Tres Coracoes",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_tallassee_1300_wtls_106_5",
+      "name": "1300 WTLS 106.5 FM",
+      "city": "Tallassee",
+      "state": "AL",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_gazeta_fm_linha_gazeta_fm_linhares",
+      "name": "GAZETA FM LINHARES",
+      "city": "Gazeta Fm Linhares",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_liberal_fm_97_5_liberal_fm_97_5mhz",
+      "name": "Liberal FM 97.5MHz",
+      "city": "Liberal Fm 97 5Mhz",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_raglan_rag_fm_107_7",
+      "name": "Radio Rag FM 107.7",
+      "city": "Raglan",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_mobile_wavh_106_5_fm_talk",
+      "name": "WAVH 106.5 FM Talk",
+      "city": "Mobile",
+      "state": "AL",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_hamilton_free_89_0",
+      "name": "Radio Free 89.0 FM",
+      "city": "Hamilton",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_huntsville_wafn_92_7_fm_fun",
+      "name": "WAFN 92.7 FM FUN",
+      "city": "Huntsville",
+      "state": "AL",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_jb_jb",
+      "name": "JB.FM",
+      "city": "Jb",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_mobile_wabd_97_5",
+      "name": "WABD 97.5 FM",
+      "city": "Mobile",
+      "state": "AL",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_selma_wapr_88_3",
+      "name": "WAPR 88.3 FM",
+      "city": "Selma",
+      "state": "AL",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_west_frankfort_3abn_radio_music_cha",
+      "name": "3ABN Radio Music Channel",
+      "city": "West Frankfort",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_dunedin_one_91_0",
+      "name": "Radio One 91.0 FM",
+      "city": "Dunedin",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_terra_fm_947_terra_fm_947",
+      "name": "Terra FM - 947",
+      "city": "Terra Fm 947",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_opelika_wani_1400",
+      "name": "WANI 1400 AM",
+      "city": "Opelika",
+      "state": "AL",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_birmingham_wbhj_95_7",
+      "name": "WBHJ 95.7 FM",
+      "city": "Birmingham",
+      "state": "AL",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_92fm_sao_joao_92fm_sao_joao",
+      "name": "92FM Sao Joao",
+      "city": "92Fm Sao Joao",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_brewer_wkit_100_3",
+      "name": "Radio WKIT 100.3 FM",
+      "city": "Brewer",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_odessa_odessa",
+      "name": "Odessa",
+      "city": "Odessa",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_104_uruguaiana_104_uruguaiana",
+      "name": "Radio 104 Uruguaiana",
+      "city": "104 Uruguaiana",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_adegaon_adegaon",
+      "name": "Radio AdegaOn",
+      "city": "Adegaon",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_dothan_wvob_91_3",
+      "name": "WVOB 91.3 FM",
+      "city": "Dothan",
+      "state": "AL",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_mobile_wgok_900_am_gospel_9",
+      "name": "WGOK 900 AM Gospel 900",
+      "city": "Mobile",
+      "state": "AL",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_andalusia_wstf_91_5",
+      "name": "WSTF 91.5 FM",
+      "city": "Andalusia",
+      "state": "AL",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_auckland_the_breeze_93_4",
+      "name": "Radio The Breeze 93.4 FM",
+      "city": "Auckland",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_barrow_kbrw_91_9_fm_680",
+      "name": "KBRW 91.9 FM 680 AM",
+      "city": "Barrow",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_anchorage_kcam_790_am_88_7",
+      "name": "KCAM 790 AM 88.7 FM",
+      "city": "Anchorage",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_foley_whep_1310_am_baldwin",
+      "name": "WHEP 1310 AM Baldwin",
+      "city": "Foley",
+      "state": "AL",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_cody_knwt_wyoming_sounds",
+      "name": "KNWT Wyoming Sounds 89.1 FM",
+      "city": "Cody",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_laramie_kuwl_jazz_wyoming_90",
+      "name": "KUWL Jazz Wyoming 90.1 FM",
+      "city": "Laramie",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_montgomery_wvas_90_7",
+      "name": "WVAS 90.7 FM",
+      "city": "Montgomery",
+      "state": "AL",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_burns_kign_101_9",
+      "name": "Radio KIGN 101.9 FM",
+      "city": "Burns",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_auckland_the_sound_93_8",
+      "name": "Radio The Sound 93.8 FM",
+      "city": "Auckland",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_cnma_cnma",
+      "name": "Rádio CNMA",
+      "city": "Cnma",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_cidade_maluca_s_cidade_maluca_samp",
+      "name": "RADIO CIDADE MALUCA SAMP",
+      "city": "Cidade Maluca Samp",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_oxford_wvok_97_9",
+      "name": "WVOK 97.9 FM",
+      "city": "Oxford",
+      "state": "AL",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_estereosom_estereosom",
+      "name": "Rádio Estereosom FM",
+      "city": "Estereosom",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_casper_kmgw_96_7",
+      "name": "KMGW 96.7 FM",
+      "city": "Casper",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_birmingham_wzzk_104_7",
+      "name": "WZZK 104.7 FM",
+      "city": "Birmingham",
+      "state": "AL",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_northampton_wxoj_vfr_103_3",
+      "name": "Radio WXOJ VFR 103.3 FM",
+      "city": "Northampton",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_homer_kbbi_890",
+      "name": "Radio KBBI 890 AM",
+      "city": "Homer",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_marshfield_watd_95_9",
+      "name": "Radio WATD 95.9 FM",
+      "city": "Marshfield",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_attleboro_wara_1320",
+      "name": "Radio WARA 1320 AM",
+      "city": "Attleboro",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_prattville_wxfx_95_1_fm_the_fox",
+      "name": "WXFX 95.1 FM The Fox",
+      "city": "Prattville",
+      "state": "AL",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_new_orleans_catholic_community_r",
+      "name": "Catholic Community Radio 690 AM",
+      "city": "New Orleans",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_lowell_wcap_980",
+      "name": "Radio WCAP 980 AM",
+      "city": "Lowell",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_auckland_static_88_1",
+      "name": "Radio Static 88.1 FM",
+      "city": "Auckland",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_worcester_wcrn_830",
+      "name": "Radio WCRN 830 AM",
+      "city": "Worcester",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_medianeira_fm_1_medianeira_fm_100_9",
+      "name": "Rádio Medianeira FM 100.9",
+      "city": "Medianeira Fm 100 9",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_medianeira_fm_1_medianeira_fm_102_7",
+      "name": "Rádio Medianeira FM 102.7",
+      "city": "Medianeira Fm 102 7",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_great_barringto_wbcr_lp_97_7",
+      "name": "Radio WBCR-LP 97.7 FM",
+      "city": "Great Barrington",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_westfield_wnnz_640",
+      "name": "Radio WNNZ 640 AM",
+      "city": "Westfield",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_falmouth_wcib_101_9_cool_102",
+      "name": "Radio WCIB 101.9 Cool 102 FM",
+      "city": "Falmouth",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_nelson_fresh_95_4",
+      "name": "Radio Fresh 95.4 FM",
+      "city": "Nelson",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_fall_river_wsar_1480",
+      "name": "Radio WSAR 1480 AM",
+      "city": "Fall River",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rapid_city_kota_1380_am_100_7",
+      "name": "KOTA 1380 AM 100.7 FM",
+      "city": "Rapid City",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_woods_hole_wcai_90_1",
+      "name": "Radio WCAI 90.1 FM",
+      "city": "Woods Hole",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pittsfield_wupe_whoopee_100_1",
+      "name": "Radio WUPE Whoopee 100.1 FM",
+      "city": "Pittsfield",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_provincetown_womr_92_1",
+      "name": "Radio WOMR 92.1 FM",
+      "city": "Provincetown",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_tucson_npr_89_1_fm_azpm",
+      "name": "NPR 89.1 FM - AZPM",
+      "city": "Tucson",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pittsfield_wtbr_89_7",
+      "name": "Radio WTBR 89.7 FM",
+      "city": "Pittsfield",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_boston_wbur_90_9",
+      "name": "Radio WBUR 90.9 FM",
+      "city": "Boston",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sioux_falls_kxrb_1000",
+      "name": "KXRB 1000 AM",
+      "city": "Sioux Falls",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_tucson_classical_90_9_fm_az",
+      "name": "Classical 90.9 FM - AZPM",
+      "city": "Tucson",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_malta_q105_7_classic_rock",
+      "name": "Q105.7 - Classic Rock",
+      "city": "Malta",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_natick_wqom_catholic_1060",
+      "name": "Radio WQOM Catholic 1060 AM",
+      "city": "Natick",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_somente_web_lighthouse_inspirati",
+      "name": "Lighthouse Inspirational Radio",
+      "city": "Somente Web",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_seaford_wusx_98_5",
+      "name": "Radio WUSX 98.5 FM",
+      "city": "Seaford",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_phoenix_espn_ktar_620",
+      "name": "Radio ESPN KTAR 620 AM",
+      "city": "Phoenix",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_logan_city_101_0",
+      "name": "Radio 101.0 FM",
+      "city": "Logan City",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_fayetteville_kuaf_91_3",
+      "name": "Radio KUAF 91.3 FM",
+      "city": "Fayetteville",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_siloam_springs_klrc_90_9",
+      "name": "Radio KLRC 90.9 FM",
+      "city": "Siloam Springs",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_yankton_the_blast",
+      "name": "The Blast.FM",
+      "city": "Yankton",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_brandon_kvcf_90_5",
+      "name": "KVCF 90.5 FM",
+      "city": "Brandon",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_fayetteville_kuaf_91_3_fm_classic",
+      "name": "Radio KUAF 91.3 FM Classical",
+      "city": "Fayetteville",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_cooma_xlfm_96_1_snowy_moun",
+      "name": "XLFM 96.1 Snowy Mountains",
+      "city": "Cooma",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_marion_kxht_107_1",
+      "name": "Radio KXHT 107.1 FM",
+      "city": "Marion",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_canberra_2ca_1053",
+      "name": "Radio 2CA 1053 AM",
+      "city": "Canberra",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sydney_2glf_89_3",
+      "name": "Radio 2GLF 89.3 FM",
+      "city": "Sydney",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_little_rock_kkpt_94_1",
+      "name": "Radio KKPT 94.1 FM",
+      "city": "Little Rock",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_fayetteville_kqsm_92_1",
+      "name": "Radio KQSM 92.1 FM",
+      "city": "Fayetteville",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_wellfleet_wryp_renew_90_1",
+      "name": "Radio WRYP Renew 90.1 FM",
+      "city": "Wellfleet",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_yankton_kynt_1450_am_102_1",
+      "name": "KYNT 1450 AM 102.1 FM",
+      "city": "Yankton",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_box_elder_kxmz_hits_102_7",
+      "name": "KXMZ Hits 102.7 FM",
+      "city": "Box Elder",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_ceara_retro_music",
+      "name": "Rádio Retrô Music FM",
+      "city": "Ceara",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_piaui_portal_das_americas",
+      "name": "Rádio Portal Das Américas",
+      "city": "Piaui",
+      "state": "PI",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_up",
+      "name": "Rádio UP",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_the_nights",
+      "name": "Rádio The Nights",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_para_promessa",
+      "name": "Rádio Promessa FM",
+      "city": "Para",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_super_radio_popular",
+      "name": "Rádio Super Rádio Popular",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_rede_radio_mais_vida",
+      "name": "Rádio Rede Rádio Mais Vida",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_maravilha",
+      "name": "Rádio Maravilha",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_roraima_charme",
+      "name": "Rádio Charme FM",
+      "city": "Roraima",
+      "state": "RR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_gauchinha",
+      "name": "Rádio Gauchinha FM",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_nova_dimensao",
+      "name": "Rádio Nova Dimensão",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_para_poderosa",
+      "name": "Rádio Poderosa",
+      "city": "Para",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_novissima_1",
+      "name": "Rádio Novíssima FM",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_diferenca",
+      "name": "Rádio Diferença",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_fos_poprock",
+      "name": "Rádio FOS PopRock",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_maranhao_cta",
+      "name": "Rádio CTA FM",
+      "city": "Maranhao",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_distrito_federa_big",
+      "name": "Rádio Big",
+      "city": "Distrito Federal",
+      "state": "DF",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_parana_mega_radio_brasil_su",
+      "name": "Rádio Mega Rádio Brasil Sul",
+      "city": "Parana",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_minas_hits",
+      "name": "Rádio Minas Hits",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_tocantins_dean_carlos_news",
+      "name": "Rádio Dean Carlos News",
+      "city": "Tocantins",
+      "state": "TO",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_ceara_liberdade_cariri",
+      "name": "Rádio Liberdade Cariri",
+      "city": "Ceara",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_sertao",
+      "name": "Rádio Sertão",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rondonia_antena_hits",
+      "name": "Rádio Antena Hits",
+      "city": "Rondonia",
+      "state": "RO",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_n_bom_som",
+      "name": "Rádio Bom Som",
+      "city": "Rio Grande Do Norte",
+      "state": "RN",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_para_bencao",
+      "name": "Rádio Benção FM",
+      "city": "Para",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_conexao_digital",
+      "name": "Rádio Conexão Digital",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_blindmix",
+      "name": "Rádio Blindmix",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_folheta",
+      "name": "Rádio Folheta FM",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_paraiba_web_radio_esportescz",
+      "name": "Rádio Web Rádio Esportescz",
+      "city": "Paraiba",
+      "state": "PB",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_distrito_federa_hunter_pisadinha",
+      "name": "Rádio Hunter Pisadinha",
+      "city": "Distrito Federal",
+      "state": "DF",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_web_radio_ceu_azul",
+      "name": "Rádio Web Rádio Céu Azul",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_teen",
+      "name": "Rádio Teen FM",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_brazopolis",
+      "name": "Rádio Brazópolis",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sergipe_margil",
+      "name": "Rádio Margil FM",
+      "city": "Sergipe",
+      "state": "SE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sergipe_cidade",
+      "name": "Rádio Cidade",
+      "city": "Sergipe",
+      "state": "SE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_maranhao_web_radio_alternativ",
+      "name": "Rádio Web Rádio Alternativa",
+      "city": "Maranhao",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_paraiba_cidade_alternativa",
+      "name": "Rádio Cidade Alternativa",
+      "city": "Paraiba",
+      "state": "PB",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_estacao_plug",
+      "name": "Rádio Estação Plug",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sergipe_ideia_mix",
+      "name": "Rádio Idéia Mix",
+      "city": "Sergipe",
+      "state": "SE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_comunidade_kyrios",
+      "name": "Rádio Comunidade Kyrios",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_estacao_da_cultura",
+      "name": "Rádio Estação da Cultura",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_jutai",
+      "name": "Rádio Jutai FM",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_maranhao_sotao_radio_web",
+      "name": "Rádio Sótão Rádio Web",
+      "city": "Maranhao",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_distrito_federa_massa",
+      "name": "Rádio Massa",
+      "city": "Distrito Federal",
+      "state": "DF",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_parana_antena_1",
+      "name": "Rádio Antena 1",
+      "city": "Parana",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_neurociencia_e_espir",
+      "name": "Rádio Neurociência e Espiritualidade",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sergipe_ilha_princesa",
+      "name": "Rádio Ilha Princesa FM",
+      "city": "Sergipe",
+      "state": "SE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_para_andiras_web",
+      "name": "Rádio Andirás Web",
+      "city": "Para",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_para_vivemos_os_anos_80_9",
+      "name": "Rádio Vivemos os Anos 80 90",
+      "city": "Para",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_atracao",
+      "name": "Rádio Atração",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_estetica_e_bem_estar",
+      "name": "Rádio Estética e Bem-Estar Rádio Web",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_ceara_c_mix_web_radio",
+      "name": "C Mix Web Rádio",
+      "city": "Ceara",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_tocantins_studio_top_hits",
+      "name": "Rádio Studio Top Hits",
+      "city": "Tocantins",
+      "state": "TO",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_n_zona_rural",
+      "name": "Rádio Zona Rural",
+      "city": "Rio Grande Do Norte",
+      "state": "RN",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_onda_nordestina",
+      "name": "Rádio Onda Nordestina",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_semear",
+      "name": "Rádio Semear",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_eu_amo_pastel",
+      "name": "Rádio Eu Amo Pastel",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_adonai",
+      "name": "Rádio Adonai",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_caruaru_hoje_web",
+      "name": "Rádio Caruaru Hoje Web",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_parana_web_radio_cidade",
+      "name": "Rádio Web Rádio Cidade FM",
+      "city": "Parana",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_distrito_federa_aciara",
+      "name": "Rádio Aciara",
+      "city": "Distrito Federal",
+      "state": "DF",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_campestre",
+      "name": "Rádio Campestre FM",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_paraiba_so_forro",
+      "name": "Rádio Só Forró",
+      "city": "Paraiba",
+      "state": "PB",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_para_piria",
+      "name": "Rádio Piriá FM",
+      "city": "Para",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_boa_nova",
+      "name": "Rádio Boa Nova",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_paraiba_portal_de_noticias_g",
+      "name": "Rádio Portal de Notícias GS News",
+      "city": "Paraiba",
+      "state": "PB",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_n_milton_barros",
+      "name": "Rádio Milton Barros FM",
+      "city": "Rio Grande Do Norte",
+      "state": "RN",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_bahia_kaynonia",
+      "name": "Rádio Kaynonia",
+      "city": "Bahia",
+      "state": "BA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_mato_grosso_jp_do_araguaia",
+      "name": "Rádio JP do Araguaia",
+      "city": "Mato Grosso",
+      "state": "MT",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_paraiba_bela_vista",
+      "name": "Rádio Bela Vista",
+      "city": "Paraiba",
+      "state": "PB",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_melodia_sul",
+      "name": "Rádio Melodia Sul",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_mais",
+      "name": "Rádio Mais",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_suica_pernambucana",
+      "name": "Rádio Suíça Pernambucana",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_web_radio_renuncia",
+      "name": "Rádio Web Rádio Renuncia",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_ceara_comercial_irmaos_and",
+      "name": "Rádio Comercial Irmãos Andrade",
+      "city": "Ceara",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_parana_alvorecer_campo_mour",
+      "name": "Rádio Alvorecer Campo Mourão",
+      "city": "Parana",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_n_web_bom_sucesso",
+      "name": "Rádio Web Bom Sucesso FM",
+      "city": "Rio Grande Do Norte",
+      "state": "RN",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_agora_laguna",
+      "name": "Rádio Agora Laguna",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_picarras",
+      "name": "Rádio Piçarras",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_tocantins_wording_76_3",
+      "name": "Rádio Wording 76,3",
+      "city": "Tocantins",
+      "state": "TO",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sanga_puita_sanga_puita_web",
+      "name": "Rádio Sanga Puitã Web",
+      "city": "Sanga Puita",
+      "state": "MS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_el_shaddai",
+      "name": "Rádio El Shaddai",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_web_radio_solidaria",
+      "name": "Rádio Web Rádio Solidaria 2023",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_vida_nova",
+      "name": "Rádio Vida Nova FM",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_terra_nova",
+      "name": "Rádio Terra Nova",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_tocantins_web_radio_studio_mix",
+      "name": "Rádio Web Rádio Studio Mix",
+      "city": "Tocantins",
+      "state": "TO",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_maranhao_itapecuru",
+      "name": "Rádio Itapecuru",
+      "city": "Maranhao",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_web_radio_top_modao",
+      "name": "Rádio Web Rádio Top Modão",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_para_jovem_dom",
+      "name": "Rádio Jovem Dom FM",
+      "city": "Para",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_sabe_caxias",
+      "name": "Rádio Sabe Caxias",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_n_ilha_do_sal",
+      "name": "Rádio Ilha do Sal",
+      "city": "Rio Grande Do Norte",
+      "state": "RN",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_web_do_paulinho",
+      "name": "Rádio Web do Paulinho",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_forro_play",
+      "name": "Rádio Forró Play",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_family_8217_s_radio",
+      "name": "Family’s Rádio",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_camara",
+      "name": "Rádio Câmara",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rondonia_transamerica_brasil",
+      "name": "Rádio Transamérica Brasil FM",
+      "city": "Rondonia",
+      "state": "RO",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_gospel_tche",
+      "name": "Rádio Gospel Tchê",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_mais",
+      "name": "Rádio Mais",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_parana_deus_liberta",
+      "name": "Rádio Deus Liberta",
+      "city": "Parana",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_rota_98_web_radio",
+      "name": "Rota 98 Web Rádio",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_piaui_excelencia",
+      "name": "Rádio Excelência",
+      "city": "Piaui",
+      "state": "PI",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sergipe_sociedade_de_sergipe",
+      "name": "Rádio Sociedade De Sergipe",
+      "city": "Sergipe",
+      "state": "SE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_web_pernambuco_da_ge",
+      "name": "Rádio Web Pernambuco Da Gente",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_paraiso",
+      "name": "Rádio Paraíso FM",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_sucesso_do_povo",
+      "name": "Rádio Sucesso do Povo",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_web_radio_gazeta_luz",
+      "name": "Rádio Web Rádio Gazeta Luzense",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_palavra_e_vida",
+      "name": "Rádio Palavra e Vida",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_piaui_estrela_do_mar_radio",
+      "name": "Rádio Estrela Do Mar Rádio Rock",
+      "city": "Piaui",
+      "state": "PI",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_maranhao_estacao_cidade",
+      "name": "Rádio Estação Cidade",
+      "city": "Maranhao",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_bahia_batista",
+      "name": "Rádio Batista",
+      "city": "Bahia",
+      "state": "BA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_itajai_gospel_lovore",
+      "name": "Rádio Itajái Gospel Lovores Antigo",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_objetiva",
+      "name": "Rádio Objetiva",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_distrito_federa_grao_de_mostarda",
+      "name": "Rádio Grão De Mostarda",
+      "city": "Distrito Federal",
+      "state": "DF",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_cristo_e_a_solucao_w",
+      "name": "Cristo é a Solução Web Rádio",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_cidade_pop_rock",
+      "name": "Rádio Cidade Pop Rock",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_para_web_ceifa",
+      "name": "Rádio Web Ceifa",
+      "city": "Para",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_mala_de_garupa",
+      "name": "Rádio Mala de Garupa",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_mix_play",
+      "name": "Rádio Mix Play FM",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_almeidas",
+      "name": "Rádio Almeidas FM",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_para_impacto_geracao_e_lo",
+      "name": "Rádio Impacto Geração e Louvor",
+      "city": "Para",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_nova_jerusalem_crist",
+      "name": "Rádio Nova Jerusalém Cristo Vive",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_popular_web",
+      "name": "Rádio Popular Web",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_brazilian",
+      "name": "Radio Brazilian",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_web_radio_sao_jose",
+      "name": "Rádio Web Rádio São José",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sergipe_metropoles",
+      "name": "Rádio Metrópoles",
+      "city": "Sergipe",
+      "state": "SE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_jatauba",
+      "name": "Rádio Jataúba FM",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_para_vibe_radio_gm",
+      "name": "Rádio Vibe Rádio GM",
+      "city": "Para",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_vicente_de_carv_fonte_da_vida",
+      "name": "Rádio Fonte Da Vida",
+      "city": "Vicente De Carvalho",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_para_navega_para",
+      "name": "Rádio Navega Pará",
+      "city": "Para",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_joao_batista_web",
+      "name": "Rádio João Batista Web",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_ceara_efraim_de_aracati",
+      "name": "Rádio Efraim De Aracati",
+      "city": "Ceara",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_canal_do_povao",
+      "name": "Rádio Canal do Povão",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_n_web_radio_crista_era",
+      "name": "Rádio Web Rádio Cristã Erasmo Cardoso",
+      "city": "Rio Grande Do Norte",
+      "state": "RN",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_paraiba_kadosh",
+      "name": "Rádio Kadosh FM",
+      "city": "Paraiba",
+      "state": "PB",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_piaui_nova",
+      "name": "Rádio Nova FM",
+      "city": "Piaui",
+      "state": "PI",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_parana_tem_londrina",
+      "name": "Rádio Tem Londrina",
+      "city": "Parana",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_parana_flasback",
+      "name": "Rádio Flasback",
+      "city": "Parana",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_mato_grosso_camara_lucas_do_rio",
+      "name": "Rádio Câmara Lucas do Rio Verde",
+      "city": "Mato Grosso",
+      "state": "MT",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_espirito_santo_top_sertanejo_bj",
+      "name": "Rádio Top Sertanejo BJ",
+      "city": "Espirito Santo",
+      "state": "ES",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_piaui_contena_web",
+      "name": "Rádio Contena Web",
+      "city": "Piaui",
+      "state": "PI",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_conecta",
+      "name": "Rádio Conecta FM",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_n_gospel_extremoz",
+      "name": "Rádio Gospel Extremoz",
+      "city": "Rio Grande Do Norte",
+      "state": "RN",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_web_radio_horebe",
+      "name": "Rádio Web Rádio Horebe",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_maranata_gospel",
+      "name": "Rádio Maranata Gospel",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rondonia_gbf",
+      "name": "Rádio GBF",
+      "city": "Rondonia",
+      "state": "RO",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_para_impacto_radio_web",
+      "name": "Rádio Impacto Rádio Web",
+      "city": "Para",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_conexao_fm_web",
+      "name": "Rádio Conexão FM Web",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_para_visual_net",
+      "name": "Rádio Visual Net",
+      "city": "Para",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_sinta",
+      "name": "Rádio Sinta",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_fergs_radio",
+      "name": "Fergs Rádio",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_flashback_so_as_melh",
+      "name": "Rádio Flashback Só As Melhores",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_lagoa_doce",
+      "name": "Rádio Lagoa Doce",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_web_radio_ac",
+      "name": "Rádio Web Rádio AC",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_web_radio_mega_hits",
+      "name": "Rádio Web Rádio Mega Hits Itacarambi",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_ondas_de_misericordi",
+      "name": "Rádio Ondas De Misericórdia",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_estacao_da_alegria",
+      "name": "Rádio Estação da Alegria",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_parana_tribo_urbana",
+      "name": "Rádio Tribo Urbana",
+      "city": "Parana",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_distrito_federa_brasilia_futebol",
+      "name": "Rádio Brasília Futebol",
+      "city": "Distrito Federal",
+      "state": "DF",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_cidade_simpatia_conc",
+      "name": "Rádio Cidade Simpatia Concórdia",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_lagoa_web_radio",
+      "name": "Lagoa Web Rádio",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_distrito_federa_nossa_radio_web_cato",
+      "name": "Rádio Nossa Rádio Web Católica",
+      "city": "Distrito Federal",
+      "state": "DF",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_parana_tangua_fm_curitiba",
+      "name": "Rádio Tanguá FM Curitiba",
+      "city": "Parana",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_sul_colonial",
+      "name": "Rádio Sul Colonial",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_ceara_web_radio_monte_real",
+      "name": "Rádio Web Rádio Monte Real",
+      "city": "Ceara",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_parana_terra_nativa",
+      "name": "Rádio Terra Nativa",
+      "city": "Parana",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_mato_grosso_do__gospel_67",
+      "name": "Rádio Gospel 67",
+      "city": "Mato Grosso Do Sul",
+      "state": "MS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_oxente_sertao",
+      "name": "Rádio Oxente Sertão",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_ceara_web_radio_gentil_bar",
+      "name": "Rádio Web Rádio Gentil Barreira",
+      "city": "Ceara",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_web_missoes",
+      "name": "Rádio Web Missões",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_parana_mix_brasil",
+      "name": "Rádio Mix Brasil",
+      "city": "Parana",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_paraiba_web_radio_assuncao",
+      "name": "Rádio Web Rádio Assunção",
+      "city": "Paraiba",
+      "state": "PB",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_defesa_da_sa_doutrin",
+      "name": "Rádio Defesa da Sã Doutrina",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_paraiba_liga",
+      "name": "Rádio Liga",
+      "city": "Paraiba",
+      "state": "PB",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_n_comunique",
+      "name": "Rádio Comunique",
+      "city": "Rio Grande Do Norte",
+      "state": "RN",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rondonia_floresca",
+      "name": "Rádio Floresça",
+      "city": "Rondonia",
+      "state": "RO",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_equipe_5_estrelas",
+      "name": "Rádio Equipe 5 Estrelas",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_e_web_tv_mais",
+      "name": "Rádio e Web TV Mais",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_nova",
+      "name": "Radio Nova",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_piaui_sertao_piaui",
+      "name": "Rádio Sertão Piaui",
+      "city": "Piaui",
+      "state": "PI",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_cultura_alagoinha",
+      "name": "Rádio Cultura Alagoinha",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_super_hits",
+      "name": "Rádio Super Hits",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_jovem",
+      "name": "Rádio Jovem",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_mais_fm_cl",
+      "name": "Rádio Mais FM CL",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_web_radio_lider",
+      "name": "Rádio Web Rádio Líder",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sergipe_web_sao_vicente",
+      "name": "Rádio Web São Vicente",
+      "city": "Sergipe",
+      "state": "SE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_parana_rp_news",
+      "name": "Rádio RP News",
+      "city": "Parana",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_n_fl_web_radio",
+      "name": "FL Web Rádio",
+      "city": "Rio Grande Do Norte",
+      "state": "RN",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_barauna",
+      "name": "Rádio Baraúna FM",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_studio",
+      "name": "Rádio Stúdio",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_do_trabalhador",
+      "name": "Rádio do Trabalhador",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sergipe_web_radio_sua_sinton",
+      "name": "Rádio Web Rádio Sua Sintonia",
+      "city": "Sergipe",
+      "state": "SE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_acir_antao",
+      "name": "Rádio Acir Antão",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_para_miranda",
+      "name": "Rádio Miranda",
+      "city": "Para",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_ceara_web_radio_primeiro_a",
+      "name": "Rádio Web Rádio Primeiro Amor",
+      "city": "Ceara",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_cavunge_cavunge_news",
+      "name": "Rádio Cavunge News",
+      "city": "Cavunge",
+      "state": "BA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_n_serido",
+      "name": "Rádio Seridó FM",
+      "city": "Rio Grande Do Norte",
+      "state": "RN",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_parana_parana_guarapuava",
+      "name": "Rádio Paraná Guarapuava",
+      "city": "Parana",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_espirito_santo_moxuara",
+      "name": "Rádio Moxuara FM",
+      "city": "Espirito Santo",
+      "state": "ES",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_parana_online_nsf",
+      "name": "Rádio Online Nsf",
+      "city": "Parana",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_web_radio_flash",
+      "name": "Rádio Web Rádio Flash",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_ministerio_da_fe",
+      "name": "Rádio Ministério da Fé",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sergipe_brito",
+      "name": "Rádio Brito",
+      "city": "Sergipe",
+      "state": "SE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_piaui_sisenando_silva",
+      "name": "Rádio Sisenando Silva",
+      "city": "Piaui",
+      "state": "PI",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_piaui_tropical_87_9",
+      "name": "Rádio Tropical 87.9",
+      "city": "Piaui",
+      "state": "PI",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_mundo_melhor",
+      "name": "Rádio Mundo Melhor",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_mato_grosso_do__juti",
+      "name": "Rádio Juti",
+      "city": "Mato Grosso Do Sul",
+      "state": "MS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_embalo_jovem_rs",
+      "name": "Rádio Embalo Jovem RS",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rondonia_band",
+      "name": "Rádio Band",
+      "city": "Rondonia",
+      "state": "RO",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_turminha_do_funil",
+      "name": "Rádio Turminha Do Funil",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_mato_grosso_do__interativa",
+      "name": "Rádio Interativa FM",
+      "city": "Mato Grosso Do Sul",
+      "state": "MS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_imparsom",
+      "name": "Rádio Imparsom",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_distrito_federa_tv_e_radio_brasil_a",
+      "name": "Rádio Tv e Radio Brasil a Fora 360",
+      "city": "Distrito Federal",
+      "state": "DF",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_web_radio_marca_de_g",
+      "name": "Rádio Web Rádio Marca de Gaitero",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_rio_mafra_pop",
+      "name": "Rádio Rio Mafra Pop",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_eternidade",
+      "name": "Rádio Eternidade",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_hoje",
+      "name": "Rádio Hoje FM",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_jequitiba",
+      "name": "Rádio Jequitibá",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_sua",
+      "name": "Rádio Sua FM",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_web_melodia",
+      "name": "Rádio Web Melodia",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_conexao_passira",
+      "name": "Rádio Conexão Passira",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_rede_metropolitan",
+      "name": "Rádio Rede Metropolitan",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_web_radio_comunitari",
+      "name": "Rádio Web Rádio Comunitária Antena 5",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_paraiba_meridional",
+      "name": "Rádio Meridional FM",
+      "city": "Paraiba",
+      "state": "PB",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_mato_grosso_do__web_radio_videira",
+      "name": "Rádio Web Rádio Videira",
+      "city": "Mato Grosso Do Sul",
+      "state": "MS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_87_especial",
+      "name": "Rádio 87 Especial",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_para_anajas",
+      "name": "Rádio Anajás",
+      "city": "Para",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_cristo_reina",
+      "name": "Rádio Cristo Reina",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_massa",
+      "name": "Rádio Massa",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_distrito_federa_web_celebrar",
+      "name": "Rádio Web Celebrar",
+      "city": "Distrito Federal",
+      "state": "DF",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_n_jose_da_penha",
+      "name": "Rádio José Da Penha",
+      "city": "Rio Grande Do Norte",
+      "state": "RN",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_maranhao_portal_da_amazonia",
+      "name": "Rádio Portal Da Amazônia",
+      "city": "Maranhao",
+      "state": "MA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_distrito_federa_internacional_de_mis",
+      "name": "Rádio Internacional de Missões",
+      "city": "Distrito Federal",
+      "state": "DF",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_paraiba_do_corone_grilo",
+      "name": "Rádio do Coroné Grilo",
+      "city": "Paraiba",
+      "state": "PB",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_harpa_radio",
+      "name": "Harpa Rádio",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_web_canto_xucro",
+      "name": "Rádio Web Canto Xucro",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_para_alternativa",
+      "name": "Rádio Alternativa",
+      "city": "Para",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_mato_grosso_do__igreja_verbo_vivo",
+      "name": "Rádio Igreja Verbo Vivo",
+      "city": "Mato Grosso Do Sul",
+      "state": "MS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_web_tvf",
+      "name": "Rádio Web TVF",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_antena_98_1",
+      "name": "Rádio Antena 98.1",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_so_musicas",
+      "name": "Rádio Só Músicas",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_web_radio_roda_de_am",
+      "name": "Rádio Web Rádio Roda De Amigos",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_web_radio_shalom",
+      "name": "Rádio Web Rádio Shalom",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_tocantins_formoso",
+      "name": "Rádio Formoso FM",
+      "city": "Tocantins",
+      "state": "TO",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_piaui_krs_hits",
+      "name": "Rádio KRS Hits",
+      "city": "Piaui",
+      "state": "PI",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_distrito_federa_satelite",
+      "name": "Rádio Satélite",
+      "city": "Distrito Federal",
+      "state": "DF",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_evangelista",
+      "name": "Rádio Evangelista FM",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_paraiba_web_conquistar",
+      "name": "Rádio Web Conquistar",
+      "city": "Paraiba",
+      "state": "PB",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_piaui_cidade",
+      "name": "Rádio Cidade",
+      "city": "Piaui",
+      "state": "PI",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_web_entre_serras",
+      "name": "Rádio Web Entre Serras FM",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_piaui_santa_isabel",
+      "name": "Rádio Santa Isabel",
+      "city": "Piaui",
+      "state": "PI",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_rainha_da_paz",
+      "name": "Rádio Rainha Da Paz",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_splash_brasil_sertan",
+      "name": "Rádio Splash Brasil Sertanejo & Samba",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_e_tv_amor_fraterno",
+      "name": "Rádio e TV Amor Fraterno",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_paraiba_web_radio_alternativ",
+      "name": "Rádio Web Rádio Alternativa A Voz Do Povo",
+      "city": "Paraiba",
+      "state": "PB",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_massa",
+      "name": "Rádio Massa",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_mar_grande_mar_grande",
+      "name": "Rádio Mar Grande",
+      "city": "Mar Grande",
+      "state": "BA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_missoes_conectadas",
+      "name": "Rádio Missões Conectadas",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_parana_sb_filmes",
+      "name": "Rádio SB Filmes",
+      "city": "Parana",
+      "state": "PR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_web_radio_paroquia_s",
+      "name": "Rádio Web Rádio Paróquia Santo Antônio",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_ibirajuba_online",
+      "name": "Rádio Ibirajuba Online",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_vila_peladas",
+      "name": "Rádio Vila Peladas",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_impacto_web_radio",
+      "name": "Impacto Web Rádio",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_n_salgada_fm_online",
+      "name": "Rádio Salgada FM Online",
+      "city": "Rio Grande Do Norte",
+      "state": "RN",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_adoracao",
+      "name": "Rádio Adoração",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_estacao_da_fe",
+      "name": "Rádio Estação da Fé",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_sertaneja_gospel",
+      "name": "Rádio Sertaneja Gospel",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_para_web_salvaterra",
+      "name": "Rádio Web Salvaterra",
+      "city": "Para",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_uats",
+      "name": "Rádio UATS",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa_catarina_web_estacao_alto_val",
+      "name": "Rádio Web Estação Alto Vale",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_samambaia_mix_gospel",
+      "name": "Rádio Mix Gospel",
+      "city": "Samambaia",
+      "state": "DF",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_torre",
+      "name": "Rádio Torre",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_top",
+      "name": "Rádio Top",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio_grande_do_s_do_sul",
+      "name": "Rádio do Sul",
+      "city": "Rio Grande Do Sul",
+      "state": "RS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_mato_grosso_do__semeando_a_semente",
+      "name": "Rádio Semeando a Semente",
+      "city": "Mato Grosso Do Sul",
+      "state": "MS",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas_gerais_vertra_2_0",
+      "name": "Rádio Vertra 2.0",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_paraiba_web_radio_shekinah_d",
+      "name": "Rádio Web Rádio Shekináh de Deus",
+      "city": "Paraiba",
+      "state": "PB",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_roraima_liga",
+      "name": "Rádio Liga",
+      "city": "Roraima",
+      "state": "RR",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sao-paulo-brazi_radio-amigos-do-rock-naci_24751",
+      "name": "Radio Amigos do Rock Nacional",
+      "city": "Sao Paulo (Brazil)",
+      "state": "Sao Paulo (Brazil)",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sao-paulo-brazi_radio-otima-89-1-fm_25325",
+      "name": "Rádio Ótima 89.1 FM",
+      "city": "Sao Paulo (Brazil)",
+      "state": "Sao Paulo (Brazil)",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sao-paulo-brazi_ternura-fm_25390",
+      "name": "Ternura FM",
+      "city": "Sao Paulo (Brazil)",
+      "state": "Sao Paulo (Brazil)",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas-gerais_liberdade-92-9-belo-horiz_25035",
+      "name": "Liberdade 92.9 (Belo Horizonte - MG)",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_minas-gerais_musirama-fm-92-1-mhz-zyc7_25628",
+      "name": "Musirama FM 92.1 MHz ZYC709 (Sete Lagoas - MG)",
+      "city": "Minas Gerais",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_bahia_bahia-fm-sul-102-1_26090",
+      "name": "Bahia FM Sul 102.1",
+      "city": "Bahia",
+      "state": "BA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_bahia_nova-brasil-fm-salvador_26862",
+      "name": "Nova Brasil FM Salvador",
+      "city": "Bahia",
+      "state": "BA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_bahia_radio-93-fm_26977",
+      "name": "Rádio 93 FM",
+      "city": "Bahia",
+      "state": "BA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_bahia_radio-boa-fm_26569",
+      "name": "Rádio boa fm",
+      "city": "Bahia",
+      "state": "BA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_parana-brazil_grauna-fm-95-5_25943",
+      "name": "Grauna FM 95,5",
+      "city": "Paraná(Brazil)",
+      "state": "Paraná(Brazil)",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa-catarina-_atlantida-blumenau_26731",
+      "name": "Atlantida Blumenau",
+      "city": "Santa Catarina, SC",
+      "state": "Santa Catarina, SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa-catarina-_gold-instrumental_26591",
+      "name": "GOLD INSTRUMENTAL",
+      "city": "Santa Catarina, SC",
+      "state": "Santa Catarina, SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_santa-catarina_jovem-pan-fm-blumenau-sc_26656",
+      "name": "Jovem Pan FM - Blumenau - SC",
+      "city": "Santa Catarina",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_pernambuco_nova-brasil-fm-recife-zyd_26902",
+      "name": "Nova Brasil FM Recife (ZYD241, 94,3 MHz FM)",
+      "city": "Pernambuco",
+      "state": "PE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_fortaleza-ceara_radio-100-fm_28107",
+      "name": "Rádio 100 FM",
+      "city": "Fortaleza, Ceará",
+      "state": "Fortaleza, Ceará",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_ceara_radio-web-luna_28187",
+      "name": "RÁDIO WEB LUNA",
+      "city": "Ceará",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_distrito-federa_nova-brasil-fm-brasilia-d_27557",
+      "name": "Nova Brasil FM Brasília, DF (ZYC476, 97,5 MHz)",
+      "city": "Distrito Federal",
+      "state": "DF",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_distrito-federa_radio-verde-oliva-brasili_27659",
+      "name": "Rádio Verde Oliva - Brasília",
+      "city": "Distrito Federal",
+      "state": "DF",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_distrito-federa_unica-gospel-music_28434",
+      "name": "ÚNICA - Gospel Music",
+      "city": "Distrito Federal",
+      "state": "DF",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_para_liberal-fm-web_28188",
+      "name": "Liberal FM Web",
+      "city": "Pará",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_para_radio-brega-paraense_28561",
+      "name": "Radio Brega Paraense",
+      "city": "Pará",
+      "state": "PA",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_rio-grande-do-n_radio-grafith_28710",
+      "name": "Rádio Grafith",
+      "city": "Rio Grande do Norte",
+      "state": "RN",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_piaui-teresina_radio-nacao-vitoriosa_28782",
+      "name": "Rádio Nação Vitoriosa",
+      "city": "Piauí ,Teresina",
+      "state": "Piauí ,Teresina",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_piaui_radio-nacao-vitoriosa_28801",
+      "name": "Rádio Nação Vitoriosa",
+      "city": "Piaui",
+      "state": "PI",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_brasil-piaui-br_radio-nacao-vitoriosa_28910",
+      "name": "Rádio Nação Vitoriosa",
+      "city": "Brasil ,Piaui ,Brasil",
+      "state": "Brasil ,Piaui ,Brasil",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_sergipe_nova-brasil-fm-93-5-araca_28878",
+      "name": "Nova Brasil FM 93.5 Aracaju",
+      "city": "Sergipe",
+      "state": "SE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_brazil_jovem-pan-porto-alegre_28485",
+      "name": "Jovem Pan Porto Alegre",
+      "city": "Brazil",
+      "state": "",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_brazil_itapema-fm-floreanopolis_29272",
+      "name": "Itapema FM Floreanopolis",
+      "city": "Brazil",
+      "state": "",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "br_brazil_jb-fm_29250",
+      "name": "JB.FM",
+      "city": "Brazil",
+      "state": "",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_4dbf247c-52c0-44e8-bf5f-f9803f401fbd",
+      "name": "107 FM Tatuí",
+      "city": "",
+      "state": "Sao Paulo",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_bdc15ed2-f76d-433d-ae51-bc231ab90e38",
+      "name": "87 FM",
+      "city": "",
+      "state": "Pernambuco",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_c4335568-5976-4275-8f21-b9bae8adae78",
+      "name": "CBN São Paulo",
+      "city": "",
+      "state": "Sao Paulo",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_36fb00ed-0774-41c1-a8fb-9e13cef330c9",
+      "name": "FM Vale Verde",
+      "city": "",
+      "state": "São Paulo",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_e03dc3e5-a352-4d90-b8f2-50673eb81e1c",
+      "name": "GOLD WEB RADIO",
+      "city": "",
+      "state": "SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_209986f7-e934-4291-bbc2-b6190b20aabf",
+      "name": "Jaguarão FM 87,9",
+      "city": "",
+      "state": "Rio Grande do Sul",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_2e198067-cdd3-4fbc-b673-7be52078b9d1",
+      "name": "Jangadeiro 88,9 FM",
+      "city": "",
+      "state": "Fortaleza, Ceará",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_8cf1083b-a326-11e8-abb8-52543be04c81",
+      "name": "JB FM",
+      "city": "",
+      "state": "Rio de Janeiro",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_4cb94b99-ff06-4521-b643-a78bf272dbe3",
+      "name": "Jovem Pan BH",
+      "city": "",
+      "state": "Minas Gerais",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_96487106-0601-11e8-ae97-52543be04c81",
+      "name": "Mix Rio 102.1 Rio de Janeiro, RJ",
+      "city": "",
+      "state": "Rio de Janeiro",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_a8e3f689-4c8a-4e6c-be47-f611871965b0",
+      "name": "Nova Brasil FM Salvador",
+      "city": "",
+      "state": "Bahia",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_fbf9b026-64a8-4cb5-a770-5a7a4220525b",
+      "name": "Odessa",
+      "city": "",
+      "state": "",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_a49ae0e2-978d-4a50-a43b-150693abb00f",
+      "name": "Planeta Reggae",
+      "city": "",
+      "state": "RJ",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_f028b48f-8b12-4b19-99b5-2f8e7000964b",
+      "name": "Rádio 100 FM",
+      "city": "",
+      "state": "Fortaleza, Ceará",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_2f9956ae-b407-46d0-99ff-9f18de4e98ad",
+      "name": "Radio 93 FM",
+      "city": "",
+      "state": "Bahia",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_81ed5460-a0b0-4a25-b7bb-623bdb34110e",
+      "name": "Rádio Águia FM",
+      "city": "",
+      "state": "CE",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_82d1022c-cfb2-4738-ab11-0543fb6e1fce",
+      "name": "Rádio AMC",
+      "city": "",
+      "state": "",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_c72c2a29-b42c-4aad-9317-9d5cd369c212",
+      "name": "Radio Amigos do Rock",
+      "city": "",
+      "state": "SP",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_25f1c87a-0aea-4fa8-9287-0e7c8346f6c1",
+      "name": "Rádio Atlântida 100.9 FM - Florianópolis - SC",
+      "city": "",
+      "state": "Santa Catarina, SC",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_354d8c7e-a490-4b67-bc23-dd719ea54c83",
+      "name": "Rádio Bandeirantes 90.9 FM",
+      "city": "",
+      "state": "Sao Paulo",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_9c978cee-a861-42ca-b88f-5b8780b56d06",
+      "name": "Rádio Biritiba Mirim",
+      "city": "",
+      "state": "São Paulo",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_9c8d1f36-5266-4027-bedb-11a626cfb7b8",
+      "name": "Rádio boa fm",
+      "city": "",
+      "state": "Bahia",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_dccc4010-9c0a-489b-a216-d47df5e4bafd",
+      "name": "Rádio Bom Sucesso 95.5 FM",
+      "city": "",
+      "state": "Minas Gerais Brasil",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_6f6e79f3-3697-4707-b64a-0ef20df068ba",
+      "name": "Radio Brega Paraense",
+      "city": "",
+      "state": "Pará",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_99b62fda-c7b9-4294-89a8-e79201e13e14",
+      "name": "RADIO CIDADE MALUCA SAMP",
+      "city": "",
+      "state": "",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_4df6a2c5-e467-4a40-9ebb-16de11d9446d",
+      "name": "Rádio CNMA",
+      "city": "",
+      "state": "",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_f5e47b29-9241-4906-a218-e84da6a1eb17",
+      "name": "Rádio Diversão FM live",
+      "city": "",
+      "state": "Rio de Janeiro",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_5d89f896-5714-4b82-aa5e-39dff6e7b371",
+      "name": "Rádio Estereosom FM",
+      "city": "",
+      "state": "",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_9d4cc69b-bb83-41c3-b76c-9da2eacee424",
+      "name": "Rádio Globo - Rio de Janeiro",
+      "city": "",
+      "state": "Rio de Janeiro",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_1eaf6810-41de-4a43-827b-dcf8070748e5",
+      "name": "Rádio Globo 98.1 FM",
+      "city": "",
+      "state": "Rio de Janeiro",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_61b9176a-a6b2-4d41-b6d7-3462d643c968",
+      "name": "Rádio Grafith",
+      "city": "",
+      "state": "Rio Grande do Norte",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_1dd58dd1-aacc-456f-a83e-0135e855b4a7",
+      "name": "Radio Hollywood",
+      "city": "",
+      "state": "",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_ea035d44-e6bf-4974-9bf0-a766b44df5ac",
+      "name": "Rádio Joli MPB",
+      "city": "",
+      "state": "São Paulo",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_9c7a386f-8575-4f60-baae-f8c6db926fce",
+      "name": "Rádio Jornal 91.3 FM",
+      "city": "",
+      "state": "Sergipe",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_670827c3-b66b-4d60-a4ea-5d4b993e79a0",
+      "name": "Rádio Local SIVB",
+      "city": "",
+      "state": "Pernambuco",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_ddcf7d66-4ea2-4983-a6e9-26d9cf0c798d",
+      "name": "Rádio Marajá AM 660 kHz - RFC -",
+      "city": "",
+      "state": "Rio Grande do Sul",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_644f8c79-4b7f-4c22-9f5f-4152525d4e30",
+      "name": "Rádio Metropolitana 98.5 FM Pop",
+      "city": "",
+      "state": "São Paulo",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_42c74279-92e7-4747-bc76-b1a5065a3c39",
+      "name": "Radio MIX FM",
+      "city": "",
+      "state": "",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_475a6c74-550f-450c-a8ef-6c57d4d9054d",
+      "name": "Rádio Nação Vitoriosa",
+      "city": "",
+      "state": "Piauí ,Teresina",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_d649e7e1-d7a8-4790-a8d9-6a9f76a2a7cf",
+      "name": "Rádio Nação Vitoriosa",
+      "city": "",
+      "state": "Piaui",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_4c0651ff-0253-4f40-8ef4-755621aacc23",
+      "name": "Rádio Nação Vitoriosa",
+      "city": "",
+      "state": "Brasil ,Piaui ,Brasil",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_18f4b8c4-0907-4edc-adf6-a6580844739b",
+      "name": "Rádio Nacional da Memória Adventista",
+      "city": "",
+      "state": "Sao Paulo",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_8eb03f0d-ebf8-4f97-ba85-cdce78522733",
+      "name": "Rádio Notícias Tatuí - 98,3 FM",
+      "city": "",
+      "state": "São Paulo",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_9c504337-c7ca-4cc4-b20b-9e773a107aa7",
+      "name": "Rádio Pão Diário",
+      "city": "",
+      "state": "Curitiba",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_bda04c1b-4276-426a-b7fa-7b81beff0ddb",
+      "name": "Rádio Rede 3.16",
+      "city": "",
+      "state": "Rio de Janeiro",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_3de68171-973b-493b-ae10-1b1a56b4a5cf",
+      "name": "Rádio secular",
+      "city": "",
+      "state": "Online",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_5dc7a91f-c5b9-49aa-9c49-dd6fe31fb776",
+      "name": "Rádio The Beatles (MP3)",
+      "city": "",
+      "state": "Goiás",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_7ee94a31-e83b-41fa-8937-daf8184a4323",
+      "name": "Rádio Trianon 740 AM",
+      "city": "",
+      "state": "São Paulo",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_71a7e038-33b1-4647-880b-2d0eebfb2878",
+      "name": "Radio Tropical 103.7 FM",
+      "city": "",
+      "state": "",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_c8ae4940-7857-4273-8640-e12d743bd659",
+      "name": "Radio UENF",
+      "city": "",
+      "state": "Rio de Janeiro",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_d451198e-098f-45a8-a4c5-6d1ea9fee7ae",
+      "name": "Rádio Verde Oliva - Três Corações",
+      "city": "",
+      "state": "",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_573ce430-2797-477e-b659-401a3a5c5023",
+      "name": "Rádio Verdinha 92.5 FM",
+      "city": "",
+      "state": "Fortaleza, Ceará",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_98568cdf-2ef1-45ac-8db7-992cd781050c",
+      "name": "RÁDIO WEB LUNA",
+      "city": "",
+      "state": "Ceará",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_b9e48686-f197-11e9-a96c-52543be04c81",
+      "name": "SM Brasil",
+      "city": "",
+      "state": "São Paulo",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_e6a9a89b-87d5-4103-ac5e-2b02bb9fe735",
+      "name": "Terra FM - 947",
+      "city": "",
+      "state": "",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_2f72e27b-4089-4d25-b77a-09f2787a68de",
+      "name": "The Brother´s FM",
+      "city": "",
+      "state": "MG",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_9f71efdf-0c84-4c52-9e2c-48b7d87948f3",
+      "name": "TMC Belo Horizonte",
+      "city": "",
+      "state": "Minas Gerais",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    },
+    {
+      "id": "rb_0e3c61c0-3980-4848-8ae6-ff68d550a5f6",
+      "name": "ÚNICA - Gospel Music",
+      "city": "",
+      "state": "Distrito Federal",
+      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
+    }
+  ],
+  "note": "Unverified entries retained without guessed locations."
+}

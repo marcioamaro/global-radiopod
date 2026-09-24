@@ -1,0 +1,91 @@
+
+D:\global-radiopod - Copia>if "Windows_NT" == "Windows_NT" setlocal
+
+D:\global-radiopod - Copia>set DIRNAME=D:\global-radiopod - Copia\ 
+
+D:\global-radiopod - Copia>if "D:\global-radiopod - Copia\" == "" set DIRNAME=. 
+
+D:\global-radiopod - Copia>set APP_BASE_NAME=gradlew 
+
+D:\global-radiopod - Copia>set APP_HOME=D:\global-radiopod - Copia\ 
+
+D:\global-radiopod - Copia>for %i in ("D:\global-radiopod - Copia\") do set APP_HOME=%~fi 
+
+D:\global-radiopod - Copia>set APP_HOME=D:\global-radiopod - Copia\ 
+
+D:\global-radiopod - Copia>set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m" 
+
+D:\global-radiopod - Copia>if defined JAVA_HOME goto findJavaFromJavaHome 
+
+D:\global-radiopod - Copia>set JAVA_HOME=C:\Program Files\Android\Android Studio\jbr 
+
+D:\global-radiopod - Copia>set JAVA_EXE=C:\Program Files\Android\Android Studio\jbr/bin/java.exe 
+
+D:\global-radiopod - Copia>if exist "C:\Program Files\Android\Android Studio\jbr/bin/java.exe" goto execute 
+
+D:\global-radiopod - Copia>"C:\Program Files\Android\Android Studio\jbr/bin/java.exe" "-Xmx64m" "-Xms64m"   "-Dorg.gradle.appname=gradlew" -jar "D:\global-radiopod - Copia\\gradle\wrapper\gradle-wrapper.jar" :app:testDebugUnitTest --tests com.example.data.PodcastLibraryToolsTest --tests com.example.data.MediaBackupRoundTripTest 
+Calculating task graph as no cached configuration is available for tasks: :app:testDebugUnitTest --tests com.example.data.PodcastLibraryToolsTest --tests com.example.data.MediaBackupRoundTripTest
+> Task :app:preBuild UP-TO-DATE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:generateDebugBuildConfig UP-TO-DATE
+> Task :app:processDebugGoogleServices UP-TO-DATE
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:generateDebugResources
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:processDebugNavigationResources
+> Task :app:mapDebugSourceSetPaths
+> Task :app:compileDebugNavigationResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:processDebugManifestForPackage
+> Task :app:javaPreCompileDebugUnitTest UP-TO-DATE
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :app:packageDebugResources
+> Task :app:parseDebugLocalResources
+> Task :app:generateDebugRFile UP-TO-DATE
+> Task :app:mergeDebugUnitTestManifest
+> Task :app:processDebugUnitTestManifest
+> Task :app:mergeDebugResources
+> Task :app:kspDebugKotlin
+> Task :app:processDebugResources
+> Task :app:packageDebugUnitTestForUnitTest
+> Task :app:generateDebugUnitTestConfig
+
+> Task :app:compileDebugKotlin FAILED
+e: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/ui/RadioViewModel.kt:1164:9 'when' expression must be exhaustive. Add the 'PERSONAL_LIBRARY' branch or an 'else' branch.
+e: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/ui/RadioViewModel.kt:2167:16 'when' expression must be exhaustive. Add the 'PERSONAL_LIBRARY' branch or an 'else' branch.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileDebugKotlin' (registered by plugin 'com.android.internal.application').
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 40s
+26 actionable tasks: 16 executed, 10 up-to-date
+Configuration cache entry stored.
+
+D:\global-radiopod - Copia>if 1 EQU 0 goto mainEnd 
+
+D:\global-radiopod - Copia>rem Set variable GRADLE_EXIT_CONSOLE if you need the _script_ return code instead of 
+
+D:\global-radiopod - Copia>rem the _cmd.exe /c_ return code! 
+
+D:\global-radiopod - Copia>set EXIT_CODE=1 
+
+D:\global-radiopod - Copia>if 1 EQU 0 set EXIT_CODE=1 
+
+D:\global-radiopod - Copia>if not "" == "" exit 1 
+
+D:\global-radiopod - Copia>exit /b 1 

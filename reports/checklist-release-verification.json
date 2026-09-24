@@ -1,0 +1,23 @@
+{
+  "versionName": "0.3.7",
+  "versionCode": 89,
+  "testSuites": 24,
+  "results": {
+    "tests": 46,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "artifacts": [
+    {
+      "path": "app/build/outputs/apk/release/app-release.apk",
+      "bytes": 13830257,
+      "sha256": "32132c0b707febd18b7c66b869556c6d623f17b24771b06fbb19cc1d38146782"
+    },
+    {
+      "path": "app/build/outputs/bundle/release/app-release.aab",
+      "bytes": 19962557,
+      "sha256": "4b75a882d2a092de7df62ffe7b84991e18128999c15f24d537bbe30b01db6681"
+    }
+  ]
+}

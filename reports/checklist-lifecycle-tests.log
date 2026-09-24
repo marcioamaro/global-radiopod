@@ -1,0 +1,113 @@
+
+D:\global-radiopod - Copia>if "Windows_NT" == "Windows_NT" setlocal
+
+D:\global-radiopod - Copia>set DIRNAME=D:\global-radiopod - Copia\ 
+
+D:\global-radiopod - Copia>if "D:\global-radiopod - Copia\" == "" set DIRNAME=. 
+
+D:\global-radiopod - Copia>set APP_BASE_NAME=gradlew 
+
+D:\global-radiopod - Copia>set APP_HOME=D:\global-radiopod - Copia\ 
+
+D:\global-radiopod - Copia>for %i in ("D:\global-radiopod - Copia\") do set APP_HOME=%~fi 
+
+D:\global-radiopod - Copia>set APP_HOME=D:\global-radiopod - Copia\ 
+
+D:\global-radiopod - Copia>set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m" 
+
+D:\global-radiopod - Copia>if defined JAVA_HOME goto findJavaFromJavaHome 
+
+D:\global-radiopod - Copia>set JAVA_HOME=C:\Program Files\Android\Android Studio\jbr 
+
+D:\global-radiopod - Copia>set JAVA_EXE=C:\Program Files\Android\Android Studio\jbr/bin/java.exe 
+
+D:\global-radiopod - Copia>if exist "C:\Program Files\Android\Android Studio\jbr/bin/java.exe" goto execute 
+
+D:\global-radiopod - Copia>"C:\Program Files\Android\Android Studio\jbr/bin/java.exe" "-Xmx64m" "-Xms64m"   "-Dorg.gradle.appname=gradlew" -jar "D:\global-radiopod - Copia\\gradle\wrapper\gradle-wrapper.jar" :app:testDebugUnitTest --tests com.example.data.RestoreFailureRecoveryTest --tests com.example.data.MediaBackupRoundTripTest --tests com.example.ui.YouTubeWebViewLifecycleTest 
+Calculating task graph as no cached configuration is available for tasks: :app:testDebugUnitTest --tests com.example.data.RestoreFailureRecoveryTest --tests com.example.data.MediaBackupRoundTripTest --tests com.example.ui.YouTubeWebViewLifecycleTest
+> Task :app:preBuild UP-TO-DATE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:generateDebugBuildConfig UP-TO-DATE
+> Task :app:processDebugGoogleServices UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:processDebugNavigationResources UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:compileDebugNavigationResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:javaPreCompileDebugUnitTest UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:generateDebugRFile UP-TO-DATE
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:mergeDebugUnitTestManifest UP-TO-DATE
+> Task :app:processDebugUnitTestManifest UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:packageDebugUnitTestForUnitTest UP-TO-DATE
+> Task :app:generateDebugUnitTestConfig UP-TO-DATE
+> Task :app:kspDebugKotlin
+> Task :app:compileDebugKotlin
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/MainActivity.kt:173:23 'constructor(p0: String!, p1: String!): Locale' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/MainActivity.kt:175:23 'constructor(p0: String!): Locale' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/data/repository/CuratedStations.kt:65:65 'constructor(p0: String!, p1: String!): Locale' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/player/AudioRouteManager.kt:307:45 'fun seek(p0: Long): PendingResult<RemoteMediaClient.MediaChannelResult!>' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/player/RadioPlayerManager.kt:602:84 'field value: String' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/player/SmartLoadErrorHandlingPolicy.kt:138:13 Check for instance is always 'true'.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/service/RadioMediaService.kt:522:29 'static field COMMAND_SET_DEVICE_VOLUME: Int' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/service/RadioMediaService.kt:524:29 'static field COMMAND_ADJUST_DEVICE_VOLUME: Int' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/service/RadioMediaService.kt:541:24 'static field COMMAND_SET_DEVICE_VOLUME: Int' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/service/RadioMediaService.kt:543:24 'static field COMMAND_ADJUST_DEVICE_VOLUME: Int' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/service/RadioMediaService.kt:717:22 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/service/RadioMediaService.kt:1134:22 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/service/RadioMediaService.kt:1181:26 'fun onPlayerCommandRequest(p0: MediaSession, p1: MediaSession.ControllerInfo, p2: Int): Int' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/ui/components/MonochromeFlag.kt:78:17 Duplicate branch condition in 'when'.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/ui/onboarding/OnboardingWizardScreen.kt:128:29 'constructor(p0: String!, p1: String!): Locale' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/ui/onboarding/OnboardingWizardScreen.kt:128:61 'constructor(p0: String!): Locale' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/ui/onboarding/OnboardingWizardScreen.kt:1664:61 'static field VIBRATOR_SERVICE: String' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/ui/screens/CarModeScreen.kt:919:50 'val Icons.Filled.VolumeMute: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeMute.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/ui/screens/CarModeScreen.kt:920:50 'val Icons.Filled.VolumeDown: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeDown.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/ui/screens/CarModeScreen.kt:921:39 'val Icons.Filled.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/ui/screens/DockModeScreen.kt:110:64 'constructor(p0: String!, p1: String!): Locale' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/ui/screens/DockModeScreen.kt:117:92 'constructor(p0: String!, p1: String!): Locale' is deprecated. Deprecated in Java.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/ui/screens/IpodAudioOutputScreen.kt:175:43 'val Icons.Filled.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/ui/screens/IpodPodcastScreens.kt:687:61 'val Icons.Filled.Notes: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Notes.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/ui/screens/IpodVideoScreen.kt:566:57 'val Icons.Filled.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/ui/screens/IpodYouTubeScreens.kt:771:26 'val LocalLifecycleOwner: ProvidableCompositionLocal<LifecycleOwner>' is deprecated. Moved to lifecycle-runtime-compose library in androidx.lifecycle.compose package.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/ui/screens/IpodYouTubeScreens.kt:855:49 'val Icons.Filled.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/ui/screens/IpodYouTubeScreens.kt:1028:26 'val LocalLifecycleOwner: ProvidableCompositionLocal<LifecycleOwner>' is deprecated. Moved to lifecycle-runtime-compose library in androidx.lifecycle.compose package.
+w: file:///D:/global-radiopod%20-%20Copia/app/src/main/java/com/example/ui/screens/IpodYouTubeScreens.kt:1125:45 'val Icons.Filled.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack.
+
+> Task :app:processDebugJavaRes UP-TO-DATE
+> Task :app:compileDebugJavaWithJavac UP-TO-DATE
+> Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:kspDebugUnitTestKotlin
+
+> Task :app:compileDebugUnitTestKotlin
+w: file:///D:/global-radiopod%20-%20Copia/app/src/test/java/com/example/data/RadioAuditAndSearchTest.kt:133:85 'constructor(p0: String!, p1: String!): Locale' is deprecated. Deprecated in Java.
+
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:processDebugUnitTestJavaRes UP-TO-DATE
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.conscrypt.NativeLibraryUtil in an unnamed module (file:/C:/Users/marci/.gradle/caches/modules-2/files-2.1/org.conscrypt/conscrypt-openjdk-uber/2.5.2/d858f142ea189c62771c505a6548d8606ac098fe/conscrypt-openjdk-uber-2.5.2.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+> Task :app:testDebugUnitTest
+> Task :app:finalizeTestRoborazziDebug SKIPPED
+
+BUILD SUCCESSFUL in 1m 53s
+34 actionable tasks: 7 executed, 27 up-to-date
+Configuration cache entry stored.
+
+D:\global-radiopod - Copia>if 0 EQU 0 goto mainEnd 
+
+D:\global-radiopod - Copia>if "Windows_NT" == "Windows_NT" endlocal
