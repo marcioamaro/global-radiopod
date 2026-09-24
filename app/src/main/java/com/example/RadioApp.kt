@@ -52,10 +52,18 @@ class RadioApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        kotlinx.coroutines.runBlocking(kotlinx.coroutines.Dispatchers.IO) {
+            com.example.util.RestoreJournal.recover(this@RadioApp)
+        }
+        com.example.data.repository.CatalogUpdates.initialize(this)
+        com.example.data.repository.RadioCatalog.initialize(this)
+        com.example.data.repository.PublishedRankings.initialize(this)
         database = RadioDatabase.getDatabase(this)
-        repository = RadioRepository(database.favoriteStationDao(), database.radioStationDao())
+        repository = RadioRepository(database.favoriteStationDao(), database.radioStationDao(),
+            catalogPreferences = getSharedPreferences("catalog_sync", MODE_PRIVATE))
         localMediaRepository = com.example.data.repository.LocalMediaRepository(this)
         podcastRepository = com.example.data.repository.PodcastRepository.getInstance(this)
+        downloadManager // Recover persisted download queue when the app opens.
         soundAndHaptics = IpodSoundAndHaptics.getInstance(this)
         clickWheelRepository = com.example.data.prefs.ClickWheelPreferencesRepository.getInstance(this)
         clickWheelEngine = com.example.ui.components.ClickWheelEngine(
@@ -65,6 +73,17 @@ class RadioApp : Application() {
 
         // Strict lightweight memory and disk limits for image loading to prevent phone heating & GC pauses
         val imageLoader = ImageLoader.Builder(this)
+            .components {
+                add(object : coil.intercept.Interceptor {
+                    override suspend fun intercept(chain: coil.intercept.Interceptor.Chain): coil.request.ImageResult {
+                        val remote = chain.request.data.toString().startsWith("http://") || chain.request.data.toString().startsWith("https://")
+                        if (remote && !com.example.util.DataUsagePolicy(this@RadioApp).remoteArtwork) {
+                            return coil.request.ErrorResult(null, chain.request, java.io.IOException("Remote artwork disabled"))
+                        }
+                        return chain.proceed(chain.request)
+                    }
+                })
+            }
             .memoryCache {
                 MemoryCache.Builder(this)
                     .maxSizePercent(0.10) // Limit to 10% heap max

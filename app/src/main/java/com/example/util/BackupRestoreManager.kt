@@ -31,7 +31,7 @@ object BackupRestoreManager {
         val podcastRepo = PodcastRepository.getInstance(context)
         val db = RadioDatabase.getDatabase(context)
 
-        root.put("version", 28)
+        root.put("version", 29)
         root.put("app", "MediaPod + Radio / Podcast")
         root.put("timestamp", System.currentTimeMillis())
 
@@ -60,6 +60,8 @@ object BackupRestoreManager {
             put("isHapticsEnabled", prefs.isHapticsEnabled)
             put("volumeLevel", prefs.volumeLevel.toDouble())
             put("autoPlayOnLaunch", prefs.isAutoPlayOnLaunch)
+            put("remoteArtwork", DataUsagePolicy(context).remoteArtwork)
+            put("preferredBitrate", DataUsagePolicy(context).preferredBitrate)
         }
         root.put("audioPreferences", audioObj)
 
@@ -157,6 +159,8 @@ object BackupRestoreManager {
             })
         }
         podcastObj.put("customPodcasts", podCustomArray)
+        podcastObj.put("playedEpisodeIds", JSONArray(podcastRepo.playedEpisodeIds.value.toList()))
+        podcastObj.put("library", PodcastLibraryBackup.export(context))
         root.put("podcastData", podcastObj)
 
         // 5. YouTube Videos
@@ -172,6 +176,7 @@ object BackupRestoreManager {
             })
         }
         root.put("youtubeVideos", ytArray)
+        root.put("mediaLibrary", com.example.data.repository.MediaLibraryRepository.getInstance(context).exportJson())
 
         // 6. Jogo Brick High Scores (Arcade Ranking)
         val brickScores = prefs.getBrickHighScores()
@@ -193,14 +198,14 @@ object BackupRestoreManager {
         data class Error(val message: String) : RestoreResult()
     }
 
-    suspend fun exportBackupToUri(context: Context, uri: Uri): Boolean = withContext(Dispatchers.IO) {
+    suspend fun exportBackupToUri(context: Context, uri: Uri, password: CharArray): Boolean = withContext(Dispatchers.IO) {
         try {
             val jsonString = generateBackupJson(context)
-            val encryptedBytes = BackupCryptoHelper.encryptBackupPayload(jsonString)
+            val encryptedBytes = BackupCryptoHelper.encryptBackupPayload(jsonString, password)
             context.contentResolver.openOutputStream(uri)?.use { outputStream ->
                 outputStream.write(encryptedBytes)
                 outputStream.flush()
-            }
+            } ?: return@withContext false
             true
         } catch (e: Exception) {
             android.util.Log.e("BackupRestoreManager", "Falha ao exportar backup criptografado", e)
@@ -208,10 +213,18 @@ object BackupRestoreManager {
         }
     }
 
-    suspend fun restoreBackupFromUri(context: Context, uri: Uri): RestoreResult = withContext(Dispatchers.IO) {
+    suspend fun restoreBackupFromUri(context: Context, uri: Uri, password: CharArray? = null): RestoreResult = withContext(Dispatchers.IO) {
         try {
             val rawBytes = context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                inputStream.readBytes()
+                val output = java.io.ByteArrayOutputStream()
+                val buffer = ByteArray(8192)
+                while (true) {
+                    val count = inputStream.read(buffer)
+                    if (count < 0) break
+                    require(output.size() + count <= 16 * 1024 * 1024) { "Backup muito grande" }
+                    output.write(buffer, 0, count)
+                }
+                output.toByteArray()
             } ?: return@withContext RestoreResult.Error("Arquivo de backup inválido ou incompatível")
 
             if (rawBytes.isEmpty()) {
@@ -220,7 +233,7 @@ object BackupRestoreManager {
 
             // Descriptografia obrigatória AES-256-GCM com validação de assinatura e integridade
             val jsonStr = try {
-                BackupCryptoHelper.decryptBackupPayload(rawBytes)
+                BackupCryptoHelper.decryptBackupPayload(rawBytes, password)
             } catch (secEx: Exception) {
                 android.util.Log.w("BackupRestoreManager", "Falha de criptografia / integridade", secEx)
                 return@withContext RestoreResult.Error("Arquivo de backup inválido ou incompatível")
@@ -243,6 +256,16 @@ object BackupRestoreManager {
     }
 
     suspend fun restoreFromJson(context: Context, jsonString: String): Boolean = withContext(Dispatchers.IO) {
+        try {
+            require(jsonString.toByteArray(Charsets.UTF_8).size <= 16 * 1024 * 1024)
+            val root = JSONObject(jsonString)
+            BackupSchema.validate(root)
+            RestoreJournal.apply(context) { applyRestoreJson(context, jsonString) }
+        } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+        catch (_: Exception) { false }
+    }
+
+    private suspend fun applyRestoreJson(context: Context, jsonString: String): Boolean = withContext(Dispatchers.IO) {
         try {
             val root = JSONObject(jsonString)
             val prefs = IpodPreferencesManager.getInstance(context)
@@ -285,6 +308,8 @@ object BackupRestoreManager {
                 if (a.has("isHapticsEnabled")) prefs.isHapticsEnabled = a.getBoolean("isHapticsEnabled")
                 if (a.has("volumeLevel")) prefs.volumeLevel = a.getDouble("volumeLevel").toFloat()
                 if (a.has("autoPlayOnLaunch")) prefs.isAutoPlayOnLaunch = a.getBoolean("autoPlayOnLaunch")
+                if (a.has("remoteArtwork")) DataUsagePolicy(context).remoteArtwork = a.getBoolean("remoteArtwork")
+                if (a.has("preferredBitrate")) DataUsagePolicy(context).preferredBitrate = a.getInt("preferredBitrate")
             }
 
             // Restore Radio Data
@@ -359,6 +384,10 @@ object BackupRestoreManager {
             // Restore Podcast Data
             if (root.has("podcastData")) {
                 val p = root.getJSONObject("podcastData")
+                p.optJSONObject("library")?.let { PodcastLibraryBackup.restore(context, it) }
+                p.optJSONArray("playedEpisodeIds")?.let { ids ->
+                    podcastRepo.restorePlayedEpisodes((0 until ids.length()).map { ids.getString(it) }.toSet())
+                }
                 if (p.has("favorites")) {
                     val favs = p.getJSONArray("favorites")
                     for (i in 0 until favs.length()) {
@@ -374,7 +403,9 @@ object BackupRestoreManager {
                             isCustom = pf.optBoolean("isCustom", false),
                             isFavorite = true
                         )
-                        podcastRepo.toggleFavorite(show)
+                        if (podcastRepo.favoritesFlow.value.none { it.id == show.id || it.feedUrl == show.feedUrl }) {
+                            podcastRepo.toggleFavorite(show)
+                        }
                     }
                 }
 
@@ -398,9 +429,12 @@ object BackupRestoreManager {
             }
 
             // Restore YouTube Videos
+            root.optJSONObject("mediaLibrary")?.let {
+                com.example.data.repository.MediaLibraryRepository.getInstance(context).restoreJson(it)
+            }
             if (root.has("youtubeVideos")) {
                 val yt = root.getJSONArray("youtubeVideos")
-                for (i in 0 until yt.length()) {
+                for (i in yt.length() - 1 downTo 0) {
                     val y = yt.getJSONObject(i)
                     val video = YouTubeVideo(
                         id = y.optString("id"),
@@ -433,6 +467,7 @@ object BackupRestoreManager {
             true
         } catch (e: Exception) {
             android.util.Log.e("BackupRestoreManager", "Falha ao processar restauração JSON", e)
+            if (e is kotlinx.coroutines.CancellationException) throw e
             false
         }
     }

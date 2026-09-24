@@ -9,7 +9,7 @@ import javax.crypto.spec.SecretKeySpec
 
 /**
  * Utilitário de Criptografia Segura AES-256-GCM para Backup de Preferências do MediaPod.
- * Garante que o arquivo exportado seja 100% cifrado, imune a adulteração e exclusivo do app.
+ * Novos backups usam senha pessoal; o segredo legado existe apenas para leitura de arquivos antigos.
  */
 object BackupCryptoHelper {
 
@@ -38,12 +38,14 @@ object BackupCryptoHelper {
      * Criptografa o JSON de backup gerando o payload binário:
      * [8B MAGIC] + [16B SALT] + [12B IV] + [CIPHERTEXT + 16B GCM AUTH TAG]
      */
-    fun encryptBackupPayload(plainJson: String): ByteArray {
+    fun encryptBackupPayload(plainJson: String, password: CharArray): ByteArray {
+        require(password.size >= 8) { "Use uma senha com pelo menos 8 caracteres" }
+        val header = MAGIC_HEADER.copyOf().apply { this[lastIndex] = 0x02 }
         val random = SecureRandom()
         val salt = ByteArray(SALT_SIZE).apply { random.nextBytes(this) }
         val iv = ByteArray(IV_SIZE).apply { random.nextBytes(this) }
 
-        val keySpec = PBEKeySpec(APP_SECRET, salt, ITERATION_COUNT, KEY_LENGTH_BIT)
+        val keySpec = PBEKeySpec(password, salt, 210_000, KEY_LENGTH_BIT)
         val keyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
         val keyBytes = keyFactory.generateSecret(keySpec).encoded
         val secretKey = SecretKeySpec(keyBytes, "AES")
@@ -51,13 +53,13 @@ object BackupCryptoHelper {
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, GCMParameterSpec(TAG_LENGTH_BIT, iv))
         // Cabeçalho mágico incluído no cálculo da tag de autenticação
-        cipher.updateAAD(MAGIC_HEADER)
+        cipher.updateAAD(header)
 
         val inputBytes = plainJson.toByteArray(Charsets.UTF_8)
         val encryptedBytes = cipher.doFinal(inputBytes)
 
         val output = ByteArray(MAGIC_HEADER.size + SALT_SIZE + IV_SIZE + encryptedBytes.size)
-        System.arraycopy(MAGIC_HEADER, 0, output, 0, MAGIC_HEADER.size)
+        System.arraycopy(header, 0, output, 0, header.size)
         System.arraycopy(salt, 0, output, MAGIC_HEADER.size, SALT_SIZE)
         System.arraycopy(iv, 0, output, MAGIC_HEADER.size + SALT_SIZE, IV_SIZE)
         System.arraycopy(encryptedBytes, 0, output, MAGIC_HEADER.size + SALT_SIZE + IV_SIZE, encryptedBytes.size)
@@ -70,20 +72,25 @@ object BackupCryptoHelper {
      * Retorna a String JSON ou lança SecurityException se o arquivo for texto claro, corrompido ou adulterado.
      */
     @Throws(Exception::class)
-    fun decryptBackupPayload(encryptedPayload: ByteArray): String {
+    fun decryptBackupPayload(encryptedPayload: ByteArray, password: CharArray? = null): String {
         val minSize = MAGIC_HEADER.size + SALT_SIZE + IV_SIZE + (TAG_LENGTH_BIT / 8)
         if (encryptedPayload.size < minSize) {
             throw SecurityException("Arquivo de backup inválido ou incompatível")
         }
 
         // Verifica o cabeçalho mágico
-        for (i in MAGIC_HEADER.indices) {
+        for (i in 0 until MAGIC_HEADER.lastIndex) {
             if (encryptedPayload[i] != MAGIC_HEADER[i]) {
                 // Arquivo não possui o cabeçalho criptografado do MediaPod (ex: JSON texto claro ou arquivo corrompido)
                 throw SecurityException("Arquivo de backup inválido ou incompatível")
             }
         }
 
+        val version = encryptedPayload[MAGIC_HEADER.lastIndex].toInt()
+        require(version in 1..2) { "Versão de backup não suportada" }
+        val header = encryptedPayload.copyOfRange(0, MAGIC_HEADER.size)
+        val secret = if (version == 1) APP_SECRET else requireNotNull(password) { "Informe a senha do backup" }
+        require(version == 1 || secret.isNotEmpty()) { "Informe a senha do backup" }
         val salt = ByteArray(SALT_SIZE)
         System.arraycopy(encryptedPayload, MAGIC_HEADER.size, salt, 0, SALT_SIZE)
 
@@ -93,14 +100,14 @@ object BackupCryptoHelper {
         val cipherOffset = MAGIC_HEADER.size + SALT_SIZE + IV_SIZE
         val cipherLength = encryptedPayload.size - cipherOffset
 
-        val keySpec = PBEKeySpec(APP_SECRET, salt, ITERATION_COUNT, KEY_LENGTH_BIT)
+        val keySpec = PBEKeySpec(secret, salt, if (version == 1) ITERATION_COUNT else 210_000, KEY_LENGTH_BIT)
         val keyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
         val keyBytes = keyFactory.generateSecret(keySpec).encoded
         val secretKey = SecretKeySpec(keyBytes, "AES")
 
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         cipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(TAG_LENGTH_BIT, iv))
-        cipher.updateAAD(MAGIC_HEADER)
+        cipher.updateAAD(header)
 
         val decryptedBytes = cipher.doFinal(encryptedPayload, cipherOffset, cipherLength)
         return String(decryptedBytes, Charsets.UTF_8)
