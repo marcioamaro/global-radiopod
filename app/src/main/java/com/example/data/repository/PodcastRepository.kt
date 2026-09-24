@@ -24,6 +24,9 @@ class PodcastRepository private constructor(private val context: Context) {
 
     private val _curatedShows = mutableListOf<PodcastShow>()
     private val episodeCache = mutableMapOf<String, List<PodcastEpisode>>()
+    private val _playedEpisodeIds = MutableStateFlow(prefs.all.filter { it.key.startsWith("played_") && it.value == true }
+        .keys.map { it.removePrefix("played_") }.toSet())
+    val playedEpisodeIds: StateFlow<Set<String>> = _playedEpisodeIds.asStateFlow()
 
     private val _favoritesFlow = MutableStateFlow<List<PodcastShow>>(emptyList())
     val favoritesFlow: StateFlow<List<PodcastShow>> = _favoritesFlow.asStateFlow()
@@ -44,6 +47,15 @@ class PodcastRepository private constructor(private val context: Context) {
     fun getCustomPodcasts(): List<PodcastShow> = _customShowsFlow.value
 
     fun getCuratedShows(): List<PodcastShow> = _curatedShows.toList()
+
+    fun reloadFromStorage() {
+        loadFavoritesFromPrefs()
+        loadRecentsFromPrefs()
+        loadCustomShowsFromPrefs()
+        loadSubscriptionsFromPrefs()
+        _playedEpisodeIds.value = prefs.all.filter { it.key.startsWith("played_") && it.value == true }
+            .keys.map { it.removePrefix("played_") }.toSet()
+    }
 
     fun addCustomPodcast(title: String, feedUrl: String): PodcastShow {
         val show = PodcastShow(
@@ -71,25 +83,14 @@ class PodcastRepository private constructor(private val context: Context) {
         "educacao" to "1304"
     )
 
-    suspend fun getTopPodcasts(countryCode: String, limit: Int = 500): List<PodcastShow> = withContext(Dispatchers.IO) {
-        val rankingRepo = PodcastRankingRepository.getInstance(context)
-        val isBrazil = countryCode.equals("BR", ignoreCase = true)
-        val isGlobal = countryCode.equals("GLOBAL", ignoreCase = true) || countryCode.equals("ALL", ignoreCase = true)
-
-        if (isBrazil) {
-            rankingRepo.getTopPodcastsBrazil(limit)
-        } else if (isGlobal) {
-            rankingRepo.getTopPodcastsWorld(limit)
-        } else {
-            val favIds = _favoritesFlow.value.map { it.id }.toSet()
-            val filtered = _curatedShows.filter { it.country.equals(countryCode, ignoreCase = true) }
-            val sorted = filtered
-                .distinctBy { it.feedUrl.lowercase() }
-                .filter { it.feedUrl.isNotBlank() && it.episodeCount > 0 }
-                .sortedByDescending { it.episodeCount }
-                .map { it.copy(isFavorite = favIds.contains(it.id)) }
-            if (limit > 0) sorted.take(limit) else sorted
-        }
+    // Country browsing is a catalog view, separate from source-published rankings.
+    suspend fun getTopPodcasts(countryCode: String, limit: Int = 500): List<PodcastShow> = withContext(Dispatchers.Default) {
+        val global = countryCode.equals("GLOBAL", true) || countryCode.equals("ALL", true)
+        val favorites = _favoritesFlow.value.map { it.id }.toSet()
+        val shows = _curatedShows.filter { global || it.country.equals(countryCode, true) }
+            .distinctBy { it.feedUrl }.sortedBy { it.title.lowercase(Locale.ROOT) }
+            .map { it.copy(isFavorite = it.id in favorites) }
+        if (limit > 0) shows.take(limit) else shows
     }
 
     suspend fun getPodcastsByCategory(categoryKeyword: String): List<PodcastShow> = withContext(Dispatchers.IO) {
@@ -191,32 +192,38 @@ class PodcastRepository private constructor(private val context: Context) {
         }
     }
 
-    suspend fun searchPodcasts(query: String): List<PodcastShow> = withContext(Dispatchers.IO) {
-        if (query.isBlank()) return@withContext emptyList()
+    fun searchCatalog(query: String): List<PodcastShow> {
         val tokens = query.trim().split(Regex("\\s+")).filter { it.isNotBlank() }.map { com.example.util.RadioSearchEngine.normalize(it) }
         val favIds = _favoritesFlow.value.map { it.id }.toSet()
-
-        // 1. Filtro local no catálogo offline com normalização NFD sem acentos
-        val localMatches = (_curatedShows + _customShowsFlow.value).filter { show ->
+        return (_curatedShows + _customShowsFlow.value + _favoritesFlow.value + _subscriptionsFlow.value).filter { show ->
             val corpus = com.example.util.RadioSearchEngine.normalize("${show.title} ${show.author} ${show.category} ${show.description}")
             tokens.all { token -> corpus.contains(token) }
-        }
+        }.filter { it.feedUrl.isNotBlank() }.distinctBy { it.feedUrl.trim() }
+            .map { it.copy(isFavorite = it.id in favIds, rankPosition = null) }
+    }
+
+    suspend fun searchPodcasts(query: String): List<PodcastShow> = withContext(Dispatchers.IO) {
+        val localMatches = searchCatalog(query)
+        if (query.isBlank()) return@withContext localMatches
+        val favIds = _favoritesFlow.value.map { it.id }.toSet()
 
         // 2. Busca online global na API do iTunes
         val onlineMatches = try {
             PodcastApiClient.searchPodcasts(query)
+        } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            throw cancelled
         } catch (_: Exception) {
             emptyList()
         }
 
         (localMatches + onlineMatches)
-            .distinctBy { it.feedUrl.lowercase() }
-            .filter { it.feedUrl.isNotBlank() && it.episodeCount > 0 }
-            .map { it.copy(isFavorite = favIds.contains(it.id)) }
+            .distinctBy { it.feedUrl.trim() }
+            .filter { it.feedUrl.isNotBlank() }
+            .map { it.copy(isFavorite = favIds.contains(it.id), rankPosition = null) }
     }
 
     suspend fun getEpisodesForShow(show: PodcastShow): List<PodcastEpisode> = withContext(Dispatchers.IO) {
-        episodeCache[show.id]?.let { return@withContext it }
+        episodeCache[show.id]?.let { return@withContext it.map { ep -> ep.copy(isPlayed = isEpisodePlayed(ep.id)) } }
         var episodes = RssFeedParser.fetchEpisodes(show.feedUrl, show.id, show.title, show.artworkUrl)
 
         // Auto-Cura Dinâmica: Se o feed estiver quebrado, migrado ou vazio, busca link oficial atualizado na API do iTunes
@@ -224,9 +231,7 @@ class PodcastRepository private constructor(private val context: Context) {
             try {
                 val liveResults = PodcastApiClient.searchPodcasts(show.title)
                 val match = liveResults.firstOrNull {
-                    it.title.equals(show.title, ignoreCase = true) ||
-                    it.title.lowercase(Locale.ROOT).contains(show.title.lowercase(Locale.ROOT)) ||
-                    show.title.lowercase(Locale.ROOT).contains(it.title.lowercase(Locale.ROOT))
+                    com.example.util.PodcastIdentity.samePublisherAndTitle(show, it)
                 }
                 if (match != null && match.feedUrl.isNotBlank() && !match.feedUrl.equals(show.feedUrl, ignoreCase = true)) {
                     android.util.Log.i("PodcastRepository", "Auto-Cura ativada para '${show.title}': tentando novo feed oficial ${match.feedUrl}")
@@ -243,7 +248,7 @@ class PodcastRepository private constructor(private val context: Context) {
         if (episodes.isNotEmpty()) {
             episodeCache[show.id] = episodes
         }
-        episodes
+        episodes.map { it.copy(isPlayed = isEpisodePlayed(it.id)) }
     }
 
     // --- Meus Podcasts (Custom) ---
@@ -458,7 +463,17 @@ class PodcastRepository private constructor(private val context: Context) {
     }
 
     fun markEpisodePlayed(episodeId: String, played: Boolean = true) {
-        prefs.edit().putBoolean("played_$episodeId", played).commit()
+        if (episodeId.isBlank()) return
+        prefs.edit().putBoolean("played_$episodeId", played).apply()
+        _playedEpisodeIds.value = if (played) _playedEpisodeIds.value + episodeId else _playedEpisodeIds.value - episodeId
+    }
+
+    fun restorePlayedEpisodes(ids: Set<String>) {
+        val merged = _playedEpisodeIds.value + ids.filter { it.isNotBlank() }
+        val editor = prefs.edit()
+        merged.forEach { editor.putBoolean("played_$it", true) }
+        editor.apply()
+        _playedEpisodeIds.value = merged
     }
 
     fun isEpisodePlayed(episodeId: String): Boolean {

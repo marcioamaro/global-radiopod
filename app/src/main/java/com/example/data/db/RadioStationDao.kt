@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -35,4 +36,11 @@ interface RadioStationDao {
 
     @Query("DELETE FROM stations")
     suspend fun clearStations()
+
+    @Transaction
+    suspend fun replaceCatalog(stations: List<RadioStationEntity>) {
+        clearStations()
+        insertStations(stations)
+    }
+
 }

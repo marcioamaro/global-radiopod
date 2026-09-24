@@ -98,13 +98,20 @@ class LocalMediaRepository(private val context: Context) {
             e.printStackTrace()
         }
 
+        MediaLibraryRepository.getInstance(context).registerFiles(LibraryKind.AUDIO, tracks.map { track ->
+            val file = File(track.filePath)
+            MediaFileReference(track.libraryKey(), if (file.isFile) file.length() else -1, file.lastModified()) {
+                requireNotNull(contentResolver.openInputStream(track.contentUri))
+            }
+        })
         tracks.sortedBy { it.title.trim().lowercase() }
     }
 
     suspend fun getAudioFolders(): List<MediaFolder> = withContext(Dispatchers.IO) {
         val tracks = getAllAudioTracks()
-        tracks.groupBy { it.folderName }
-            .map { (folderName, items) ->
+        tracks.groupBy { File(it.filePath).parent.orEmpty() }
+            .map { (_, items) ->
+                val folderName = items.first().folderName
                 val parentPath = items.firstOrNull()?.filePath?.let { File(it).parent ?: "" } ?: ""
                 MediaFolder(
                     name = folderName,
@@ -116,8 +123,8 @@ class LocalMediaRepository(private val context: Context) {
             .sortedBy { it.name.trim().lowercase() }
     }
 
-    suspend fun getTracksByFolder(folderName: String): List<LocalAudioTrack> = withContext(Dispatchers.IO) {
-        getAllAudioTracks().filter { it.folderName.equals(folderName, ignoreCase = true) }
+    suspend fun getTracksByFolder(folderName: String, folderPath: String? = null): List<LocalAudioTrack> = withContext(Dispatchers.IO) {
+        getAllAudioTracks().filter { if (folderPath != null) File(it.filePath).parent == folderPath else it.folderName.equals(folderName, ignoreCase = true) }
             .sortedBy { it.title.trim().lowercase() }
     }
 
@@ -175,13 +182,20 @@ class LocalMediaRepository(private val context: Context) {
             e.printStackTrace()
         }
 
+        MediaLibraryRepository.getInstance(context).registerFiles(LibraryKind.VIDEO, videos.map { track ->
+            val file = File(track.filePath)
+            MediaFileReference(track.libraryKey(), if (file.isFile) file.length() else -1, file.lastModified()) {
+                requireNotNull(contentResolver.openInputStream(track.contentUri))
+            }
+        })
         videos.sortedBy { it.title.trim().lowercase() }
     }
 
     suspend fun getVideoFolders(): List<MediaFolder> = withContext(Dispatchers.IO) {
         val videos = getAllVideoTracks()
-        videos.groupBy { it.folderName }
-            .map { (folderName, items) ->
+        videos.groupBy { File(it.filePath).parent.orEmpty() }
+            .map { (_, items) ->
+                val folderName = items.first().folderName
                 val parentPath = items.firstOrNull()?.filePath?.let { File(it).parent ?: "" } ?: ""
                 MediaFolder(
                     name = folderName,
@@ -193,8 +207,8 @@ class LocalMediaRepository(private val context: Context) {
             .sortedBy { it.name.trim().lowercase() }
     }
 
-    suspend fun getVideosByFolder(folderName: String): List<LocalVideoTrack> = withContext(Dispatchers.IO) {
-        getAllVideoTracks().filter { it.folderName.equals(folderName, ignoreCase = true) }
+    suspend fun getVideosByFolder(folderName: String, folderPath: String? = null): List<LocalVideoTrack> = withContext(Dispatchers.IO) {
+        getAllVideoTracks().filter { if (folderPath != null) File(it.filePath).parent == folderPath else it.folderName.equals(folderName, ignoreCase = true) }
             .sortedBy { it.title.trim().lowercase() }
     }
 
@@ -202,6 +216,7 @@ class LocalMediaRepository(private val context: Context) {
      * Attempts to find high-resolution album art from the web using iTunes Search API
      */
     suspend fun fetchOnlineAlbumArt(artist: String, title: String, album: String): String? = withContext(Dispatchers.IO) {
+        if (!com.example.util.DataUsagePolicy(context).remoteArtwork) return@withContext null
         val cacheKey = "${artist.lowercase().trim()} - ${title.lowercase().trim()}"
         artworkCache[cacheKey]?.let { return@withContext it }
 

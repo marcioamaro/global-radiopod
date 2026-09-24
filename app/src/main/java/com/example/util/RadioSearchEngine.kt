@@ -5,6 +5,9 @@ import java.text.Normalizer
 import java.util.Locale
 
 object RadioSearchEngine {
+    private val diacritics = "\\p{InCombiningDiacriticalMarks}+".toRegex()
+    private val whitespace = "\\s+".toRegex()
+    private val decimalSeparator = "(?<=\\d)[,.](?=\\d)".toRegex()
 
     /**
      * Remove acentos e caracteres diacríticos, espaços extras e converte para minúsculas.
@@ -12,7 +15,8 @@ object RadioSearchEngine {
     fun normalize(text: String?): String {
         if (text.isNullOrBlank()) return ""
         val nfd = Normalizer.normalize(text, Normalizer.Form.NFD)
-        return nfd.replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
+        return nfd.replace(diacritics, "")
+            .replace(decimalSeparator, ".")
             .lowercase(Locale.ROOT)
             .trim()
     }
@@ -55,19 +59,23 @@ object RadioSearchEngine {
         val cleanQuery = normalize(query)
         if (cleanQuery.isBlank()) return true
 
-        val tokens = cleanQuery.split("\\s+".toRegex()).filter { it.isNotBlank() }
+        val tokens = cleanQuery.split(whitespace).filter { it.isNotBlank() }
         if (tokens.isEmpty()) return true
 
-        // Obter aliases estaduais adicionais para enriquecer o corpus
+        val corpus = searchableText(station)
+        return tokens.all { token -> corpus.contains(token) }
+    }
+
+    fun searchableText(station: RadioStation): String {
+        // Shared by the indexed and compatibility search paths.
         val ufAliases = BRAZILIAN_UF_ALIASES[station.state.uppercase(Locale.ROOT)] ?: emptyList()
         val extraUfCorpus = ufAliases.joinToString(" ")
 
         // Construir corpus textual normalizado da emissora
-        val corpus = normalize(
+        return normalize(
             "${station.name} ${station.country} ${station.countryCode} ${station.state} ${station.city} ${station.tags} ${station.primaryGenre} $extraUfCorpus"
         )
 
-        return tokens.all { token -> corpus.contains(token) }
     }
 
     /**

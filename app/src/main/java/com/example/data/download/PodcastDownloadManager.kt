@@ -10,6 +10,12 @@ import com.example.data.model.PodcastEpisode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
+import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,10 +43,21 @@ class PodcastDownloadManager private constructor(private val context: Context) {
     private val _statusMap = MutableStateFlow<Map<String, DownloadStatus>>(emptyMap())
     val statusMap: StateFlow<Map<String, DownloadStatus>> = _statusMap.asStateFlow()
 
-    private val activeJobs = mutableMapOf<String, Job>()
+    private val activeJobs = java.util.concurrent.ConcurrentHashMap<String, Job>()
+    private val connections = java.util.concurrent.ConcurrentHashMap<String, HttpURLConnection>()
+    private val slots = Semaphore(2)
+    private val cancelling = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+    private val episodeAdapter = com.squareup.moshi.Moshi.Builder().build().adapter(PodcastEpisode::class.java)
 
     init {
         loadPersistedIndex()
+        prefs.all.filterKeys { it.startsWith("pending_") }.forEach { (key, value) ->
+            val episode = runCatching { episodeAdapter.fromJson(value as String) }.getOrNull()
+            if (episode != null) {
+                if (prefs.getBoolean("paused_${episode.id}", false)) updateStatus(episode.id, DownloadStatus.Paused(episode.id, 0))
+                else startDownload(episode)
+            }
+        }
     }
 
     private val downloadDir: File
@@ -75,97 +92,76 @@ class PodcastDownloadManager private constructor(private val context: Context) {
         return if (file.exists() && file.length() > 0) file.absolutePath else null
     }
 
-    fun startDownload(episode: PodcastEpisode) {
-        if (isDownloaded(episode.id)) {
-            Log.d(TAG, "Episódio já baixado: ${episode.id}")
+    private fun partialFile(id: String): File {
+        val hash = java.security.MessageDigest.getInstance("SHA-256").digest(id.toByteArray()).joinToString("") { "%02x".format(it) }
+        return File(downloadDir, "pod_$hash.tmp")
+    }
+
+    @Synchronized fun startDownload(episode: PodcastEpisode) {
+        if (episode.id in cancelling || isDownloaded(episode.id) || activeJobs[episode.id]?.isActive == true) return
+        activeJobs[episode.id]?.takeUnless { it.isCompleted }?.let { previous ->
+            scope.launch { previous.join(); startDownload(episode) }
             return
         }
-
-        if (isWifiOnlyEnabled() && !isConnectedToWifi()) {
-            updateStatus(episode.id, DownloadStatus.Failed(episode.id, "Download restrito a redes Wi-Fi"))
-            return
-        }
-
-        activeJobs[episode.id]?.cancel()
-
+        check(prefs.edit().putString("pending_${episode.id}", episodeAdapter.toJson(episode))
+            .putBoolean("paused_${episode.id}", false).commit())
         updateStatus(episode.id, DownloadStatus.Queued(episode.id))
-
-        val job = scope.launch {
-            val sanitizedName = "pod_${episode.id.replace("[^a-zA-Z0-9_-]".toRegex(), "_")}"
-            val targetFile = File(downloadDir, "$sanitizedName.mp3")
-            val tempFile = File(downloadDir, "$sanitizedName.tmp")
-
-            var connection: HttpURLConnection? = null
-            var input: InputStream? = null
-            var output: FileOutputStream? = null
-
+        val job = scope.launch(start = CoroutineStart.LAZY) {
             try {
-                val url = URL(episode.audioUrl)
-                connection = url.openConnection() as HttpURLConnection
-                connection.connectTimeout = 15000
-                connection.readTimeout = 30000
-                connection.instanceFollowRedirects = true
-                connection.connect()
-
-                if (connection.responseCode !in 200..299) {
-                    throw IllegalStateException("Servidor retornou HTTP ${connection.responseCode}")
+                slots.withPermit {
+                    if (isWifiOnlyEnabled() && !isConnectedToWifi()) error("Conecte ao Wi-Fi e toque em retomar")
+                    val partial = partialFile(episode.id)
+                    val validator = File(partial.path + ".validator")
+                    val jobContext = coroutineContext
+                    ResumableTransfer.transfer(episode.audioUrl, partial, validator, {
+                        jobContext.ensureActive()
+                        if (isWifiOnlyEnabled() && !isConnectedToWifi()) error("Conecte ao Wi-Fi e toque em retomar")
+                    }, { bytes, total ->
+                        val percent = if (total > 0) ((bytes * 100) / total).toInt().coerceIn(0, 100) else 0
+                        updateStatus(episode.id, DownloadStatus.Downloading(episode.id, percent, bytes, total))
+                    }, { connection ->
+                        if (connection == null) connections.remove(episode.id) else connections[episode.id] = connection
+                    })
+                    coroutineContext.ensureActive()
+                    val target = File(partial.path.removeSuffix(".tmp") + ".mp3")
+                    check(partial.renameTo(target)) { "Não foi possível finalizar o arquivo" }
+                    persistEpisodeRecord(episode, target.absolutePath, target.length())
+                    prefs.edit().remove("pending_${episode.id}").remove("paused_${episode.id}").commit()
+                    validator.delete()
+                    updateStatus(episode.id, DownloadStatus.Completed(episode.id, target.absolutePath, target.length()))
                 }
-
-                val totalLength = connection.contentLengthLong
-                input = connection.inputStream
-                output = FileOutputStream(tempFile)
-
-                val buffer = ByteArray(8192)
-                var bytesDownloaded = 0L
-                var read: Int
-
-                while (input.read(buffer).also { read = it } != -1) {
-                    output.write(buffer, 0, read)
-                    bytesDownloaded += read
-
-                    val percent = if (totalLength > 0) {
-                        ((bytesDownloaded * 100) / totalLength).toInt().coerceIn(0, 100)
-                    } else 0
-
-                    updateStatus(
-                        episode.id,
-                        DownloadStatus.Downloading(episode.id, percent, bytesDownloaded, totalLength)
-                    )
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (error: Exception) {
+                if (coroutineContext[Job]?.isActive == true) {
+                    com.example.util.Diagnostics.record(context, com.example.util.Diagnostics.Event.DOWNLOAD_FAILED)
+                    prefs.edit().putBoolean("paused_${episode.id}", true).commit()
+                    updateStatus(episode.id, DownloadStatus.Failed(episode.id, "Não foi possível concluir. Verifique rede e espaço e tente retomar."))
                 }
-
-                output.flush()
-                output.close()
-                output = null
-
-                // Renomeação atômica
-                if (targetFile.exists()) targetFile.delete()
-                if (!tempFile.renameTo(targetFile)) {
-                    throw IllegalStateException("Falha ao renomear arquivo temporário para definitivo")
-                }
-
-                persistEpisodeRecord(episode, targetFile.absolutePath, targetFile.length())
-                updateStatus(episode.id, DownloadStatus.Completed(episode.id, targetFile.absolutePath, targetFile.length()))
-            } catch (e: Exception) {
-                if (tempFile.exists()) tempFile.delete()
-                updateStatus(episode.id, DownloadStatus.Failed(episode.id, e.message ?: "Erro desconhecido"))
-            } finally {
-                try { input?.close() } catch (_: Exception) {}
-                try { output?.close() } catch (_: Exception) {}
-                try { connection?.disconnect() } catch (_: Exception) {}
-                activeJobs.remove(episode.id)
-            }
+            } finally { activeJobs.remove(episode.id, coroutineContext[Job]) }
         }
-
         activeJobs[episode.id] = job
+        job.start()
+    }
+
+    @Synchronized fun pauseDownload(episodeId: String) {
+        prefs.edit().putBoolean("paused_$episodeId", true).commit()
+        activeJobs[episodeId]?.cancel()
+        connections.remove(episodeId)?.disconnect()
+        val progress = (_statusMap.value[episodeId] as? DownloadStatus.Downloading)?.progressPercent ?: 0
+        updateStatus(episodeId, DownloadStatus.Paused(episodeId, progress))
     }
 
     fun cancelDownload(episodeId: String) {
-        activeJobs[episodeId]?.cancel()
-        activeJobs.remove(episodeId)
-        val sanitizedName = "pod_${episodeId.replace("[^a-zA-Z0-9_-]".toRegex(), "_")}"
-        val tempFile = File(downloadDir, "$sanitizedName.tmp")
-        if (tempFile.exists()) tempFile.delete()
-        updateStatus(episodeId, DownloadStatus.NotDownloaded)
+        cancelling.add(episodeId)
+        pauseDownload(episodeId)
+        scope.launch {
+            activeJobs[episodeId]?.join()
+            partialFile(episodeId).delete()
+            File(partialFile(episodeId).path + ".validator").delete()
+            prefs.edit().remove("pending_$episodeId").remove("paused_$episodeId").commit()
+            updateStatus(episodeId, DownloadStatus.NotDownloaded)
+            cancelling.remove(episodeId)
+        }
     }
 
     fun deleteDownload(episodeId: String): Boolean {
@@ -181,13 +177,13 @@ class PodcastDownloadManager private constructor(private val context: Context) {
         return deleted
     }
 
-    private fun updateStatus(episodeId: String, status: DownloadStatus) {
+    @Synchronized private fun updateStatus(episodeId: String, status: DownloadStatus) {
         val updated = _statusMap.value.toMutableMap()
         updated[episodeId] = status
         _statusMap.value = updated
     }
 
-    private fun persistEpisodeRecord(episode: PodcastEpisode, localPath: String, fileSize: Long) {
+    @Synchronized private fun persistEpisodeRecord(episode: PodcastEpisode, localPath: String, fileSize: Long) {
         val list = getDownloadedEpisodes().toMutableList()
         list.removeAll { it.id == episode.id }
         val updatedEpisode = episode.copy(localFilePath = localPath)
@@ -216,7 +212,7 @@ class PodcastDownloadManager private constructor(private val context: Context) {
             .commit()
     }
 
-    private fun removeEpisodeRecord(episodeId: String) {
+    @Synchronized private fun removeEpisodeRecord(episodeId: String) {
         val list = getDownloadedEpisodes().filterNot { it.id == episodeId }
         val jsonArray = JSONArray()
         list.forEach { ep ->
@@ -330,6 +326,8 @@ class PodcastDownloadManager private constructor(private val context: Context) {
 
         @androidx.annotation.VisibleForTesting
         fun clearInstanceForTesting() {
+            INSTANCE?.scope?.coroutineContext?.get(Job)?.cancel()
+            INSTANCE?.connections?.values?.forEach { it.disconnect() }
             INSTANCE = null
         }
     }

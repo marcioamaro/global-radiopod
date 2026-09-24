@@ -17,7 +17,9 @@ data class PodcastShow(
     val isCustom: Boolean = false,
     val isFavorite: Boolean = false,
     val isSubscribed: Boolean = false,
-    val unreadCount: Int = 0
+    val unreadCount: Int = 0,
+    val rankPosition: Int? = null,
+    val externalUrl: String = ""
 ) {
     val displayCountry: String
         get() = when (country.uppercase()) {

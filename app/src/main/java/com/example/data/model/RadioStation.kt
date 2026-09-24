@@ -37,7 +37,8 @@ data class RadioStation(
     val codec: String = "MP3",
     val bitrate: Int = 128,
     val votes: Int = 0,
-    val isFavorite: Boolean = false
+    val isFavorite: Boolean = false,
+    val rankPosition: Int? = null
 ) {
     fun getAllStreamCandidates(): List<String> {
         val list = mutableListOf<String>()
@@ -147,7 +148,7 @@ data class RadioStation(
                 }
             }
         }
-        return list
+        return list.sortedBy { if (it.startsWith("https://", ignoreCase = true)) 0 else 1 }
     }
 
     fun penalizeStreamUrl(failedUrl: String): RadioStation {

@@ -1,7 +1,6 @@
 package com.example.data.cache
 
 import com.example.data.model.RadioStation
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Cache thread-safe em memória para resultados de pesquisas e filtros taxonômicos
@@ -9,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap
  * e instantânea dentro de subconjuntos de estações já carregados.
  */
 class SearchResultCache(
-    private val maxCapacity: Int = 100,
+    private val maxCapacity: Int = 20,
     private val timeToLiveMs: Long = 15 * 60 * 1000L // 15 minutos
 ) {
     private data class CacheEntry(
@@ -17,21 +16,19 @@ class SearchResultCache(
         val timestamp: Long
     )
 
-    private val cache = ConcurrentHashMap<String, CacheEntry>()
+    private val cache = LinkedHashMap<String, CacheEntry>(16, 0.75f, true)
+    private val maxStationReferences = 100_000
 
-    fun put(key: String, stations: List<RadioStation>) {
-        if (key.isBlank() || stations.isEmpty()) return
-        if (cache.size >= maxCapacity) {
-            // Remove as entradas mais antigas
-            val oldestKey = cache.minByOrNull { it.value.timestamp }?.key
-            if (oldestKey != null) {
-                cache.remove(oldestKey)
-            }
-        }
+    @Synchronized fun put(key: String, stations: List<RadioStation>) {
+        if (key.isBlank() || stations.size > maxStationReferences) return
+        cache.remove(key)
         cache[key] = CacheEntry(stations, System.currentTimeMillis())
+        while (cache.size > maxCapacity || cache.values.sumOf { it.stations.size } > maxStationReferences) {
+            cache.remove(cache.keys.first())
+        }
     }
 
-    fun get(key: String): List<RadioStation>? {
+    @Synchronized fun get(key: String): List<RadioStation>? {
         val entry = cache[key] ?: return null
         if (System.currentTimeMillis() - entry.timestamp > timeToLiveMs) {
             cache.remove(key)
@@ -42,15 +39,15 @@ class SearchResultCache(
 
     fun contains(key: String): Boolean = get(key) != null
 
-    fun remove(key: String) {
+    @Synchronized fun remove(key: String) {
         cache.remove(key)
     }
 
-    fun clear() {
+    @Synchronized fun clear() {
         cache.clear()
     }
 
-    val size: Int get() = cache.size
+    val size: Int get() = synchronized(this) { cache.size }
 
     companion object {
         @Volatile

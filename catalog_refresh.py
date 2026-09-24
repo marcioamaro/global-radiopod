@@ -19,7 +19,7 @@ import av
 
 ROOT = Path(__file__).resolve().parent
 REPORT = ROOT / 'reports/catalog-refresh-20260922'
-ATUAL = 'https://ice.fabricahost.com.br/radioatua1941'
+ATUAL = 'https://ice.fabricahost.com.br/radioatual941'
 
 def clean(value):
     if isinstance(value, str):
@@ -32,7 +32,7 @@ def clean(value):
     return value
 
 def norm(value):
-    return re.sub(r'[^a-z0-9]', '', ''.join(c for c in unicodedata.normalize('NFKD', value.lower()) if not unicodedata.combining(c)))
+    return ''.join(c for c in unicodedata.normalize('NFKD', value.casefold()) if c.isalnum())
 
 def urlkey(value):
     p = urlsplit(value.strip())
@@ -59,15 +59,22 @@ def decode(data):
 async def probe(session, url, depth=0):
     if depth > 3 or urlsplit(url).scheme not in ('http', 'https'):
         raise ValueError('Unsupported URL or playlist recursion')
-    async with session.get(url, timeout=aiohttp.ClientTimeout(total=22, sock_connect=8, sock_read=8)) as r:
+    async with session.get(url, headers={'Cache-Control': 'no-cache', 'Pragma': 'no-cache'}, timeout=aiohttp.ClientTimeout(total=22, sock_connect=8, sock_read=8)) as r:
         if r.status not in (200, 206):
             raise ValueError(f'HTTP {r.status}')
         ctype = r.headers.get('Content-Type', '').lower()
         if 'html' in ctype:
             raise ValueError('HTML instead of audio')
         data = bytearray()
+        decoded = None
         async for chunk in r.content.iter_chunked(8192):
             data.extend(chunk)
+            if len(data) >= 16384 and not data.lstrip().startswith((b'#EXTM3U', b'[playlist]')):
+                try:
+                    decoded = await asyncio.to_thread(decode, bytes(data))
+                    break
+                except Exception:
+                    pass
             if len(data) >= 65536:
                 break
         resolved = str(r.url)
@@ -87,7 +94,7 @@ async def probe(session, url, depth=0):
             result['resolved_url'] = resolved
             result['codec'] = 'HLS'
         return result
-    codec, seconds = await asyncio.to_thread(decode, bytes(data))
+    codec, seconds = decoded or await asyncio.to_thread(decode, bytes(data))
     return {'resolved_url': resolved, 'codec': codec, 'decoded_seconds': seconds,
             'sample_bytes': len(data), 'content_type': ctype, 'http_status': 200,
             'checked_at': dt.datetime.now(dt.timezone.utc).isoformat()}
@@ -150,8 +157,8 @@ async def main():
                         try:
                             result = await probe(session, url)
                             # Two independently opened streams must decode before admission.
-                            result = await probe(session, result['resolved_url'])
-                            s.update(primary_stream_url=result['resolved_url'], alternative_stream_urls=[], all_stream_urls=[result['resolved_url']], total_sources_count=1, codec=result['codec'], validation=result)
+                            result = await probe(session, url)
+                            s.update(primary_stream_url=url, alternative_stream_urls=[], all_stream_urls=[url], total_sources_count=1, codec=result['codec'], validation=result)
                             completed += 1
                             if completed % 100 == 0:
                                 print('Validated', completed, '/', len(unique), flush=True)
@@ -185,6 +192,7 @@ async def main():
     if len(accepted) < len(old) * .5:
         dump(REPORT / 'validated-catalog.json', {'stations': accepted})
         raise RuntimeError('Less than half of original count validated; catalog untouched. Inspect network/rejections.')
+    # Both existing and new entries must pass validation before export.
     data['stations'] = accepted
     data['metadata'].update(total_stations=len(accepted), brazil_stations=sum(s.get('country_code') == 'BR' for s in accepted), last_updated=summary['checked_at'])
     dump(ROOT / 'all_radio_sources.json', data)

@@ -1,0 +1,1994 @@
+{
+  "podcast_world": {
+    "source": "",
+    "sourceUrl": "",
+    "period": "Todos os tempos · até 23/04/2026",
+    "note": "20 podcasts em ordem de popularidade histórica mundial.",
+    "entries": [
+      {
+        "rank": 1,
+        "title": "The Joe Rogan Experience",
+        "show": {
+          "id": "itunes_360084272",
+          "title": "The Joe Rogan Experience",
+          "author": "Joe Rogan",
+          "description": "The official podcast of comedian Joe Rogan.",
+          "feedUrl": "https://feeds.megaphone.fm/GLT1412515089",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/ac/39/c4/ac39c4f9-9a22-06b4-442e-ed5d9715b09f/mza_16971090484056979646.jpg/600x600bb.jpg",
+          "country": "GLOBAL",
+          "category": "Comedy",
+          "episodeCount": 2754,
+          "rssLanguage": "en",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 2,
+        "title": "Gemischtes Hack",
+        "show": {
+          "id": "itunes_1292709842",
+          "title": "Gemischtes Hack",
+          "author": "Felix Lobrecht & Tommi Schmitt",
+          "description": "Felix Lobrecht (Comedian und Autor) und Tommi Schmitt (TV-Moderator und Kolumnist) haben einen Podcast. Jeden Mittwoch exklusiv als Video-Podcast auf Spotify.",
+          "feedUrl": "https://feeds.megaphone.fm/GLT8390938385",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/dc/37/50/dc3750de-5c3b-6446-f32d-eaaf399f0b8c/mza_12821350567191789117.jpeg/600x600bb.jpg",
+          "country": "GLOBAL",
+          "category": "Comedy",
+          "episodeCount": 379,
+          "rssLanguage": "de",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 3,
+        "title": "Crime Junkie",
+        "show": {
+          "id": "us_crime_junkie",
+          "title": "Crime Junkie",
+          "author": "audiochuck",
+          "description": "True crime stories told straightforward and grippingly for crime junkies everywhere.",
+          "feedUrl": "https://feeds.simplecast.com/qm_9xx0g",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts126/v4/8c/35/04/8c350430-2fbf-98d0-0a25-00b76550ffeb/mza_13445204151221888086.jpg/600x600bb.jpg",
+          "country": "US",
+          "category": "True Crime",
+          "episodeCount": 526,
+          "isCustom": false,
+          "isFavorite": false
+        }
+      },
+      {
+        "rank": 4,
+        "title": "Armchair Expert with Dax Shepard",
+        "show": {
+          "id": "us_armchair_expert",
+          "title": "Armchair Expert with Dax Shepard",
+          "author": "Armchair Umbrella",
+          "description": "Hi, I’m Dax Shepard, and I love talking to people. I am endlessly fascinated by the messiness of being human, and I find people who are vulnerable and honest about their struggles and shortcomings to be incredibly sexy. I invite you to join me as I explore other people’s stories. We will celebrate, above all, the challenges and setbacks that ultimately lead to growth and betterment. What qualifies me for such an endeavor? More than a decade of sobriety, a degree in Anthropology and four years of improv training. I will attempt to discover human “truths” without any laboratory work, clinical trials or data collection. I will be, in the great tradition of 16th-century scientists, an Armchair Expert.",
+          "feedUrl": "https://rss.art19.com/armchair-expert",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/f0/13/8f/f0138f4b-8bc3-0a64-2c11-ef566840f60f/mza_3062409012210474882.jpeg/600x600bb.jpg",
+          "country": "US",
+          "category": "Comédia",
+          "episodeCount": 1100,
+          "isCustom": false,
+          "isFavorite": false,
+          "rssLanguage": "en",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 5,
+        "title": "Last Podcast On The Left",
+        "show": {
+          "id": "itunes_437299706",
+          "title": "Last Podcast On The Left",
+          "author": "The Last Podcast Network",
+          "description": "The Last Podcast on the Left covers all the horrors our world has to offer, both imagined and real. From demons and slashers to cults and serial killers, The Last Podcast is guaranteed to satisfy your bloodlust.\n\nSubscribe to SiriusXM Podcasts+ to listen to new episodes of Last Podcast on the Left ad-free, plus get Friday episodes a whole week early. Start a free trial now on Apple Podcasts or by visiting siriusxm.com/podcastsplus.",
+          "feedUrl": "https://feeds.simplecast.com/dCXMIpJz",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/25/c9/7f/25c97f36-41e7-38a9-7e95-4f87997024f4/mza_430481307357513215.jpg/600x600bb.jpg",
+          "country": "GLOBAL",
+          "category": "True Crime",
+          "episodeCount": 1207,
+          "rssLanguage": "en",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 6,
+        "title": "The Daily",
+        "show": {
+          "id": "us_the_daily",
+          "title": "The Daily",
+          "author": "The New York Times",
+          "description": "This is what the news should sound like. The biggest stories of our time, five days a week.",
+          "feedUrl": "https://feeds.simplecast.com/54nAGcIl",
+          "artworkUrl": "",
+          "country": "US",
+          "category": "News",
+          "episodeCount": 2962,
+          "isCustom": false,
+          "isFavorite": false
+        }
+      },
+      {
+        "rank": 7,
+        "title": "Fest & Flauschig",
+        "show": {
+          "id": "itunes_1765742605",
+          "title": "Fest & Flauschig",
+          "author": "Jan Böhmermann & Olli Schulz",
+          "description": "Fest & Flauschig mit Jan Böhmermann und Olli Schulz. Der preisgekrönte, verblüffend fabelhafte, grenzenlos fantastische Podcast für sie, ihn und es.",
+          "feedUrl": "https://feeds.megaphone.fm/GLT4060321204",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/7e/c9/59/7ec95967-879f-e67f-5088-56fa9f6055e1/mza_13387026936660092084.jpg/600x600bb.jpg",
+          "country": "GLOBAL",
+          "category": "Comedy",
+          "episodeCount": 712,
+          "rssLanguage": "de",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 8,
+        "title": "Morbid",
+        "show": {
+          "id": "itunes_1379959217",
+          "title": "Morbid",
+          "author": "Ash Kelley & Alaina Urquhart",
+          "description": "It’s a lighthearted nightmare in here, weirdos! Morbid is a true crime, creepy history and all things spooky podcast hosted by an autopsy technician and a hairstylist. Join us for a heavy dose of research with a dash of comedy thrown in for flavor.\n\nSubscribe to SiriusXM Podcasts+ to listen to new episodes of Morbid ad-free.\n\nStart a free trial now on Apple Podcasts or by visiting siriusxm.com/podcastsplus.",
+          "feedUrl": "https://feeds.simplecast.com/ohmVlJZQ",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/78/e9/0e/78e90ee0-567d-1ad8-17a0-17d7c988c4bd/mza_8425901783365617933.jpg/600x600bb.jpg",
+          "country": "GLOBAL",
+          "category": "True Crime",
+          "episodeCount": 888,
+          "rssLanguage": "en",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 9,
+        "title": "My Favorite Murder with Karen Kilgariff and Georgia Hardstark",
+        "show": {
+          "id": "itunes_1074507850",
+          "title": "My Favorite Murder with Karen Kilgariff and Georgia Hardstark",
+          "author": "Exactly Right and iHeartPodcasts",
+          "description": "My Favorite Murder is a true crime comedy podcast hosted by Karen Kilgariff and Georgia Hardstark. Each week, Karen and Georgia share compelling true crimes and hometown stories from friends and listeners. \n\nSince MFM launched in January of 2016, Karen and Georgia have shared their lifelong interest in true crime and have covered stories of infamous serial killers like the Night Stalker, mysterious cold cases, captivating cults, incredible survivor stories and important events from history like the Tulsa race massacre of 1921.  \n\nMy Favorite Murder is part of the Exactly Right podcast network that provides a platform for bold, creative voices to bring to life provocative, entertaining and relatable stories for audiences everywhere. The Exactly Right roster of podcasts covers a variety of topics including historic true crime, comedic interviews and news, science, pop culture and more. Podcasts on the network include Buried Bones with Kate Winkler Dawson and Paul Holes, That's Messed Up: An SVU Podcast, This Podcast Will Kill You, Bananas and more.",
+          "feedUrl": "https://www.omnycontent.com/d/playlist/e73c998e-6e60-432f-8610-ae210140c5b1/bdde8bb3-169d-43b1-91d3-b24c0047969c/f450d41f-16bc-4ecd-8f6c-b24c004796e2/podcast.rss",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/1b/80/b1/1b80b146-8608-f76f-97e7-7a2317549c35/mza_14115126871478479568.jpg/600x600bb.jpg",
+          "country": "GLOBAL",
+          "category": "True Crime",
+          "episodeCount": 1221,
+          "rssLanguage": "en",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 10,
+        "title": "Relatos de la Noche",
+        "show": {
+          "id": "es_relatos_noche",
+          "title": "Relatos de la Noche",
+          "author": "Uriel Reyes",
+          "description": "Las mejores historias de terror, leyendas urbanas y mitos de la noche mexicana.",
+          "feedUrl": "https://feeds.simplecast.com/qD8JsErd",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/bf/46/a1/bf46a1c2-bd6a-4edc-d6be-56ee3e004a77/mza_15678576961428579311.jpg/600x600bb.jpg",
+          "country": "ES",
+          "category": "Terror",
+          "episodeCount": 651,
+          "isCustom": false,
+          "isFavorite": false
+        }
+      },
+      {
+        "rank": 11,
+        "title": "Call Her Daddy",
+        "show": {
+          "id": "itunes_1418960261",
+          "title": "Call Her Daddy",
+          "author": "Alex Cooper",
+          "description": "The most-listened to podcast by women, Alex Cooper’s Call Her Daddy has been creating conversation since 2018. From deep, honest discussions to laugh-out-loud moments, Cooper cuts through the BS with exciting guests and bold topics. New episodes drop every Wednesday, with throwback episodes every Friday. Want more? Join the Daddy Gang @callherdaddy.",
+          "feedUrl": "https://feeds.simplecast.com/mKn_QmLS",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/05/10/91/05109145-8c22-5464-1f20-aaedeab769f8/mza_10276081716633787086.jpg/600x600bb.jpg",
+          "country": "GLOBAL",
+          "category": "Comedy",
+          "episodeCount": 613,
+          "rssLanguage": "en",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 12,
+        "title": "Não Inviabilize",
+        "show": {
+          "id": "br_nao_inviabilize",
+          "title": "Não Inviabilize",
+          "author": "Déia Freitas",
+          "description": "O canal Não Inviabilize é um espaço de contos e crônicas, um laboratório de histórias reais. Aqui você ouve as suas histórias misturadas às minhas!\n\nQuadros do canal:\nAmor Nas Redes - histórias de amor, afeto, saudade;\nPicolé de Limão - histórias do cotidiano, ciladas, trapaças, muita história revoltante;\nLuz Acesa - histórias de terror, suspense e mistério;\nFicção da Realidade - histórias ficcionais interativas;\nMico Meu - histórias engraçadas;\nAlarme - histórias que servem de alerta, gatilhos emocionais.\n\nSite: naoinviabilize.com.br\nE-mail: naoinviabilize@gmail.com",
+          "feedUrl": "https://anchor.fm/s/44064584/podcast/rss",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts116/v4/75/d3/76/75d376e6-3695-afe6-e1e7-722094849d7d/mza_13789298122083723167.jpg/600x600bb.jpg",
+          "country": "BR",
+          "category": "Ficção cômica",
+          "episodeCount": 1367,
+          "isCustom": false,
+          "isFavorite": false,
+          "rssLanguage": "pt",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 13,
+        "title": "Pardon My Take",
+        "show": {
+          "id": "itunes_1089022756",
+          "title": "Pardon My Take",
+          "author": "Barstool Sports",
+          "description": "On \"Pardon My Take,\" Big Cat & PFT Commenter deliver the loudest and most correct sports takes in the history of the spoken word. Daily topics, guests, and an inability to tell what the hosts might be doing will make this your new favorite sports talk show. This is a podcast that will without a doubt change your life for the better- guaranteed, or your money back. *Pretend a reggaeton air horn is going off right now* PMT. You can find every episode of this show on Apple Podcasts, Spotify or Netflix. Prime Members can listen ad-free on Amazon Music. For more, visit barstool.link/pardon-my-take",
+          "feedUrl": "https://mcsorleys.barstoolsports.com/feed/pardon-my-take",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/35/74/6a/35746a0c-7687-7dde-ff04-338d93e78303/mza_10377078556009223546.jpg/600x600bb.jpg",
+          "country": "GLOBAL",
+          "category": "Football",
+          "episodeCount": 910,
+          "rssLanguage": "",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 14,
+        "title": "Distractible",
+        "show": {
+          "id": "itunes_1567659047",
+          "title": "Distractible",
+          "author": "Distractible",
+          "description": "The Distractible podcast with Mark Fischbach, Wade Barnes, and Bob Muyskens is a space to have thoughtful discussions about funny, out there, or otherwise interesting stories from everyday life. Also an opportunity for three friends to remind each other they are not as smart as they think.",
+          "feedUrl": "https://feeds.megaphone.fm/QCD8163454930",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/85/59/b1/8559b188-b621-d8d3-4954-bd6b48540351/mza_8636338618090739257.jpeg/600x600bb.jpg",
+          "country": "GLOBAL",
+          "category": "Comedy",
+          "episodeCount": 451,
+          "rssLanguage": "en",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 15,
+        "title": "La Cotorrisa",
+        "show": {
+          "id": "itunes_1458792155",
+          "title": "La Cotorrisa",
+          "author": "La Cotorrisa Podcast",
+          "description": "Ricardo Pérez y Slobotzky se ponen a cotorrear como siempre, pero ahora lo están grabando. Escúchalos todos los miércoles hablando de noticias extrañas, datos curiosos, anécdotas hilarantes y aliviana el ombligo de la semana. Nuevo episodio todos los miércoles y domingo",
+          "feedUrl": "https://feeds.simplecast.com/xE9e0As4",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/60/ec/9a/60ec9a66-b29d-ab08-f257-be1a69ba4cc5/mza_14695168599780731050.jpeg/600x600bb.jpg",
+          "country": "GLOBAL",
+          "category": "Comedy",
+          "episodeCount": 753,
+          "rssLanguage": "es",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 16,
+        "title": "Dateline NBC",
+        "show": {
+          "id": "itunes_1464919521",
+          "title": "Dateline NBC",
+          "author": "NBC News",
+          "description": "Current and classic episodes, featuring compelling true-crime mysteries, powerful documentaries and in-depth investigations. \n  \nFollow now to get the latest episodes of Dateline NBC completely free, or subscribe to Dateline Premium for ad-free listening and exclusive bonus content: DatelinePremium.com",
+          "feedUrl": "https://podcastfeeds.nbcnews.com/HL4TzgYC",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts115/v4/8c/00/7a/8c007a42-e550-0214-d4cb-b59cd7edf194/mza_5305664083935674472.jpeg/600x600bb.jpg",
+          "country": "GLOBAL",
+          "category": "True Crime",
+          "episodeCount": 859,
+          "rssLanguage": "en",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 17,
+        "title": "Mordlust",
+        "show": {
+          "id": "itunes_1413425371",
+          "title": "Mordlust",
+          "author": "Paulina Krasa & Laura Wohlers",
+          "description": "Im True Crime-Podcast \"Mordlust - Verbrechen und ihre Hintergründe” sprechen die Journalistinnen Paulina Krasa und Laura Wohlers über wahre Kriminalfälle aus Deutschland. In jeder Folge erzählen die Reporterinnen einen bedeutsamen wahren Kriminalfall nach, ordnen ihn ein, erörtern und diskutieren die juristischen, psychologischen oder gesellschaftlichen Aspekte und sprechen mit Menschen mit Expertise. Dabei gehen sie Fragen nach wie: Was sind die Schwierigkeiten bei einem Indizienprozess? Wieso gestehen Unschuldige? Und wie hätte die Tat womöglich verhindert werden können? Mord aus Habgier, niedrigen Beweggründen oder Mordlust - für die meisten Verbrechen gibt es eine Erklärung und nach der suchen die beiden.\n\nDu möchtest mehr über unsere Werbepartner erfahren? Hier findest du alle Infos & Rabatte: https://linktr.ee/Mordlust\n\nDu möchtest Werbung in diesem Podcast schalten? Dann erfahre hier mehr über die Werbemöglichkeiten bei Seven.One Audio: https://www.seven.one/portfolio/sevenone-audio",
+          "feedUrl": "https://mordlust-podcast.podigee.io/feed/mp3",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/33/fd/32/33fd32f2-d7ab-c1c8-07d8-e9453cfb960a/mza_15001598499224287928.jpg/600x600bb.jpg",
+          "country": "GLOBAL",
+          "category": "True Crime",
+          "episodeCount": 263,
+          "rssLanguage": "de",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 18,
+        "title": "Baywatch Berlin",
+        "show": {
+          "id": "itunes_1488376434",
+          "title": "Baywatch Berlin",
+          "author": "Klaas Heufer-Umlauf, Thomas Schmitt, Jakob Lundt & Studio Bummens",
+          "description": "Das Beautiful Mind Klaas Heufer-Umlauf probiert in diesem Podcast nach über 10 Jahren weltfremden Jet Set Spaß Kontakt zur echten Welt aufzunehmen. \nWie einst in der Weihnachtsgeschichte wird er dabei von seinen Freunden Thomas Schmitt und Jakob Lundt an die Hand genommen und langsam wieder mit den Themen des wahren Lebens in Kontakt gebracht. Tauchen Sie ein und seien Sie die Kugel im Flipperautomaten „Baywatch Berlin“!\n\nDu möchtest mehr über unsere Werbepartner erfahren? Hier findest du alle Infos & Rabatte: https://linktr.ee/BaywatchBerlin",
+          "feedUrl": "https://baywatch-berlin.podigee.io/feed/mp3",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/1a/d0/0f/1ad00ff0-e318-cd1a-87c3-60e5589802f2/mza_7364194502885681078.jpg/600x600bb.jpg",
+          "country": "GLOBAL",
+          "category": "Comedy",
+          "episodeCount": 353,
+          "rssLanguage": "de",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 19,
+        "title": "Hobbylos",
+        "show": {
+          "id": "itunes_1749309634",
+          "title": "Hobbylos",
+          "author": "Spotify, Rezo & Julien Bam",
+          "description": "Rezo (jung, attraktiv und erfolgreich hobbylos) & Julien Bam (sportlich, fehlerfrei & aufstrebend hobbylos) reden hier, ja, genau hier, in der Spotify Show über therapeutische, mathematische, politische, sozial mediale, lebhafte Fakten ihres Lebens. \nEinfach folgen, um zum zertifizierten Kreis der Lobbyhoes zu gehören. Öffnungszeiten: Jeden Samstag bis Samstag.\nWir sind mit @hobbylos auch auf Instagram und TikTok am Start - ihr wisst was zu tun ist.\nHobbylos ist eine Produktion von Spotify Studios und Y.O.U. Media Consulting. Hier findest du alle Infos & Rabatte unserer Werbepartner: https://linktr.ee/podcast_hobbylos",
+          "feedUrl": "https://feeds.megaphone.fm/GLT8915357524",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/bc/01/91/bc0191a6-65d2-0fd7-3881-f0241df1843d/mza_18409587808151072656.jpg/600x600bb.jpg",
+          "country": "GLOBAL",
+          "category": "Comedy",
+          "episodeCount": 253,
+          "rssLanguage": "de",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 20,
+        "title": "Killer Stories with Harvey Guillén",
+        "show": {
+          "id": "itunes_1205030005",
+          "title": "Killer Stories with Harvey Guillén",
+          "author": "Spotify Studios",
+          "description": "Welcome to your weekly journey into the darkest corners of human nature. Join Harvey Guillén every Monday as he explores crimes that seized the public’s attention, from jaw-dropping heists and devastating cons to serial murders and deadly rivalries. Each episode unfolds a single case, examining not just the events themselves, but what continues to linger beneath the surface.\n\nKiller Stories is a Spotify Podcast. New video episodes on Mondays!",
+          "feedUrl": "https://feeds.megaphone.fm/END1032105222",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/f5/d6/59/f5d659cd-d9ca-2ea5-9cd6-295b4d200427/mza_15633811809801599009.jpeg/600x600bb.jpg",
+          "country": "GLOBAL",
+          "category": "True Crime",
+          "episodeCount": 625,
+          "rssLanguage": "en",
+          "feedCheckedAt": "2026-09-23"
+        }
+      }
+    ]
+  },
+  "podcast_brazil": {
+    "source": "",
+    "sourceUrl": "",
+    "period": "Popularidade",
+    "note": "20 podcasts brasileiros mais populares com episódios disponíveis.",
+    "entries": [
+      {
+        "rank": 1,
+        "title": "Não Inviabilize",
+        "show": {
+          "id": "br_nao_inviabilize",
+          "title": "Não Inviabilize",
+          "author": "Déia Freitas",
+          "description": "O canal Não Inviabilize é um espaço de contos e crônicas, um laboratório de histórias reais. Aqui você ouve as suas histórias misturadas às minhas!\n\nQuadros do canal:\nAmor Nas Redes - histórias de amor, afeto, saudade;\nPicolé de Limão - histórias do cotidiano, ciladas, trapaças, muita história revoltante;\nLuz Acesa - histórias de terror, suspense e mistério;\nFicção da Realidade - histórias ficcionais interativas;\nMico Meu - histórias engraçadas;\nAlarme - histórias que servem de alerta, gatilhos emocionais.\n\nSite: naoinviabilize.com.br\nE-mail: naoinviabilize@gmail.com",
+          "feedUrl": "https://anchor.fm/s/44064584/podcast/rss",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts116/v4/75/d3/76/75d376e6-3695-afe6-e1e7-722094849d7d/mza_13789298122083723167.jpg/600x600bb.jpg",
+          "country": "BR",
+          "category": "Ficção cômica",
+          "episodeCount": 1367,
+          "isCustom": false,
+          "isFavorite": false,
+          "rssLanguage": "pt",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 2,
+        "title": "O Assunto",
+        "show": {
+          "id": "br_o_assunto",
+          "title": "O Assunto",
+          "author": "G1 / Natuza Nery",
+          "description": "O assunto diário mais importante do Brasil e do mundo explicado com profundidade.",
+          "feedUrl": "https://www.omnycontent.com/d/playlist/651a251e-06e1-47e0-9336-ac5a00f41628/04561b43-753d-4784-8e19-ac8b00e86411/3036d550-85b2-4301-b1e4-ac8b00e8641f/podcast.rss",
+          "artworkUrl": "https://s2.glbimg.com/o-assunto.jpg",
+          "country": "BR",
+          "category": "Notícias",
+          "episodeCount": 1831,
+          "isCustom": false,
+          "isFavorite": false
+        }
+      },
+      {
+        "rank": 3,
+        "title": "Inteligência Ltda.",
+        "show": {
+          "id": "br_inteligencia_ltda",
+          "title": "Inteligência Ltda.",
+          "author": "Rogério Vilela",
+          "description": "O comediante, quadrinhista e aeromoça Rogério Vilela bate um papo com convidados mais inteligentes do que ele (como se fosse difícil!) sobre os mais diversos temas, dos mais profundos aos mais banais. Quase sempre com bom humor.",
+          "feedUrl": "https://anchor.fm/s/6cf4d5a0/podcast/rss",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/41/8e/e8/418ee807-c149-96f6-bf81-c379538c1571/mza_9306777545034514338.jpg/600x600bb.jpg",
+          "country": "BR",
+          "category": "Entrevistas cômicas",
+          "episodeCount": 2373,
+          "isCustom": false,
+          "isFavorite": false,
+          "rssLanguage": "pt-br",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 4,
+        "title": "NerdCast",
+        "show": {
+          "id": "br_nerdcast",
+          "title": "NerdCast",
+          "author": "Jovem Nerd",
+          "description": "O podcast mais tradicional do Brasil sobre cultura pop, história, cinema e ciência.",
+          "feedUrl": "https://feeds.megaphone.fm/JNPD6227286900",
+          "artworkUrl": "https://jovemnerd.com.br/wp-content/themes/jovemnerd/assets/images/nerdcast-logo.png",
+          "country": "BR",
+          "category": "Cultura Pop",
+          "episodeCount": 1729,
+          "isCustom": false,
+          "isFavorite": false
+        }
+      },
+      {
+        "rank": 5,
+        "title": "Calma Urgente",
+        "show": {
+          "id": "itunes_1740542729",
+          "title": "Calma Urgente",
+          "author": "Calma Urgente",
+          "description": "Calma Urgente! \nAlessandra Orofino, Bruno Torturra e Gregorio Duvivier discutem os assuntos que urgem serem tratados com muita calma. \nToda segunda-feira ao vivo às 20h30 no YouTube do Estúdio Fluxo. \nE toda quarta-feira de manhã em podcast.\n\nCom Alessandra Orofino, Gregorio Duvivier e Bruno Torturra\n\nFaça parte do Clube de Cultura do Calma Urgente 2026, conversas semanais sobre livros, filmes, séries e discos com Alê, Bruno, Greg e convidados especiais.\n\n>> Acesse agora em calmaurgente.com",
+          "feedUrl": "https://anchor.fm/s/f379c644/podcast/rss",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/ba/55/dc/ba55dc03-02a9-3e09-2633-267932fa947d/mza_10010243290063963327.jpg/600x600bb.jpg",
+          "country": "BR",
+          "category": "Política",
+          "episodeCount": 126,
+          "rssLanguage": "pt-br",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 6,
+        "title": "Foro de Teresina",
+        "show": {
+          "id": "br_foro_teresina",
+          "title": "Foro de Teresina",
+          "author": "piauí",
+          "description": "Podcast de política da revista piauí produzido pelo Estúdio Novelo. Com os jornalistas Fernando de Barros e Silva e Ana Clara Costa e o sociólogo Celso Rocha de Barros.",
+          "feedUrl": "https://feeds.megaphone.fm/NPP2619427256",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/39/e5/bd/39e5bd2c-3c6f-452f-ff95-7f75abc2a804/mza_4513085051670041992.jpeg/600x600bb.jpg",
+          "country": "BR",
+          "category": "Política",
+          "episodeCount": 546,
+          "isCustom": false,
+          "isFavorite": false,
+          "rssLanguage": "pt",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 7,
+        "title": "the news",
+        "show": {
+          "id": "itunes_1728539426",
+          "title": "the news",
+          "author": "tns",
+          "description": "Tudo que você precisa saber para começar seu dia bem e informado! Notícias inteligentes e rápidas para quem quer se antenar e sair na frente!\n\nDê o play e fique por dentro de tudo que é mais relevante no Brasil e no mundo, sempre de uma maneira leve, descontraída e bem-humorada.\n\nClaro… Sempre acompanhado de um bom café sem açúcar. risos.\n\n@thenews.cc",
+          "feedUrl": "https://anchor.fm/s/e80cf13c/podcast/rss",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/3b/0e/04/3b0e0419-97cb-e1a7-31a5-590626e84757/mza_15817934406797407768.jpg/600x600bb.jpg",
+          "country": "BR",
+          "category": "Notícias diárias",
+          "episodeCount": 786,
+          "rssLanguage": "pt-br",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 8,
+        "title": "Flow Podcast",
+        "show": {
+          "id": "br_flow",
+          "title": "Flow Podcast",
+          "author": "Grupo Flow",
+          "description": "Flow Podcast tem as melhores conversas que você vai ouvir!",
+          "feedUrl": "https://anchor.fm/s/a5637400/podcast/rss",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts116/v4/53/bf/39/53bf396b-7722-39c3-334b-44250289d6da/mza_8108217580151050881.jpg/600x600bb.jpg",
+          "country": "BR",
+          "category": "Autoajuda",
+          "episodeCount": 1469,
+          "isCustom": false,
+          "isFavorite": false,
+          "rssLanguage": "pt-br",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 9,
+        "title": "Escafandro",
+        "show": {
+          "id": "itunes_1451605322",
+          "title": "Escafandro",
+          "author": "Rádio Escafandro",
+          "description": "Em cada episódio, uma investigação jornalística. Com uma hora de duração, os episódios são um mosaico de entrevistas inéditas, gravações em campo e áudios de arquivo, costurados pela narração do jornalista Tomás Chiaverini. Os temas são os mais variados e a abordagem é sempre profunda, irreverente e inusitada.",
+          "feedUrl": "https://anchor.fm/s/a9f2877c/podcast/rss",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts126/v4/1e/dd/9c/1edd9c5c-346f-8d65-4ea0-87bcf5d9dd39/mza_8389258683731400387.jpg/600x600bb.jpg",
+          "country": "BR",
+          "category": "Documentário",
+          "episodeCount": 206,
+          "rssLanguage": "pt-br",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 10,
+        "title": "Rádio Novelo Apresenta",
+        "show": {
+          "id": "br_radio_novelo",
+          "title": "Rádio Novelo Apresenta",
+          "author": "Rádio Novelo",
+          "description": "Toda quinta-feira, histórias que você nem sabia que precisava ouvir. Rádio Novelo Apresenta é um podcast original da Rádio Novelo, apresentado por Branca Vianna.\n\nFaça parte do Clube da Novelo: radionovelo.com.br/clube\n\n\n\nSiga o nosso perfil no Instagram: https://www.instagram.com/radionovelo",
+          "feedUrl": "https://feeds.megaphone.fm/NPP6869883964",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/43/79/e0/4379e099-c68d-328f-0337-0b9184be49d9/mza_15660651985667315561.jpeg/600x600bb.jpg",
+          "country": "BR",
+          "category": "Documentário",
+          "episodeCount": 200,
+          "isCustom": false,
+          "isFavorite": false,
+          "rssLanguage": "pt",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 11,
+        "title": "Petit Journal",
+        "show": {
+          "id": "br_petit_journal",
+          "title": "Petit Journal",
+          "author": "Petit Journal",
+          "description": "Você tem alguns minutinhos por dia pra se atualizar sobre economia e política internacional? Os professores Daniel Sousa e Tanguy Baghdadi trazem atualidades, de forma rápida e acessível, para que você se encontre na história.",
+          "feedUrl": "https://www.spreaker.com/show/5659715/episodes/feed",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts116/v4/92/0a/bc/920abc52-a830-7d40-4c97-ca20496b13be/mza_15900765804048820826.jpg/600x600bb.jpg",
+          "country": "BR",
+          "category": "Notícias",
+          "episodeCount": 1000,
+          "isCustom": false,
+          "isFavorite": false,
+          "rssLanguage": "pt",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 12,
+        "title": "Frei Gilson Podcast - Oficial",
+        "show": {
+          "id": "itunes_1686671869",
+          "title": "Frei Gilson Podcast - Oficial",
+          "author": "Gilson da Silva Pupo Azevedo",
+          "description": "Este é o Podcast oficial do Frei Gilson. Publicamos diariamente a Meditação da Palavra, pregações e outos conteúdos para fortalecer sua fé!",
+          "feedUrl": "https://anchor.fm/s/e02f20e8/podcast/rss",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/3c/0f/4f/3c0f4f5f-3e2f-f158-ac68-affac16ef652/mza_6231783270469346631.jpg/600x600bb.jpg",
+          "country": "BR",
+          "category": "Cristianismo",
+          "episodeCount": 1770,
+          "rssLanguage": "pt-br",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 13,
+        "title": "Xadrez Verbal",
+        "show": {
+          "id": "br_xadrez_verbal",
+          "title": "Xadrez Verbal",
+          "author": "Central 3 Podcasts",
+          "description": "Você nem sempre tem tempo, mas precisa entender o que acontece no Mundo, ainda mais porque o planeta está uma zona. Toda semana, Matias Pinto recebe Filipe Figueiredo, do Xadrez Verbal, que traz pra você as principais notícias da política internacional, com análises, críticas, convidados e espaço para debate. Toda sexta-feira você se atualiza e se informa. O tabuleiro do Xadrez Verbal agora em alto e bom som na Central 3.",
+          "feedUrl": "https://www.spreaker.com/show/4712237/episodes/feed",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/76/82/6c/76826c4a-5ae5-d607-4ec8-4a3357d6bacb/mza_9348195562215104921.jpg/600x600bb.jpg",
+          "country": "BR",
+          "category": "Notícias",
+          "episodeCount": 529,
+          "isCustom": false,
+          "isFavorite": false,
+          "rssLanguage": "pt",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 14,
+        "title": "O berro do boi",
+        "show": {
+          "id": "itunes_6795561591",
+          "title": "O berro do boi",
+          "author": "Trovão Mídia e revista piauí",
+          "description": "Esta é a história de dois irmãos do interior de Goiás que hoje estão entre os empresários mais poderosos do mundo. \nNo caminho, quase derrubaram um presidente da República, admitiram crimes de corrupção, foram presos e hostilizados em público. Mas, agora, eles estão de volta. Mais ricos e influentes do que nunca.\nUma série original da Trovão Mídia com a revista piauí que revela os bastidores da ascensão, queda e retorno triunfal de Wesley e Joesley Batista.",
+          "feedUrl": "https://rss.libsyn.com/shows/625905/destinations/5511635.xml",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/3e/4c/ce/3e4cce0f-e042-aab4-b52b-7e10378a6e01/mza_7885555377449046349.png/600x600bb.jpg",
+          "country": "BR",
+          "category": "Notícias de negócios",
+          "episodeCount": 7,
+          "rssLanguage": "pt-br",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 15,
+        "title": "Podcasts do Clóvis",
+        "show": {
+          "id": "itunes_1505590185",
+          "title": "Podcasts do Clóvis",
+          "author": "Clóvis de Barros",
+          "description": "Você está no feed oficial dos programas do Clóvis de Barros! Confira os lançamentos semanais:\n Às terças-feiras: #PartiuPensar\n Às quintas-feiras: Inédita Pamonha\n \nEste conteúdo é oferecido pelo Espaço Ética, a assessoria do Clóvis de Barros.\nContato e informações: https://clovisdebarros.com.br/\nSeja membro: https://apoia.se/ineditapamonha",
+          "feedUrl": "https://anchor.fm/s/105ad60dc/podcast/rss",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/ef/d2/80/efd2800d-e60f-fffd-d59d-7fa3a19d8f12/mza_8681397672684536420.png/600x600bb.jpg",
+          "country": "BR",
+          "category": "Autoajuda",
+          "episodeCount": 569,
+          "rssLanguage": "pt-br",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 16,
+        "title": "História em Meia Hora",
+        "show": {
+          "id": "br_historia_meia_hora",
+          "title": "História em Meia Hora",
+          "author": "Agência de Podcast",
+          "description": "História em Meia Hora é um podcast feito por Vítor Soares, que fala de temas atuais e clássicos da história de maneira informal e divertida! \n-\nQuer receber conteúdos EXCLUSIVOS e de quebra ajudar um projeto educacional a se manter de pé? Acesse https://apoia.se/historiaemmeiahora\n\nPIX: historiaemmeiahora@gmail.com\n-",
+          "feedUrl": "https://anchor.fm/s/122df228/podcast/rss",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts112/v4/e7/a6/ce/e7a6ce64-7b60-39a7-8b92-5b06feb4016c/mza_16405879295063915660.jpg/600x600bb.jpg",
+          "country": "BR",
+          "category": "História",
+          "episodeCount": 508,
+          "isCustom": false,
+          "isFavorite": false,
+          "rssLanguage": "pt",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 17,
+        "title": "Quinta Misteriosa",
+        "show": {
+          "id": "itunes_1518653164",
+          "title": "Quinta Misteriosa",
+          "author": "Jaqueline Guerreiro",
+          "description": "O Quinta Misteriosa é um quadro no canal da Jaqueline Guerreiro, onde toda quinta-feira ela conta um caso real. Então bora começar o caso de hoje!\n\n*Caso você seja sensível ao conteúdo apresentado nos episódios, não recomendamos que você assista.",
+          "feedUrl": "https://anchor.fm/s/1f0086c8/podcast/rss",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts113/v4/bb/2d/d0/bb2dd0ea-e36a-05f3-3647-6295da021556/mza_8918538417999068147.jpg/600x600bb.jpg",
+          "country": "BR",
+          "category": "Crimes verídicos",
+          "episodeCount": 626,
+          "rssLanguage": "pt-br",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 18,
+        "title": "PodPeople",
+        "show": {
+          "id": "itunes_1886289716",
+          "title": "PodPeople",
+          "author": "Dra. Ana Beatriz / PodPeople",
+          "description": "Bem-vindos ao nosso Podcast! PodPeople é pra quem gosta de gente e de comportamento humano. Vamos nessa juntos!",
+          "feedUrl": "https://anchor.fm/s/e2d50cf4/podcast/rss",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/e4/01/69/e401699b-e5f8-3b9e-162f-6b68a73d4c88/mza_6351669125990520376.jpg/600x600bb.jpg",
+          "country": "BR",
+          "category": "Saúde mental",
+          "episodeCount": 347,
+          "rssLanguage": "pt-br",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 19,
+        "title": "NÃO IMPORTA",
+        "show": {
+          "id": "itunes_1794820037",
+          "title": "NÃO IMPORTA",
+          "author": "PORTA DOS FUNDOS",
+          "description": "Não importa o que você esteja fazendo. Ouvir João Vicente de Castro e Gregorio Duvivier conversando aleatoriedades e não chegando a nenhuma conclusão lógica sobre qualquer assunto é o que você não precisa na rotina. Ou talvez até precise. Esse é o Não Importa, o programa de conversas em que alguns dos sócios da nossa empresa são obrigados a trabalhar enquanto outros estão viajando. Episódios novos toda quinta!",
+          "feedUrl": "https://anchor.fm/s/100e3221c/podcast/rss",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/ea/5f/08/ea5f084e-a111-f085-9ff4-8367c395ef06/mza_1550235526680956432.jpg/600x600bb.jpg",
+          "country": "BR",
+          "category": "Ficção cômica",
+          "episodeCount": 85,
+          "rssLanguage": "pt-br",
+          "feedCheckedAt": "2026-09-23"
+        }
+      },
+      {
+        "rank": 20,
+        "title": "Podpah",
+        "show": {
+          "id": "br_podpah",
+          "title": "Podpah",
+          "author": "Podpah",
+          "description": "O podcast mais zika da internet",
+          "feedUrl": "https://anchor.fm/s/57bd30d8/podcast/rss",
+          "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts126/v4/0c/9f/a9/0c9fa96e-b4e8-9fb7-7f75-8ba0d8e5b45c/mza_6352326842037914961.jpg/600x600bb.jpg",
+          "country": "BR",
+          "category": "Entrevistas cômicas",
+          "episodeCount": 370,
+          "isCustom": false,
+          "isFavorite": false,
+          "rssLanguage": "pt-br",
+          "feedCheckedAt": "2026-09-23"
+        }
+      }
+    ]
+  },
+  "radio_brazil": {
+    "source": "",
+    "sourceUrl": "",
+    "period": "Popularidade",
+    "note": "20 rádios em ordem de popularidade no Brasil.",
+    "entries": [
+      {
+        "rank": 1,
+        "title": "Band FM",
+        "station": {
+          "id": "br_sp_065",
+          "name": "Rádio Band FM 96.1 FM",
+          "country": "Brasil",
+          "country_code": "BR",
+          "state": "SP",
+          "city": "São Paulo",
+          "codec": "AAC",
+          "bitrate_kbps": 128,
+          "votes": 3678,
+          "tags": [
+            "pop"
+          ],
+          "primary_stream_url": "https://26663.live.streamtheworld.com/BANDFM_SPAAC",
+          "alternative_stream_urls": [],
+          "total_sources_count": 1,
+          "all_stream_urls": [
+            "https://26663.live.streamtheworld.com/BANDFM_SPAAC"
+          ],
+          "favicon_url": "https://tudoradio.com/img/layout/icone_tudoradio.jpg",
+          "homepage": "https://www.band.uol.com.br/band-fm",
+          "validation": {
+            "resolved_url": "https://26663.live.streamtheworld.com/BANDFM_SPAAC",
+            "codec": "AAC",
+            "decoded_seconds": 1.022,
+            "sample_bytes": 70407,
+            "content_type": "application/flv",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:38:23.364686+00:00"
+          }
+        }
+      },
+      {
+        "rank": 2,
+        "title": "Antena 1 FM",
+        "station": {
+          "id": "antena1_sp",
+          "name": "Antena 1 (São Paulo - 94.7 FM)",
+          "country": "Brasil",
+          "country_code": "BR",
+          "state": "SP",
+          "city": "São Paulo",
+          "codec": "AAC",
+          "bitrate_kbps": 128,
+          "votes": 98000,
+          "tags": [
+            "adult contemporary",
+            "pop",
+            "soft rock",
+            "flashback"
+          ],
+          "primary_stream_url": "http://antena1.newradio.it/stream",
+          "alternative_stream_urls": [],
+          "total_sources_count": 1,
+          "all_stream_urls": [
+            "http://antena1.newradio.it/stream"
+          ],
+          "favicon_url": "https://tudoradio.com/img/layout/icone_tudoradio.jpg",
+          "homepage": "",
+          "validation": {
+            "resolved_url": "http://antena1.newradio.it/stream",
+            "codec": "AAC",
+            "decoded_seconds": 1.003,
+            "sample_bytes": 73424,
+            "content_type": "audio/aacp",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:38:12.982176+00:00"
+          }
+        }
+      },
+      {
+        "rank": 3,
+        "title": "Mix FM São Paulo",
+        "station": {
+          "id": "br_sp_297",
+          "name": "Mix FM São Paulo",
+          "country": "Brasil",
+          "country_code": "BR",
+          "state": "SP",
+          "city": "São Paulo",
+          "codec": "MP3FLOAT",
+          "bitrate_kbps": 96,
+          "votes": 3574,
+          "tags": [
+            "jovem",
+            "pop",
+            "pop rock"
+          ],
+          "primary_stream_url": "https://27423.live.streamtheworld.com/MIXFM_SAOPAULO.mp3",
+          "alternative_stream_urls": [],
+          "total_sources_count": 1,
+          "all_stream_urls": [
+            "https://27423.live.streamtheworld.com/MIXFM_SAOPAULO.mp3"
+          ],
+          "favicon_url": "https://tudoradio.com/img/layout/icone_tudoradio.jpg",
+          "homepage": "https://radiomixfm.com.br/",
+          "validation": {
+            "resolved_url": "https://27423.live.streamtheworld.com/MIXFM_SAOPAULO.mp3",
+            "codec": "MP3FLOAT",
+            "decoded_seconds": 1.019,
+            "sample_bytes": 67396,
+            "content_type": "audio/mpeg",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:38:14.609040+00:00"
+          }
+        }
+      },
+      {
+        "rank": 4,
+        "title": "Alpha FM 101.7",
+        "station": {
+          "id": "br_sp_349",
+          "name": "ALPHA FM 101.7",
+          "country": "Brasil",
+          "country_code": "BR",
+          "state": "SP",
+          "city": "São Paulo",
+          "codec": "AAC",
+          "bitrate_kbps": 128,
+          "votes": 2932,
+          "tags": [],
+          "primary_stream_url": "https://27403.live.streamtheworld.com/RADIO_ALPHAFM_ADP.aac",
+          "alternative_stream_urls": [],
+          "total_sources_count": 1,
+          "all_stream_urls": [
+            "https://27403.live.streamtheworld.com/RADIO_ALPHAFM_ADP.aac"
+          ],
+          "favicon_url": "https://tudoradio.com/img/layout/icone_tudoradio.jpg",
+          "homepage": "https://www.alphafm.com.br/",
+          "validation": {
+            "resolved_url": "https://27403.live.streamtheworld.com/RADIO_ALPHAFM_ADP.aac",
+            "codec": "AAC",
+            "decoded_seconds": 1.022,
+            "sample_bytes": 72863,
+            "content_type": "audio/aacp",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:38:14.893113+00:00"
+          }
+        }
+      },
+      {
+        "rank": 5,
+        "title": "CBN São Paulo",
+        "station": {
+          "id": "br_sp_112",
+          "name": "CBN São Paulo",
+          "country": "Brasil",
+          "country_code": "BR",
+          "state": "SP",
+          "city": "São Paulo",
+          "codec": "AAC",
+          "bitrate_kbps": 128,
+          "votes": 2953,
+          "tags": [
+            "news",
+            "sports"
+          ],
+          "primary_stream_url": "https://26683.live.streamtheworld.com/CBN_SPAAC.aac",
+          "alternative_stream_urls": [],
+          "total_sources_count": 1,
+          "all_stream_urls": [
+            "https://26683.live.streamtheworld.com/CBN_SPAAC.aac"
+          ],
+          "favicon_url": "https://tudoradio.com/img/layout/icone_tudoradio.jpg",
+          "homepage": "https://cbn.globoradio.globo.com/programas/cbn-sao-paulo/CBN-SAO-PAULO.htm",
+          "validation": {
+            "resolved_url": "https://26683.live.streamtheworld.com/CBN_SPAAC.aac",
+            "codec": "AAC",
+            "decoded_seconds": 1.024,
+            "sample_bytes": 72588,
+            "content_type": "audio/aacp",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:38:23.004942+00:00"
+          }
+        }
+      },
+      {
+        "rank": 6,
+        "title": "Rádio 105 FM",
+        "station": {
+          "id": "dial_radio-105-fm",
+          "name": "Rádio 105 FM",
+          "country": "Brasil",
+          "country_code": "BR",
+          "state": "SP",
+          "city": "Jundiaí",
+          "codec": "MP3FLOAT",
+          "bitrate_kbps": 128,
+          "votes": 26,
+          "tags": [
+            "futebol",
+            "hip hop",
+            "samba & pagode",
+            "brasil"
+          ],
+          "primary_stream_url": "https://www.appradio.app:8010/live",
+          "alternative_stream_urls": [],
+          "all_stream_urls": [
+            "https://www.appradio.app:8010/live"
+          ],
+          "favicon_url": "",
+          "homepage": "https://radio105fm.com.br/",
+          "total_sources_count": 1,
+          "validation": {
+            "resolved_url": "https://www.appradio.app:8010/live",
+            "codec": "MP3FLOAT",
+            "decoded_seconds": 1.019,
+            "sample_bytes": 67793,
+            "content_type": "audio/mpeg",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:39:29.122013+00:00"
+          }
+        }
+      },
+      {
+        "rank": 7,
+        "title": "Rádio Bandeirantes",
+        "station": {
+          "id": "dial_radio-bandeirantes-107-3-fm",
+          "name": "Rádio Bandeirantes 107.3 FM",
+          "country": "Brasil",
+          "country_code": "BR",
+          "state": "SP",
+          "city": "São Paulo",
+          "codec": "AAC",
+          "bitrate_kbps": 128,
+          "votes": 108,
+          "tags": [
+            "esportes",
+            "jornalismo",
+            "jornalismo(all news)",
+            "brasil"
+          ],
+          "primary_stream_url": "https://26683.live.streamtheworld.com/RADIOBANDEIRANTESAAC.aac",
+          "alternative_stream_urls": [],
+          "all_stream_urls": [
+            "https://26683.live.streamtheworld.com/RADIOBANDEIRANTESAAC.aac"
+          ],
+          "favicon_url": "",
+          "homepage": "https://www.band.com.br/radios/radio-bandeirantes/sao-paulo",
+          "total_sources_count": 1,
+          "validation": {
+            "resolved_url": "https://26683.live.streamtheworld.com/RADIOBANDEIRANTESAAC.aac",
+            "codec": "AAC",
+            "decoded_seconds": 1.022,
+            "sample_bytes": 73079,
+            "content_type": "audio/aacp",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:38:43.912550+00:00"
+          }
+        }
+      },
+      {
+        "rank": 8,
+        "title": "Rádio Metropolitana 98.5 FM",
+        "station": {
+          "id": "br_sao_paulo_metropolitana_98_5",
+          "name": "Rádio Metropolitana 98.5 FM",
+          "country": "Brasil",
+          "country_code": "BR",
+          "state": "SP",
+          "city": "São Paulo",
+          "codec": "AAC",
+          "bitrate_kbps": 64,
+          "votes": 520,
+          "tags": [],
+          "primary_stream_url": "https://ice.fabricahost.com.br/metropolitana985sp",
+          "alternative_stream_urls": [],
+          "total_sources_count": 1,
+          "all_stream_urls": [
+            "https://e-spo-106.fabricahost.com.br/metropolitana985sp?f=1790088035N01M34RZFDNP7Y66A45RMY927KP&tid=01M34RZFDNW557R9AXFG5HVG8B"
+          ],
+          "favicon_url": "https://metropolitanafm.com.br/wp-content/themes/metro/assets/imgs/favicon/favicon-96x96-2.png",
+          "homepage": "https://metropolitanafm.com.br/",
+          "validation": {
+            "resolved_url": "https://e-spo-106.fabricahost.com.br/metropolitana985sp?f=1790088035N01M34RZFDNP7Y66A45RMY927KP&tid=01M34RZFDNW557R9AXFG5HVG8B",
+            "codec": "AAC",
+            "decoded_seconds": 1.022,
+            "sample_bytes": 65793,
+            "content_type": "audio/aacp",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:40:36.754423+00:00"
+          }
+        }
+      },
+      {
+        "rank": 9,
+        "title": "BandNews FM - 96.9 SP",
+        "station": {
+          "id": "br_sp_184",
+          "name": "Rádio BandNews SP 96.9 FM",
+          "country": "Brasil",
+          "country_code": "BR",
+          "state": "SP",
+          "city": "São Paulo",
+          "codec": "AAC",
+          "bitrate_kbps": 128,
+          "votes": 184,
+          "tags": [
+            "news",
+            "sports"
+          ],
+          "primary_stream_url": "https://24283.live.streamtheworld.com/BANDNEWSFM_SPAAC",
+          "alternative_stream_urls": [],
+          "total_sources_count": 1,
+          "all_stream_urls": [
+            "https://24283.live.streamtheworld.com/BANDNEWSFM_SPAAC"
+          ],
+          "favicon_url": "https://tudoradio.com/img/layout/icone_tudoradio.jpg",
+          "homepage": "https://www.bandnewsfm.com.br/",
+          "validation": {
+            "resolved_url": "https://24283.live.streamtheworld.com/BANDNEWSFM_SPAAC",
+            "codec": "AAC",
+            "decoded_seconds": 1.022,
+            "sample_bytes": 68217,
+            "content_type": "application/flv",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:38:37.531723+00:00"
+          }
+        }
+      },
+      {
+        "rank": 10,
+        "title": "Rádio Transcontinental FM",
+        "station": {
+          "id": "popular_br_415775",
+          "name": "Rádio Transcontinental FM",
+          "primary_stream_url": "https://ice.fabricahost.com.br/transcontinentalsp48",
+          "alternative_stream_urls": [],
+          "country": "Brasil",
+          "country_code": "BR",
+          "state": "SP",
+          "city": "São Paulo",
+          "tags": "",
+          "codec": "",
+          "bitrate_kbps": 0,
+          "favicon_url": "https://static2.mytuner.mobi/media/tvos_radios/775/radio-transcontinental-fm.94fdedb9.jpg"
+        }
+      },
+      {
+        "rank": 11,
+        "title": "Nativa FM - São Paulo",
+        "station": {
+          "id": "dial_radio-nativa-95-3-fm",
+          "name": "Rádio Nativa 95.3 FM",
+          "country": "Brasil",
+          "country_code": "BR",
+          "state": "SP",
+          "city": "São Paulo",
+          "codec": "HLS",
+          "bitrate_kbps": 128,
+          "votes": 30,
+          "tags": [
+            "popular",
+            "sertanejo",
+            "brasil"
+          ],
+          "primary_stream_url": "https://26683.live.streamtheworld.com/NATIVA_SPAAC/HLS/playlist.m3u8",
+          "alternative_stream_urls": [],
+          "all_stream_urls": [
+            "https://26683.live.streamtheworld.com/NATIVA_SPAAC/HLS/playlist.m3u8"
+          ],
+          "favicon_url": "",
+          "homepage": "http://www.nativa.com.br",
+          "total_sources_count": 1,
+          "validation": {
+            "resolved_url": "https://26683.live.streamtheworld.com/NATIVA_SPAAC/HLS/playlist.m3u8",
+            "codec": "HLS",
+            "decoded_seconds": 1.022,
+            "sample_bytes": 67256,
+            "content_type": "audio/aacp",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:39:07.226624+00:00"
+          }
+        }
+      },
+      {
+        "rank": 12,
+        "title": "89 FM - A Rádio Rock",
+        "station": {
+          "id": "br_sp_177",
+          "name": "89FM Radio Rock",
+          "country": "Brasil",
+          "country_code": "BR",
+          "state": "SP",
+          "city": "São Paulo",
+          "codec": "AAC",
+          "bitrate_kbps": 128,
+          "votes": 226,
+          "tags": [
+            "rock"
+          ],
+          "primary_stream_url": "https://27593.live.streamtheworld.com/RADIO_89FM_ADP.aac",
+          "alternative_stream_urls": [],
+          "total_sources_count": 1,
+          "all_stream_urls": [
+            "https://27593.live.streamtheworld.com/RADIO_89FM_ADP.aac"
+          ],
+          "favicon_url": "https://tudoradio.com/img/layout/icone_tudoradio.jpg",
+          "homepage": "",
+          "validation": {
+            "resolved_url": "https://27593.live.streamtheworld.com/RADIO_89FM_ADP.aac",
+            "codec": "AAC",
+            "decoded_seconds": 1.022,
+            "sample_bytes": 67194,
+            "content_type": "audio/aacp",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:38:34.491901+00:00"
+          }
+        }
+      },
+      {
+        "rank": 13,
+        "title": "Hunter.FM - Sertanejo",
+        "station": {
+          "id": "br_sp_276",
+          "name": "Hunter.FM - O Canal Sertanejo",
+          "country": "Brasil",
+          "country_code": "BR",
+          "state": "SP",
+          "city": "São Paulo",
+          "codec": "AAC",
+          "bitrate_kbps": 128,
+          "votes": 111,
+          "tags": [],
+          "primary_stream_url": "https://live.hunter.fm/sertanejo_low",
+          "alternative_stream_urls": [],
+          "total_sources_count": 1,
+          "all_stream_urls": [
+            "https://live.hunter.fm/sertanejo_low"
+          ],
+          "favicon_url": "https://tudoradio.com/img/layout/icone_tudoradio.jpg",
+          "homepage": "https://hunter.fm/",
+          "validation": {
+            "resolved_url": "https://live.hunter.fm/sertanejo_low",
+            "codec": "AAC",
+            "decoded_seconds": 1.022,
+            "sample_bytes": 73372,
+            "content_type": "audio/aac",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:38:42.635174+00:00"
+          }
+        }
+      },
+      {
+        "rank": 14,
+        "title": "Saudade FM",
+        "station": {
+          "id": "dial_radio-saudade-99-7-fm",
+          "name": "Radio Saudade 99.7 FM",
+          "country": "Brasil",
+          "country_code": "BR",
+          "state": "SP",
+          "city": "Santos",
+          "codec": "AAC",
+          "bitrate_kbps": 128,
+          "votes": 27,
+          "tags": [
+            "adulta",
+            "classic hits",
+            "flashback",
+            "brasil"
+          ],
+          "primary_stream_url": "https://23243.live.streamtheworld.com/SAUDADE_FMAAC.aac",
+          "alternative_stream_urls": [],
+          "all_stream_urls": [
+            "https://23243.live.streamtheworld.com/SAUDADE_FMAAC.aac"
+          ],
+          "favicon_url": "",
+          "homepage": "https://www.saudadefm.com.br/",
+          "total_sources_count": 1,
+          "validation": {
+            "resolved_url": "https://23243.live.streamtheworld.com/SAUDADE_FMAAC.aac",
+            "codec": "AAC",
+            "decoded_seconds": 1.022,
+            "sample_bytes": 67739,
+            "content_type": "audio/aacp",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:39:10.899890+00:00"
+          }
+        }
+      },
+      {
+        "rank": 15,
+        "title": "Jovem Pan News",
+        "station": {
+          "id": "br_sp_137",
+          "name": "Jovem Pan News",
+          "country": "Brasil",
+          "country_code": "BR",
+          "state": "SP",
+          "city": "São Paulo SP",
+          "codec": "AAC",
+          "bitrate_kbps": 128,
+          "votes": 310,
+          "tags": [
+            "news",
+            "sports"
+          ],
+          "primary_stream_url": "https://stream-280.surfernetwork.com/vlcraijc6yiuv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJ2bGNyYWlqYzZ5aXV2IiwiaG9zdCI6InN0cmVhbS0yODAuc3VyZmVybmV0d29yay5jb20iLCJydHRsIjo1LCJqdGkiOiJ2QzExcnJfV1JUdXgzVGs0LXd0UjBRIiwiaWF0IjoxNzkwMDg3OTA5LCJleHAiOjE3OTAwODc5Njl9.PnBqwhgQxsbVFDR8SocbzvoWG6gCt5e1Zd11J6H5bt8",
+          "alternative_stream_urls": [],
+          "total_sources_count": 1,
+          "all_stream_urls": [
+            "https://stream-280.surfernetwork.com/vlcraijc6yiuv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJ2bGNyYWlqYzZ5aXV2IiwiaG9zdCI6InN0cmVhbS0yODAuc3VyZmVybmV0d29yay5jb20iLCJydHRsIjo1LCJqdGkiOiJ2QzExcnJfV1JUdXgzVGs0LXd0UjBRIiwiaWF0IjoxNzkwMDg3OTA5LCJleHAiOjE3OTAwODc5Njl9.PnBqwhgQxsbVFDR8SocbzvoWG6gCt5e1Zd11J6H5bt8"
+          ],
+          "favicon_url": "https://tudoradio.com/img/layout/icone_tudoradio.jpg",
+          "homepage": "https://jovempan.com.br/",
+          "validation": {
+            "resolved_url": "https://stream-280.surfernetwork.com/vlcraijc6yiuv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJ2bGNyYWlqYzZ5aXV2IiwiaG9zdCI6InN0cmVhbS0yODAuc3VyZmVybmV0d29yay5jb20iLCJydHRsIjo1LCJqdGkiOiJ2QzExcnJfV1JUdXgzVGs0LXd0UjBRIiwiaWF0IjoxNzkwMDg3OTA5LCJleHAiOjE3OTAwODc5Njl9.PnBqwhgQxsbVFDR8SocbzvoWG6gCt5e1Zd11J6H5bt8",
+            "codec": "AAC",
+            "decoded_seconds": 1.022,
+            "sample_bytes": 73327,
+            "content_type": "audio/aac",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:38:31.796613+00:00"
+          }
+        }
+      },
+      {
+        "rank": 16,
+        "title": "Rádio Deus é Amor",
+        "station": {
+          "id": "popular_br_438923",
+          "name": "Rádio Deus é Amor",
+          "primary_stream_url": "https://playerservices.streamtheworld.com/api/livestream-redirect/SP_STUDIOC_SC",
+          "alternative_stream_urls": [
+            "https://playerservices.streamtheworld.com/api/livestream-redirect/SP_STUDIOC_ALTO_SC"
+          ],
+          "country": "Brasil",
+          "country_code": "BR",
+          "state": "SP",
+          "city": "São Paulo",
+          "tags": "",
+          "codec": "",
+          "bitrate_kbps": 0,
+          "favicon_url": "https://static2.mytuner.mobi/media/tvos_radios/923/radio-deus-e-amor.7d3c7bbc.jpg"
+        }
+      },
+      {
+        "rank": 17,
+        "title": "Rádio Gospel Adoração",
+        "station": {
+          "id": "popular_br_475640",
+          "name": "Rádio Gospel Adoração",
+          "primary_stream_url": "https://gospeladora.dvr.ovh:6684/;",
+          "alternative_stream_urls": [
+            "https://gospeladora.dvr.ovh:6684/stream"
+          ],
+          "country": "Brasil",
+          "country_code": "BR",
+          "state": "SP",
+          "city": "São Paulo",
+          "tags": "",
+          "codec": "",
+          "bitrate_kbps": 0,
+          "favicon_url": "https://static2.mytuner.mobi/media/tvos_radios/640/radio-gospel-adoracao.afa8749b.png"
+        }
+      },
+      {
+        "rank": 18,
+        "title": "TMC São Paulo",
+        "station": {
+          "id": "rb_rádio_tmc_1001_fm_4912da",
+          "name": "Rádio TMC 100.1 FM",
+          "country": "Brasil",
+          "country_code": "BR",
+          "state": "SP",
+          "city": "São Paulo",
+          "codec": "MP3FLOAT",
+          "bitrate_kbps": 128,
+          "votes": 12,
+          "tags": [
+            "debates e entrevistas",
+            "esportes",
+            "jornalismo(all news)",
+            "brasil"
+          ],
+          "primary_stream_url": "https://24373.live.streamtheworld.com/RT_SP.mp3?dist=RadiosComBr-TMC&1771879327541",
+          "alternative_stream_urls": [],
+          "all_stream_urls": [
+            "https://24373.live.streamtheworld.com/RT_SP.mp3?dist=RadiosComBr-TMC&1771879327541"
+          ],
+          "favicon_url": "https://img.radios.com.br/radio/lg/radio8803_1760319906.png",
+          "homepage": "https://tmc360.com.br/",
+          "stationuuid": "4912dab1-896c-41af-bf00-99ccafbd8b80",
+          "total_sources_count": 1,
+          "validation": {
+            "resolved_url": "https://24373.live.streamtheworld.com/RT_SP.mp3?dist=RadiosComBr-TMC&1771879327541",
+            "codec": "MP3FLOAT",
+            "decoded_seconds": 1.019,
+            "sample_bytes": 68566,
+            "content_type": "audio/mpeg",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:39:31.298571+00:00"
+          }
+        }
+      },
+      {
+        "rank": 19,
+        "title": "Sertanejo FM",
+        "station": {
+          "id": "popular_br_478293",
+          "name": "Sertanejo FM",
+          "primary_stream_url": "http://stm7.srvvox.com.br:7632/stream",
+          "alternative_stream_urls": [],
+          "country": "Brasil",
+          "country_code": "BR",
+          "state": "SP",
+          "city": "São Paulo",
+          "tags": "",
+          "codec": "",
+          "bitrate_kbps": 0,
+          "favicon_url": "https://static2.mytuner.mobi/media/tvos_radios/293/sertanejo-fm.f835865c.png"
+        }
+      },
+      {
+        "rank": 20,
+        "title": "Kiss FM",
+        "station": {
+          "id": "dial_radio-kiss-92-5-fm",
+          "name": "Rádio Kiss 92.5 FM",
+          "country": "Brasil",
+          "country_code": "BR",
+          "state": "SP",
+          "city": "São Paulo",
+          "codec": "AAC",
+          "bitrate_kbps": 128,
+          "votes": 199,
+          "tags": [
+            "rock",
+            "brasil"
+          ],
+          "primary_stream_url": "https://23243.live.streamtheworld.com/RADIO_KISSFM_ADP.aac",
+          "alternative_stream_urls": [],
+          "all_stream_urls": [
+            "https://23243.live.streamtheworld.com/RADIO_KISSFM_ADP.aac"
+          ],
+          "favicon_url": "",
+          "homepage": "https://kissfm.com.br/",
+          "total_sources_count": 1,
+          "validation": {
+            "resolved_url": "https://23243.live.streamtheworld.com/RADIO_KISSFM_ADP.aac",
+            "codec": "AAC",
+            "decoded_seconds": 1.022,
+            "sample_bytes": 69452,
+            "content_type": "audio/aacp",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:38:37.589855+00:00"
+          }
+        }
+      }
+    ]
+  },
+  "radio_world": {
+    "source": "",
+    "sourceUrl": "",
+    "period": "Popularidade",
+    "note": "20 rádios por popularidade de acessos online no mundo.",
+    "entries": [
+      {
+        "rank": 1,
+        "title": "RTL",
+        "station": {
+          "id": "rb_042d3140-227c-4fac-9387-4903b692d5f2",
+          "name": "RTL",
+          "primary_stream_url": "https://live.m6radio.quortex.io/webM89Hc99XApzgfhXNX8ASN5/grouprtl/national/short/audio-64000/index.m3u8",
+          "alternative_stream_urls": [],
+          "favicon_url": "https://duckduckgo.com/i/035a5e15d396c67a.png",
+          "homepage": "https://www.rtl.fr/",
+          "country": "France",
+          "country_code": "FR",
+          "state": "",
+          "city": "",
+          "tags": "généraliste",
+          "codec": "AAC",
+          "bitrate_kbps": 64
+        }
+      },
+      {
+        "rank": 2,
+        "title": "France Info",
+        "station": {
+          "id": "rb_1cfb151d-a341-11e9-a787-52543be04c81",
+          "name": "France Info",
+          "primary_stream_url": "http://direct.franceinfo.fr/live/franceinfo-midfi.mp3",
+          "alternative_stream_urls": [],
+          "favicon_url": "https://www.francetvinfo.fr/assets/common/images/pwa/ios/120-5487caf3.png",
+          "homepage": "https://www.francetvinfo.fr/",
+          "country": "France",
+          "country_code": "FR",
+          "state": "",
+          "city": "",
+          "tags": "",
+          "codec": "MP3",
+          "bitrate_kbps": 128
+        }
+      },
+      {
+        "rank": 3,
+        "title": "Europe 1",
+        "station": {
+          "id": "rb_dfcef843-6bf9-40f6-b3fe-2b224df86e48",
+          "name": "Europe 1",
+          "primary_stream_url": "https://stream.europe1.fr/europe1.aac",
+          "alternative_stream_urls": [],
+          "favicon_url": "https://www.europe1.fr/build/e1/images/favicon-120x120.png",
+          "homepage": "https://www.europe1.fr/",
+          "country": "France",
+          "country_code": "FR",
+          "state": "",
+          "city": "",
+          "tags": "aac,news,talk",
+          "codec": "AAC",
+          "bitrate_kbps": 128
+        }
+      },
+      {
+        "rank": 4,
+        "title": "RMC FR",
+        "station": {
+          "id": "rb_03c97140-ba60-4f41-8b98-b560ca0927cc",
+          "name": "RMC",
+          "country": "France",
+          "country_code": "FR",
+          "state": "",
+          "city": "",
+          "primary_stream_url": "https://hls-rmc.nextradiotv.com/no_ssai/128k/media.m3u8",
+          "homepage": "https://rmc.bfmtv.com/",
+          "favicon_url": "https://rmc.bfmtv.com/assets/v4/images/BFM-RMC-footer.2099ad04d164893389ed4d7d5693e6e2.svg",
+          "tags": [
+            ""
+          ],
+          "bitrate_kbps": 0,
+          "votes": 24,
+          "source_url": "https://www.radio-browser.info/history/03c97140-ba60-4f41-8b98-b560ca0927cc",
+          "alternative_stream_urls": [],
+          "all_stream_urls": [
+            "https://hls-rmc.nextradiotv.com/no_ssai/128k/media.m3u8"
+          ],
+          "total_sources_count": 1,
+          "codec": "HLS",
+          "validation": {
+            "resolved_url": "https://hls-rmc.nextradiotv.com/no_ssai/128k/media.m3u8",
+            "codec": "HLS",
+            "decoded_seconds": 1.003,
+            "sample_bytes": 70263,
+            "content_type": "video/mp2t",
+            "http_status": 200,
+            "checked_at": "2026-09-22T16:08:16.588105+00:00"
+          }
+        }
+      },
+      {
+        "rank": 5,
+        "title": "Anon.FM",
+        "station": {
+          "id": "ru_moscow_anon-fm_59110",
+          "name": "Anon.FM",
+          "country": "The Russian Federation",
+          "country_code": "RU",
+          "state": "Moscow",
+          "city": "Moscow",
+          "codec": "MP3FLOAT",
+          "bitrate_kbps": 192,
+          "votes": 10067,
+          "tags": [
+            "anime",
+            "dnb",
+            "downtempo",
+            "experimental",
+            "jazz",
+            "psychedelic",
+            "rock",
+            "trance"
+          ],
+          "primary_stream_url": "https://icecast.anon.fm/radio",
+          "alternative_stream_urls": [],
+          "total_sources_count": 1,
+          "all_stream_urls": [
+            "https://icecast.anon.fm/radio"
+          ],
+          "favicon_url": "https://icecast.anon.fm/favicon.png",
+          "homepage": "https://anon.radio.fm/",
+          "validation": {
+            "resolved_url": "https://icecast.anon.fm/radio",
+            "codec": "MP3FLOAT",
+            "decoded_seconds": 1.019,
+            "sample_bytes": 65536,
+            "content_type": "audio/mpeg",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:54:53.356551+00:00"
+          }
+        }
+      },
+      {
+        "rank": 6,
+        "title": "Classic Vinyl HD",
+        "station": {
+          "id": "us_new_york_ny_classic_vinyl_hd",
+          "name": "Classic Vinyl HD",
+          "country": "Estados Unidos",
+          "country_code": "US",
+          "state": "New York NY",
+          "city": "New York NY",
+          "codec": "MP3FLOAT",
+          "bitrate_kbps": 320,
+          "votes": 302882,
+          "tags": [
+            "1930",
+            "1940",
+            "1950",
+            "1960",
+            "beautiful music"
+          ],
+          "primary_stream_url": "https://icecast.walmradio.com:8443/classic",
+          "alternative_stream_urls": [],
+          "total_sources_count": 1,
+          "all_stream_urls": [
+            "https://icecast.walmradio.com:8443/classic"
+          ],
+          "favicon_url": "https://icecast.walmradio.com:8443/classic.jpg",
+          "homepage": "https://walmradio.com/classic",
+          "validation": {
+            "resolved_url": "https://icecast.walmradio.com:8443/classic",
+            "codec": "MP3FLOAT",
+            "decoded_seconds": 1.008,
+            "sample_bytes": 71336,
+            "content_type": "audio/mpeg",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:43:56.298860+00:00"
+          }
+        }
+      },
+      {
+        "rank": 7,
+        "title": "BBC World Service",
+        "station": {
+          "id": "rb_bbc_world_service_98adec",
+          "name": "BBC World Service",
+          "country": "The United Kingdom Of Great Britain And Northern Ireland",
+          "country_code": "GB",
+          "state": "",
+          "city": "",
+          "codec": "MP3FLOAT",
+          "bitrate_kbps": 56,
+          "votes": 161555,
+          "tags": [
+            "news",
+            "talk"
+          ],
+          "primary_stream_url": "http://stream.live.vc.bbcmedia.co.uk/bbc_world_service",
+          "alternative_stream_urls": [],
+          "all_stream_urls": [
+            "http://stream.live.vc.bbcmedia.co.uk/bbc_world_service"
+          ],
+          "favicon_url": "http://cdn-profiles.tunein.com/s24948/images/logoq.jpg?t=1",
+          "homepage": "https://www.bbc.co.uk/programmes/w172xzjgf6lxp7y",
+          "stationuuid": "98adecf7-2683-4408-9be7-02d3f9098eb8",
+          "total_sources_count": 1,
+          "validation": {
+            "resolved_url": "http://stream.live.vc.bbcmedia.co.uk/bbc_world_service",
+            "codec": "MP3FLOAT",
+            "decoded_seconds": 1.008,
+            "sample_bytes": 65796,
+            "content_type": "audio/mpeg",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:40:07.632239+00:00"
+          }
+        }
+      },
+      {
+        "rank": 8,
+        "title": "France Inter",
+        "station": {
+          "id": "fr_france_france-inter_47611",
+          "name": "France Inter",
+          "country": "France",
+          "country_code": "FR",
+          "state": "",
+          "city": "France",
+          "codec": "HLS",
+          "bitrate_kbps": 128,
+          "votes": 9557,
+          "tags": [
+            "webradio"
+          ],
+          "primary_stream_url": "https://stream.radiofrance.fr/franceinter/franceinter_hifi.m3u8?id=radiofrance",
+          "alternative_stream_urls": [],
+          "total_sources_count": 1,
+          "all_stream_urls": [
+            "https://stream.radiofrance.fr/franceinter/franceinter_hifi.m3u8?id=radiofrance"
+          ],
+          "favicon_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/France_Inter_logo_2021.svg/1200px-France_Inter_logo_2021.svg.png",
+          "homepage": "https://www.radiofrance.fr/franceinter",
+          "validation": {
+            "resolved_url": "https://stream.radiofrance.fr/franceinter/franceinter_hifi.m3u8?id=radiofrance",
+            "codec": "HLS",
+            "decoded_seconds": 1.003,
+            "sample_bytes": 67936,
+            "content_type": "video/mp2t",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:51:00.385333+00:00"
+          }
+        }
+      },
+      {
+        "rank": 9,
+        "title": "FUN Radio",
+        "station": {
+          "id": "rb_9f756e2d-8e9b-45f5-8fc1-61573e23036b",
+          "name": "FUN Radio",
+          "primary_stream_url": "http://icecast.funradio.fr/fun-1-44-128",
+          "alternative_stream_urls": [],
+          "favicon_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Logo_Fun_Radio_%282021%29.svg/langfr-1280px-Logo_Fun_Radio_%282021%29.svg.png",
+          "homepage": "https://www.funradio.fr/",
+          "country": "France",
+          "country_code": "FR",
+          "state": "",
+          "city": "",
+          "tags": "dance,electro,latino",
+          "codec": "MP3",
+          "bitrate_kbps": 128
+        }
+      },
+      {
+        "rank": 10,
+        "title": "Deutschlandfunk | DLF | MP3 128k",
+        "station": {
+          "id": "rb_1c3e8be2-5b14-4933-bad3-87cbc227cba4",
+          "name": "Deutschlandfunk | DLF | MP3 128k",
+          "primary_stream_url": "https://st01.sslstream.dlf.de/dlf/01/128/mp3/stream.mp3?aggregator=web",
+          "alternative_stream_urls": [],
+          "favicon_url": "https://www.deutschlandfunk.de/static/img/deutschlandfunk/icons/apple-touch-icon-128x128.png",
+          "homepage": "https://www.deutschlandfunk.de/",
+          "country": "Germany",
+          "country_code": "DE",
+          "state": "Berlin",
+          "city": "",
+          "tags": "culture,news,public service,information",
+          "codec": "MP3",
+          "bitrate_kbps": 128
+        }
+      },
+      {
+        "rank": 11,
+        "title": "MANGORADIO",
+        "station": {
+          "id": "rb_mangoradio_780122",
+          "name": "MANGORADIO",
+          "country": "Germany",
+          "country_code": "DE",
+          "state": "Rheinland-Pfalz",
+          "city": "",
+          "codec": "MP3FLOAT",
+          "bitrate_kbps": 128,
+          "votes": 822706,
+          "tags": [
+            "music",
+            "variety"
+          ],
+          "primary_stream_url": "https://mangoradio.stream.laut.fm/mangoradio",
+          "alternative_stream_urls": [],
+          "all_stream_urls": [
+            "https://mangoradio.stream.laut.fm/mangoradio"
+          ],
+          "favicon_url": "https://mangoradio.de/wp-content/uploads/cropped-Logo-192x192.webp",
+          "homepage": "https://mangoradio.de/",
+          "stationuuid": "78012206-1aa1-11e9-a80b-52543be04c81",
+          "total_sources_count": 1,
+          "validation": {
+            "resolved_url": "https://mangoradio.stream.laut.fm/mangoradio",
+            "codec": "MP3FLOAT",
+            "decoded_seconds": 1.019,
+            "sample_bytes": 72140,
+            "content_type": "audio/mpeg",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:40:05.812137+00:00"
+          }
+        }
+      },
+      {
+        "rank": 12,
+        "title": "Nostalgie HQ",
+        "station": {
+          "id": "rb_d39ab442-6c34-4097-afd0-e298ac21e50c",
+          "name": "Nostalgie HQ",
+          "country": "France",
+          "country_code": "FR",
+          "state": "",
+          "city": "",
+          "primary_stream_url": "https://streaming.nrjaudio.fm/oua8a3w2dqao?origine=playernostalgie&aw_0_req.userConsentV2=&aw_0_1st.station=",
+          "homepage": "https://www.nostalgie.fr/",
+          "favicon_url": "https://img.nrj.fr/J6jlakQsQ2siRzCzCI_2IDCQj1E=/80x80/https%3A%2F%2Fplayers.nrjaudio.fm%2Flive-metadata%2Fplayer%2Fimg%2Fplayer-files%2Fnosta%2Flogos%2F640x640%2FP_Nostalgie_Premium_Logo_2023.png",
+          "tags": [
+            ""
+          ],
+          "bitrate_kbps": 320,
+          "votes": 474,
+          "source_url": "https://www.radio-browser.info/history/d39ab442-6c34-4097-afd0-e298ac21e50c",
+          "alternative_stream_urls": [],
+          "all_stream_urls": [
+            "https://streaming.nrjaudio.fm/oua8a3w2dqao?origine=playernostalgie&aw_0_req.userConsentV2=&aw_0_1st.station="
+          ],
+          "total_sources_count": 1,
+          "codec": "AAC",
+          "validation": {
+            "resolved_url": "https://streaming.nrjaudio.fm/oua8a3w2dqao?origine=playernostalgie&aw_0_req.userConsentV2=&aw_0_1st.station=",
+            "codec": "AAC",
+            "decoded_seconds": 1.003,
+            "sample_bytes": 65883,
+            "content_type": "audio/aac",
+            "http_status": 200,
+            "checked_at": "2026-09-22T15:39:53.053426+00:00"
+          }
+        }
+      },
+      {
+        "rank": 13,
+        "title": "101 SMOOTH JAZZ",
+        "station": {
+          "id": "rb_101_smooth_jazz_d28420",
+          "name": "101 SMOOTH JAZZ",
+          "country": "The United States Of America",
+          "country_code": "US",
+          "state": "California",
+          "city": "",
+          "codec": "MP3FLOAT",
+          "bitrate_kbps": 192,
+          "votes": 88828,
+          "tags": [
+            "easy listening",
+            "jazz",
+            "smooth jazz"
+          ],
+          "primary_stream_url": "http://jking.cdnstream1.com/b22139_128mp3",
+          "alternative_stream_urls": [],
+          "all_stream_urls": [
+            "http://jking.cdnstream1.com/b22139_128mp3"
+          ],
+          "favicon_url": "http://101smoothjazz.com/favicon.ico",
+          "homepage": "http://101smoothjazz.com/",
+          "stationuuid": "d28420a4-eccf-47a2-ace1-088c7e7cb7e0",
+          "total_sources_count": 1,
+          "validation": {
+            "resolved_url": "http://jking.cdnstream1.com/b22139_128mp3",
+            "codec": "MP3FLOAT",
+            "decoded_seconds": 1.019,
+            "sample_bytes": 73658,
+            "content_type": "audio/mpeg",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:40:05.160243+00:00"
+          }
+        }
+      },
+      {
+        "rank": 14,
+        "title": "Radio Paradise Main Mix (EU) 320k AAC",
+        "station": {
+          "id": "rb_radio_paradise_main_mix__9617a9",
+          "name": "Radio Paradise Main Mix (EU) 320k AAC",
+          "country": "The United States Of America",
+          "country_code": "US",
+          "state": "California",
+          "city": "",
+          "codec": "AAC",
+          "bitrate_kbps": 320,
+          "votes": 314035,
+          "tags": [
+            "california",
+            "eclectic",
+            "free",
+            "internet",
+            "non-commercial",
+            "paradise",
+            "radio"
+          ],
+          "primary_stream_url": "http://stream-uk1.radioparadise.com/aac-320",
+          "alternative_stream_urls": [],
+          "all_stream_urls": [
+            "http://stream-uk1.radioparadise.com/aac-320"
+          ],
+          "favicon_url": "https://radioparadise.com/apple-touch-icon.png",
+          "homepage": "https://radioparadise.com/",
+          "stationuuid": "9617a958-0601-11e8-ae97-52543be04c81",
+          "total_sources_count": 1,
+          "validation": {
+            "resolved_url": "http://stream-uk1.radioparadise.com/aac-320",
+            "codec": "AAC",
+            "decoded_seconds": 1.022,
+            "sample_bytes": 65676,
+            "content_type": "audio/aac",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:40:04.554615+00:00"
+          }
+        }
+      },
+      {
+        "rank": 15,
+        "title": "RFM",
+        "station": {
+          "id": "rb_2dffb353-5341-4438-b67b-83de8c3efbab",
+          "name": "RFM",
+          "primary_stream_url": "http://stream.rfm.fr/rfm.mp3",
+          "alternative_stream_urls": [],
+          "favicon_url": "http://cdn-rfm.lanmedia.fr/apple-touch-icon-120x120.png",
+          "homepage": "http://www.rfm.fr/",
+          "country": "France",
+          "country_code": "FR",
+          "state": "",
+          "city": "",
+          "tags": "",
+          "codec": "MP3",
+          "bitrate_kbps": 128
+        }
+      },
+      {
+        "rank": 16,
+        "title": "CAPITAL - The UK's No.1 Hit Music Station",
+        "station": {
+          "id": "gb_london_capital_the_uk_s_no",
+          "name": "CAPITAL - The UK's No.1 Hit Music Station",
+          "country": "Reino Unido",
+          "country_code": "GB",
+          "state": "London",
+          "city": "London",
+          "codec": "AAC",
+          "bitrate_kbps": 48,
+          "votes": 500,
+          "tags": [
+            "capital",
+            "capital fm",
+            "contemporary hits radio",
+            "dab+",
+            "england"
+          ],
+          "primary_stream_url": "https://media-ssl.musicradio.com/CapitalUK",
+          "alternative_stream_urls": [],
+          "total_sources_count": 1,
+          "all_stream_urls": [
+            "https://media-ssl.musicradio.com/CapitalUK"
+          ],
+          "favicon_url": "https://cdn-profiles.tunein.com/s241396/images/logod.jpg",
+          "homepage": "https://www.capitalfm.com/",
+          "validation": {
+            "resolved_url": "https://media-ssl.musicradio.com/CapitalUK",
+            "codec": "AAC",
+            "decoded_seconds": 1.022,
+            "sample_bytes": 73192,
+            "content_type": "audio/aac",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:45:40.898411+00:00"
+          }
+        }
+      },
+      {
+        "rank": 17,
+        "title": "Nrj Hits",
+        "station": {
+          "id": "fr__nrj_hits",
+          "name": "Nrj Hits",
+          "country": "França",
+          "country_code": "FR",
+          "state": "",
+          "city": "",
+          "codec": "AAC",
+          "bitrate_kbps": 128,
+          "votes": 745,
+          "tags": [
+            "hits"
+          ],
+          "primary_stream_url": "https://streaming.nrjaudio.fm/ou7xugf3s5gi?origine=playernrj&aw_0_req.userConsentV2=&aw_0_1st.station=NRJ-Hits",
+          "alternative_stream_urls": [],
+          "total_sources_count": 1,
+          "all_stream_urls": [
+            "https://streaming.nrjaudio.fm/ou7xugf3s5gi?origine=playernrj&aw_0_req.userConsentV2=&aw_0_1st.station=NRJ-Hits"
+          ],
+          "favicon_url": "https://img.nrj.fr/8loJFyDgG_Gm_fgnk1fhkYIewhI=/medias%2F2021%2F06%2Flogo-nrj_60db2627d4729.svg",
+          "homepage": "https://www.nrj.fr/webradios/mur-des-radios/nrj-hits",
+          "validation": {
+            "resolved_url": "https://streaming.nrjaudio.fm/ou7xugf3s5gi?origine=playernrj&aw_0_req.userConsentV2=&aw_0_1st.station=NRJ-Hits",
+            "codec": "AAC",
+            "decoded_seconds": 1.022,
+            "sample_bytes": 66180,
+            "content_type": "audio/aacp",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:46:28.321864+00:00"
+          }
+        }
+      },
+      {
+        "rank": 18,
+        "title": "Dance Wave!",
+        "station": {
+          "id": "rb_962cc6df-0601-11e8-ae97-52543be04c81",
+          "name": "Dance Wave!",
+          "primary_stream_url": "https://dancewave.online/dance.mp3",
+          "alternative_stream_urls": [],
+          "favicon_url": "https://dancewave.online/dw_logo.png",
+          "homepage": "https://dancewave.online/",
+          "country": "Hungary",
+          "country_code": "HU",
+          "state": "",
+          "city": "",
+          "tags": "club dance electronic house trance",
+          "codec": "MP3",
+          "bitrate_kbps": 128
+        }
+      },
+      {
+        "rank": 19,
+        "title": "SWR3",
+        "station": {
+          "id": "rb_240d28b9-7858-48d2-a816-9cf8e1875fe8",
+          "name": "SWR3",
+          "primary_stream_url": "https://liveradio.swr.de/sw282p3/swr3/play.mp3",
+          "alternative_stream_urls": [],
+          "favicon_url": "https://swr3.de/assets/swr3/icons/apple-touch-icon.png",
+          "homepage": "https://swr3.de/",
+          "country": "Germany",
+          "country_code": "DE",
+          "state": "Baden-Württemberg",
+          "city": "",
+          "tags": "news,pop,rock",
+          "codec": "MP3",
+          "bitrate_kbps": 128
+        }
+      },
+      {
+        "rank": 20,
+        "title": "Skyrock",
+        "station": {
+          "id": "rb_skyrock_01b61e",
+          "name": "Skyrock",
+          "country": "France",
+          "country_code": "FR",
+          "state": "",
+          "city": "",
+          "codec": "MP3FLOAT",
+          "bitrate_kbps": 128,
+          "votes": 53984,
+          "tags": [
+            "rap"
+          ],
+          "primary_stream_url": "http://icecast.skyrock.net/s/natio_mp3_128k",
+          "alternative_stream_urls": [],
+          "all_stream_urls": [
+            "http://icecast.skyrock.net/s/natio_mp3_128k"
+          ],
+          "favicon_url": "https://play-lh.googleusercontent.com/dPiQ01OUKZVfRZUbbb-EVK5g9miS_K-xrxHgmBbynGG-GQ53yt3GzFKr0zUTnb-xswQ=s200-rw",
+          "homepage": "https://skyrock.fm/",
+          "stationuuid": "01b61e49-18bd-486d-b0e1-cb51cbaf9a6d",
+          "total_sources_count": 1,
+          "validation": {
+            "resolved_url": "http://icecast.skyrock.net/s/natio_mp3_128k",
+            "codec": "MP3FLOAT",
+            "decoded_seconds": 1.008,
+            "sample_bytes": 65664,
+            "content_type": "audio/mpeg; charset=utf-8",
+            "http_status": 200,
+            "checked_at": "2026-09-22T14:40:11.469797+00:00"
+          }
+        }
+      }
+    ]
+  }
+}
