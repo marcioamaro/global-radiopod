@@ -10,7 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 @Database(
     entities = [FavoriteStationEntity::class, RadioStationEntity::class],
     version = 2,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class RadioDatabase : RoomDatabase() {
     abstract fun favoriteStationDao(): FavoriteStationDao
