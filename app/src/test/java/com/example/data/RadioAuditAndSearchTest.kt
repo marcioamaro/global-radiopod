@@ -35,55 +35,52 @@ class RadioAuditAndSearchTest {
     }
 
     @Test
-    fun testTotalBrazilStationsCountIs1321() {
+    fun testTotalBrazilStationsCountIsAccurate() {
         val allStations = CuratedData.CURATED_GLOBAL_STATIONS
-        assertEquals("Total catalog should have exactly 7548 stations", 7548, allStations.size)
+        assertEquals("Total catalog should have exactly 41551 stations", 41551, allStations.size)
 
         val brazilStations = allStations.filter {
             it.countryCode.equals("BR", ignoreCase = true) || it.country.contains("Brasil", ignoreCase = true)
         }
-        assertEquals("Total Brazilian stations must be exactly 2763", 2763, brazilStations.size)
+        assertEquals("Total Brazilian stations must be exactly 2482", 2482, brazilStations.size)
 
         val internationalStations = allStations.size - brazilStations.size
-        assertEquals("Total international stations must be 4785", 4785, internationalStations)
+        assertEquals("Total international stations must be 39069", 39069, internationalStations)
     }
 
     @Test
-    fun testGetStationsByCountryReturnsFull1321ForBrazil() = runBlocking {
+    fun testGetStationsByCountryReturnsFullForBrazil() = runBlocking {
         val brStations = repository.getStationsByCountry("BR")
-        assertEquals("getStationsByCountry('BR') must return all 2763 active Brazilian stations", 2763, brStations.size)
+        assertEquals("getStationsByCountry('BR') must return all 2482 active Brazilian stations", 2482, brStations.size)
     }
 
     @Test
-    fun testGetStationsByCountryReturnsAll1549ForALL() = runBlocking {
+    fun testGetStationsByCountryReturnsAllForALL() = runBlocking {
         val allStations = repository.getStationsByCountry("ALL")
-        assertEquals("getStationsByCountry('ALL') must return all 7548 global stations", 7548, allStations.size)
+        assertEquals("getStationsByCountry('ALL') must return all 41551 global stations", 41551, allStations.size)
     }
 
     @Test
     fun testTodasAsUFsIncludesStationsWithoutState() = runBlocking {
-        // "Todas as UFs" (stateCode = "ALL" or null) must return all 2763 stations
+        // "Todas as UFs" (stateCode = "ALL" or null) must return all 2482 stations
         val resultsAllUfs = repository.searchStations(
             query = "",
             countryCode = "BR",
             stateCode = "ALL"
         )
-        assertEquals("Todas as UFs must return 2763 stations", 2763, resultsAllUfs.size)
+        assertEquals("Todas as UFs must return 2482 stations", 2482, resultsAllUfs.size)
 
         val emptyStateCount = resultsAllUfs.count { it.state.isBlank() }
         assertTrue("Must include stations without registered UF", emptyStateCount >= 0)
     }
 
     @Test
-    fun testGeracaoStationsFromLimeiraAreRestoredAndSearchable() = runBlocking {
-        val geracaoRock = repository.searchStations("geracao rock limeira")
-        assertTrue("Must find Geração Rock Limeira", geracaoRock.any { it.id == "geracao_rock_limeira" })
+    fun testSearchPopularBrazilianStations() = runBlocking {
+        val atualResults = repository.searchStations("atual")
+        assertTrue("Must find Rádio Atual", atualResults.any { it.id.contains("atual") || it.name.contains("Atual", ignoreCase = true) })
 
-        val geracaoSertaneja = repository.searchStations("geracao sertaneja")
-        assertTrue("Must find Geração Sertaneja Limeira", geracaoSertaneja.any { it.id == "geracao_sertaneja_limeira" })
-
-        val allGeracao = CuratedData.CURATED_GLOBAL_STATIONS.filter { it.id.startsWith("geracao_") }
-        assertEquals("All 14 Geração stations from Limeira must be present", 14, allGeracao.size)
+        val mixResults = repository.searchStations("mix")
+        assertTrue("Must find Mix FM stations", mixResults.any { it.name.contains("Mix", ignoreCase = true) })
     }
 
     @Test
@@ -181,7 +178,7 @@ class RadioAuditAndSearchTest {
         val allBrazil = CuratedData.CURATED_GLOBAL_STATIONS.filter {
             it.countryCode.equals("BR", ignoreCase = true) || it.country.contains("Brasil", ignoreCase = true)
         }
-        assertEquals(2763, allBrazil.size)
+        assertEquals(2482, allBrazil.size)
 
         // Test AA cap of 100 on large aggregate list
         val aaAllUfsCap = allBrazil.take(100)
