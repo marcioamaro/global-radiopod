@@ -77,3 +77,17 @@ regressões pertinentes e gerar APK/AAB; não publicar automaticamente.
 - 24/09/2026 — por solicitação do usuário, Minha biblioteca foi removida recursivamente da navegação: item do menu inicial, destino, cabeçalho, tela e rótulos traduzidos. Dados de mídia, playlists, favoritos e backup foram preservados por serem usados pelos players. `:app:compileDebugKotlin` e `:app:assembleRelease` passaram; APK 0.3.10 (92) gerado.
 - 24/09/2026 — capas brasileiras: 15 URLs únicas declaradas por páginas das emissoras foram incorporadas e 470 capas genéricas repetidas de agregadores foram removidas. Evidência: `reports/official-brazil-radio-artwork.json`.
 - 24/09/2026 — Transmissão Econômica e Estável removida por solicitação do usuário: interface, preferências, estado do player, enum e indicação de serviço foram excluídos porque não implementavam economia de dados nem estabilidade. Compilação Kotlin revalidada.
+- 24/09/2026 — Auditoria arquitetural concluída (Itens 1 a 12) e Versão 0.3.14 (96):
+  1. [P0 CRÍTICO] Guarda `isAutoPlayOnLaunch` adicionada no `init` do `RadioViewModel` — eliminou o autoplay indesejado na abertura.
+  2. [P0 CRÍTICO] `runBlocking` em `RadioApp.onCreate()` substituído por `CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {}` não-bloqueante.
+  3. [P1 ALTO] `onDestroy` do `RadioMediaService` com liberação síncrona de `mediaLibrarySession` e `player` antes de `serviceScope.cancel()`.
+  4. [P1 ALTO] `@Volatile` em `userInitiatedPause` (`RadioPlayerManager`) garantindo visibilidade entre threads.
+  5. [P1 ALTO] `@Volatile` em `currentArtworkBitmap` (`RadioMediaService`) eliminando race condition de artwork.
+  6. [P1 ALTO] WakeLock timeout aumentado para 8h com renovação contínua e ExoPlayer usando `WAKE_MODE_NETWORK`.
+  7. [P2 MÉDIO] Dead code `initialAppearanceSettings` removido de `RadioViewModel`.
+  8. [P2 MÉDIO] `ServiceWatchdogWorker` migrado para `CoroutineWorker` com `withContext(Dispatchers.IO)` e sem `runBlocking`.
+  9. [P2 MÉDIO] Aliases redundantes de constantes de navegação limpos em `RadioMediaService.companion`.
+  10. [P2 MÉDIO] `SupervisorJob` adicionado ao `CastStreamProxy` com método `cleanup()` integrado ao `AudioRouteManager`.
+  11. [P3 BAIXO] 9 ocorrências de `Log.w` com emojis em `RadioMediaService` convertidas para `Log.d` protegidas por `BuildConfig.DEBUG`.
+  12. [P3 BAIXO] `Handler` legado em `AppRestartHelper` substituído por `CoroutineScope(Dispatchers.Main).launch { delay(250L) ... }`.
+  13. Suíte de testes unitários `:app:testDebugUnitTest` 100% aprovada (206 testes, 0 falhas) e APK release gerado com sucesso via `:app:assembleRelease` em `app/build/outputs/apk/release/app-release.apk` (13,8 MB, versão 0.3.14 / 96).

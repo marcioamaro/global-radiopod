@@ -11,6 +11,8 @@ import com.marcioamaro.mediapod.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.BufferedReader
@@ -37,7 +39,9 @@ import java.net.URLDecoder
  */
 class CastStreamProxy private constructor(private val context: Context) {
 
-    private val scope = CoroutineScope(Dispatchers.IO)
+    // CORREÇÃO P2 (auditoria item 10 — 24/09/2026):
+    // SupervisorJob isola falhas de conexões filhas para não cancelar o servidor proxy por completo.
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var serverSocket: ServerSocket? = null
     private var serverPort: Int = 0
     private var serverJob: Job? = null
@@ -96,6 +100,20 @@ class CastStreamProxy private constructor(private val context: Context) {
         } catch (_: Exception) {}
         serverSocket = null
         serverJob = null
+    }
+
+    /**
+     * Encerra o servidor e cancela o scope do proxy por completo (cleanup).
+     */
+    @Synchronized
+    fun cleanup() {
+        stopServer()
+        scope.cancel()
+        synchronized(CastStreamProxy::class.java) {
+            if (instance === this) {
+                instance = null
+            }
+        }
     }
 
     fun getLocalWifiIp(): String? {

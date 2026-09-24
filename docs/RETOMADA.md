@@ -28,7 +28,12 @@ zero nem suponha que uma tarefa em andamento terminou.
   8. Validação automatizada: 205 testes unitários passaram (0 falhas) e APK debug compilado (`app/build/outputs/apk/debug/app-debug.apk`).
 
 ## Próximo passo concreto
-Validar fisicamente o Cast de MP3 e vídeo local em TV/Nest Mini com o aparelho conectado. Em seguida, continuar a auditoria das 523 localidades de rádio restantes, alterando somente registros com evidência da própria emissora ou fonte pública confiável.
+Auditoria arquitetural (itens 1 a 12) concluída e validada (24/09/2026).
+Versão 0.3.14 (96) compilada com sucesso em `app/build/outputs/apk/release/app-release.apk`.
+Próximos passos em ordem de prioridade:
+1. Validar fisicamente a reprodução de áudio e teste de autoplay em dispositivo real.
+2. Continuar a auditoria geográfica do item 08 com fontes verificáveis das emissoras restantes.
+3. Obter aprovação explícita do titular para envio remoto (`git push origin internaciona`).
 
 ## Avaliação local — 24/09/2026
 - `python scripts/check_project.py` aprovado: 41.551 rádios, quatro rankings Top 20, 74 recursos de texto em sete idiomas e backup automático desativado.

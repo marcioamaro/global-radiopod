@@ -3,18 +3,19 @@ package com.marcioamaro.mediapod.util
 import android.content.Context
 import android.content.Intent
 import androidx.work.Constraints
+import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.marcioamaro.mediapod.data.preferences.PlaybackStateDataStore
 import com.marcioamaro.mediapod.player.RadioPlaybackStatus
 import com.marcioamaro.mediapod.player.RadioPlayerManager
 import com.marcioamaro.mediapod.service.RadioMediaService
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 
 /**
@@ -37,7 +38,7 @@ import java.util.concurrent.TimeUnit
 class ServiceWatchdogWorker(
     private val context: Context,
     params: WorkerParameters
-) : Worker(context, params) {
+) : CoroutineWorker(context, params) {
 
     companion object {
         private const val WORK_NAME = "radiopod_service_watchdog"
@@ -82,8 +83,8 @@ class ServiceWatchdogWorker(
         }
     }
 
-    override fun doWork(): Result {
-        return try {
+    override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
+        try {
             checkAndRestorePlayback()
             Result.success()
         } catch (e: Exception) {
@@ -92,12 +93,14 @@ class ServiceWatchdogWorker(
         }
     }
 
-    private fun checkAndRestorePlayback() {
+    private suspend fun checkAndRestorePlayback() {
         // 1. Verifica se havia estado de playback persistido
+        // CORREÇÃO P2 (auditoria item 8 — 24/09/2026):
+        // CoroutineWorker executando em Dispatchers.IO sem runBlocking.
         val dataStore = PlaybackStateDataStore.getInstance(context)
-        val lastMediaType = runBlocking { dataStore.lastMediaType.firstOrNull() }
-        val lastUrl = runBlocking { dataStore.lastStationUrl.firstOrNull() }
-        val lastId = runBlocking { dataStore.lastStationId.firstOrNull() }
+        val lastMediaType = dataStore.lastMediaType.firstOrNull()
+        val lastUrl = dataStore.lastStationUrl.firstOrNull()
+        val lastId = dataStore.lastStationId.firstOrNull()
 
         if (lastUrl.isNullOrBlank() || lastId.isNullOrBlank()) {
             android.util.Log.d("ServiceWatchdog", "Nenhum estado de playback salvo. Nada a restaurar.")

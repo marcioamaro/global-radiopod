@@ -10,6 +10,7 @@ import com.marcioamaro.mediapod.data.repository.RadioRepository
 import com.marcioamaro.mediapod.player.RadioPlayerManager
 import com.marcioamaro.mediapod.util.IpodSoundAndHaptics
 import com.marcioamaro.mediapod.util.ServiceWatchdogWorker
+import kotlinx.coroutines.launch
 
 class RadioApp : Application() {
 
@@ -52,7 +53,13 @@ class RadioApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        kotlinx.coroutines.runBlocking(kotlinx.coroutines.Dispatchers.IO) {
+        // CORREÇÃO P1 (auditoria item 2 — 24/09/2026):
+        // runBlocking substituído por launch assíncrono. Application.onCreate() roda na Main Thread;
+        // runBlocking bloqueava a thread principal durante I/O do RestoreJournal (risco de ANR).
+        // RestoreJournal.recover é uma operação de limpeza não-crítica: pode rodar em background.
+        kotlinx.coroutines.CoroutineScope(
+            kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.IO
+        ).launch {
             com.marcioamaro.mediapod.util.RestoreJournal.recover(this@RadioApp)
         }
         com.marcioamaro.mediapod.data.repository.CatalogUpdates.initialize(this)

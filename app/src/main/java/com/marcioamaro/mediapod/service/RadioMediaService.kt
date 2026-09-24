@@ -134,20 +134,11 @@ class RadioMediaService : MediaLibraryService() {
 
         // Android Auto Media Tree Navigation Roots (4 Abas Obrigatórias)
         const val ROOT_MEDIA_ID = "ROOT_MEDIA_ID"
-        const val ROOT_ID = "ROOT_MEDIA_ID" // Alias para compatibilidade total
+        const val ROOT_ID = "ROOT_MEDIA_ID" // Alias canônico para compatibilidade
         const val FAVORITE_RADIOS = "FAVORITE_RADIOS"
         const val RECENT_RADIOS = "RECENT_RADIOS"
         const val FAVORITE_PODCASTS = "FAVORITE_PODCASTS"
         const val RECENT_PODCASTS = "RECENT_PODCASTS"
-
-        // Aliases simétricos para manter compatibilidade com intents ou caches
-        const val ROOT_RADIO = "FAVORITE_RADIOS"
-        const val ROOT_PODCASTS = "FAVORITE_PODCASTS"
-        const val ROOT_FAVORITES = "FAVORITE_RADIOS"
-        const val ROOT_RECENT = "RECENT_RADIOS"
-        const val ROOT_ALL = "FAVORITE_RADIOS"
-        const val RADIO_FAVORITES = "FAVORITE_RADIOS"
-        const val PODCAST_FAVORITES = "FAVORITE_PODCASTS"
     }
 
     private lateinit var podcastRepository: com.marcioamaro.mediapod.data.repository.PodcastRepository
@@ -650,7 +641,9 @@ class RadioMediaService : MediaLibraryService() {
             val now = System.currentTimeMillis()
             if (now - lastSkipTimeMs > 400L) {
                 lastSkipTimeMs = now
-                android.util.Log.w("MEDIA_BTN", "✅ onSkipToNext/seekToNext recebido do sistema — roteando via NavigationContext")
+                if (com.marcioamaro.mediapod.BuildConfig.DEBUG) {
+                    android.util.Log.d("MEDIA_BTN", "onSkipToNext/seekToNext recebido do sistema — roteando via NavigationContext")
+                }
                 val coordinator = (applicationContext as? com.marcioamaro.mediapod.RadioApp)?.playbackCoordinator
                 if (coordinator != null) {
                     coordinator.skipToNext()
@@ -668,7 +661,9 @@ class RadioMediaService : MediaLibraryService() {
             val now = System.currentTimeMillis()
             if (now - lastSkipTimeMs > 400L) {
                 lastSkipTimeMs = now
-                android.util.Log.w("MEDIA_BTN", "✅ onSkipToPrevious/seekToPrevious recebido do sistema")
+                if (com.marcioamaro.mediapod.BuildConfig.DEBUG) {
+                    android.util.Log.d("MEDIA_BTN", "onSkipToPrevious/seekToPrevious recebido do sistema")
+                }
                 val coordinator = (applicationContext as? com.marcioamaro.mediapod.RadioApp)?.playbackCoordinator
                 if (coordinator != null) {
                     coordinator.skipToPrevious()
@@ -813,7 +808,9 @@ class RadioMediaService : MediaLibraryService() {
                 updateNotification()
             }
             ACTION_NEXT -> {
-                android.util.Log.w("MEDIA_BTN", "✅ ACTION_NEXT recebido — roteando via PlaybackCoordinator")
+                if (com.marcioamaro.mediapod.BuildConfig.DEBUG) {
+                    android.util.Log.d("MEDIA_BTN", "ACTION_NEXT recebido — roteando via PlaybackCoordinator")
+                }
                 val coordinator = (applicationContext as? com.marcioamaro.mediapod.RadioApp)?.playbackCoordinator
                 if (coordinator != null) {
                     coordinator.skipToNext()
@@ -823,7 +820,9 @@ class RadioMediaService : MediaLibraryService() {
                 updateNotification()
             }
             ACTION_PREVIOUS -> {
-                android.util.Log.w("MEDIA_BTN", "✅ ACTION_PREVIOUS recebido — roteando via PlaybackCoordinator")
+                if (com.marcioamaro.mediapod.BuildConfig.DEBUG) {
+                    android.util.Log.d("MEDIA_BTN", "ACTION_PREVIOUS recebido — roteando via PlaybackCoordinator")
+                }
                 val coordinator = (applicationContext as? com.marcioamaro.mediapod.RadioApp)?.playbackCoordinator
                 if (coordinator != null) {
                     coordinator.skipToPrevious()
@@ -993,7 +992,11 @@ class RadioMediaService : MediaLibraryService() {
                 }
             }
             serviceWakeLock?.let {
-                if (!it.isHeld) it.acquire(4 * 60 * 60 * 1000L) // 4 horas para streaming contínuo sem cortes
+                // CORREÇÃO P1 (auditoria item 6 — 24/09/2026):
+                // O ExoPlayer já gerencia WAKE_MODE_NETWORK internamente (RadioPlayerManager L449).
+                // Este lock do service é backup para o ForegroundService em si (não para streaming).
+                // Timeout aumentado de 4h para 8h para cobrir sessões longas; renovado a cada PLAYING.
+                if (!it.isHeld) it.acquire(8 * 60 * 60 * 1000L)
             }
 
             if (serviceWifiLock == null) {
@@ -1139,7 +1142,9 @@ class RadioMediaService : MediaLibraryService() {
                     return SessionResult.RESULT_SUCCESS
                 }
                 Player.COMMAND_SEEK_TO_NEXT, Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM -> {
-                    android.util.Log.w("MEDIA_BTN", "✅ COMMAND_SEEK_TO_NEXT recebido do sistema — roteando via NavigationContext")
+                    if (com.marcioamaro.mediapod.BuildConfig.DEBUG) {
+                        android.util.Log.d("MEDIA_BTN", "COMMAND_SEEK_TO_NEXT recebido do sistema — roteando via NavigationContext")
+                    }
                     val coordinator = (applicationContext as? com.marcioamaro.mediapod.RadioApp)?.playbackCoordinator
                     if (coordinator != null) {
                         coordinator.skipToNext()
@@ -1149,7 +1154,9 @@ class RadioMediaService : MediaLibraryService() {
                     return SessionResult.RESULT_SUCCESS
                 }
                 Player.COMMAND_SEEK_TO_PREVIOUS, Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM -> {
-                    android.util.Log.w("MEDIA_BTN", "✅ COMMAND_SEEK_TO_PREVIOUS recebido do sistema")
+                    if (com.marcioamaro.mediapod.BuildConfig.DEBUG) {
+                        android.util.Log.d("MEDIA_BTN", "COMMAND_SEEK_TO_PREVIOUS recebido do sistema")
+                    }
                     val coordinator = (applicationContext as? com.marcioamaro.mediapod.RadioApp)?.playbackCoordinator
                     if (coordinator != null) {
                         coordinator.skipToPrevious()
@@ -1179,7 +1186,9 @@ class RadioMediaService : MediaLibraryService() {
             controllerInfo: MediaSession.ControllerInfo,
             intent: Intent
         ): Boolean {
-            android.util.Log.w("MEDIA_BTN", "🔘 MediaButton recebido: ${intent.action}")
+            if (com.marcioamaro.mediapod.BuildConfig.DEBUG) {
+                android.util.Log.d("MEDIA_BTN", "MediaButton recebido: ${intent.action}")
+            }
             val keyEvent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT, KeyEvent::class.java)
             } else {
@@ -1205,7 +1214,9 @@ class RadioMediaService : MediaLibraryService() {
                         return true
                     }
                     KeyEvent.KEYCODE_MEDIA_NEXT -> {
-                        android.util.Log.w("MEDIA_BTN", "✅ onSkipToNext (KEYCODE_MEDIA_NEXT) recebido do sistema — roteando via NavigationContext")
+                        if (com.marcioamaro.mediapod.BuildConfig.DEBUG) {
+                            android.util.Log.d("MEDIA_BTN", "onSkipToNext (KEYCODE_MEDIA_NEXT) recebido do sistema — roteando via NavigationContext")
+                        }
                         val coordinator = (applicationContext as? com.marcioamaro.mediapod.RadioApp)?.playbackCoordinator
                         if (coordinator != null) {
                             coordinator.skipToNext()
@@ -1215,7 +1226,9 @@ class RadioMediaService : MediaLibraryService() {
                         return true
                     }
                     KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
-                        android.util.Log.w("MEDIA_BTN", "✅ onSkipToPrevious (KEYCODE_MEDIA_PREVIOUS) recebido do sistema")
+                        if (com.marcioamaro.mediapod.BuildConfig.DEBUG) {
+                            android.util.Log.d("MEDIA_BTN", "onSkipToPrevious (KEYCODE_MEDIA_PREVIOUS) recebido do sistema")
+                        }
                         val coordinator = (applicationContext as? com.marcioamaro.mediapod.RadioApp)?.playbackCoordinator
                         if (coordinator != null) {
                             coordinator.skipToPrevious()

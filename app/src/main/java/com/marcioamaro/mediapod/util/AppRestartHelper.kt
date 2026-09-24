@@ -8,6 +8,10 @@ import com.marcioamaro.mediapod.player.LocalVideoPlayerManager
 import com.marcioamaro.mediapod.player.RadioPlayerManager
 import com.marcioamaro.mediapod.service.RadioMediaService
 import com.google.android.gms.cast.framework.CastContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 object AppRestartHelper {
 
@@ -40,11 +44,13 @@ object AppRestartHelper {
         context.startActivity(restartIntent)
 
         // 5. Finalizar a Activity atual e liberar o processo de forma limpa
+        // CORREÇÃO P3 (auditoria item 12 — 24/09/2026): Handler legado substituído por coroutine.
         (context as? Activity)?.finishAffinity()
-        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+            kotlinx.coroutines.delay(250L)
             android.os.Process.killProcess(android.os.Process.myPid())
             kotlin.system.exitProcess(0)
-        }, 250L)
+        }
     }
 
     fun exitApp(context: Context) {

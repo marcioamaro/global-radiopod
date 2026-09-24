@@ -923,7 +923,7 @@ class AudioRouteManager private constructor(private val context: Context) {
      */
     fun cleanup() {
         stopDiscovery()
-        com.marcioamaro.mediapod.cast.CastStreamProxy.getInstance(context).stopServer()
+        com.marcioamaro.mediapod.cast.CastStreamProxy.getInstance(context).cleanup()
         try {
             val castContext = CastContext.getSharedInstance(context)
             castContext.sessionManager.removeSessionManagerListener(
