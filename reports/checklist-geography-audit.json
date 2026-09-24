@@ -48,6 +48,18 @@
         "SP"
       ],
       "source": "https://mytuner-radio.com/pt/radio/sertanejo-fm-478293/"
+    },
+    {
+      "id": "rb_rádio_evangelizar_famlia_30dbdd",
+      "before": [
+        "Paranáá",
+        "PR"
+      ],
+      "after": [
+        "Curitiba",
+        "PR"
+      ],
+      "source": "https://radioevangelizar.com.br/sintonizar/"
     }
   ],
   "unverified": [
@@ -84,13 +96,6 @@
       "name": "Rádio I Love anos 80's",
       "city": "Porto Alegre",
       "state": "RN",
-      "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
-    },
-    {
-      "id": "rb_rádio_evangelizar_famlia_30dbdd",
-      "name": "Rádio Evangelizar Família",
-      "city": "Paranáá",
-      "state": "PR",
       "reason": "City missing/ambiguous or municipality/UF mismatch; publisher evidence required"
     },
     {

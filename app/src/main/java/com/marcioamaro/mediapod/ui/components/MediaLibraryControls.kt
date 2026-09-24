@@ -57,12 +57,12 @@ fun MediaItemActions(repository: MediaLibraryRepository, kind: LibraryKind, medi
     var create by remember { mutableStateOf(false) }
     val favorite = mediaKey in state.favorites
     val playlistId = path?.takeIf { it.startsWith("playlist:") }?.removePrefix("playlist:")
-    IconButton(onClick = { repository.toggleFavorite(mediaKey) }, modifier = Modifier.size(32.dp)) {
+    IconButton(onClick = { repository.toggleFavorite(mediaKey) }, modifier = Modifier.size(48.dp)) {
         Icon(if (favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
             if (favorite) "Remover dos favoritos" else "Favoritar", tint = color, modifier = Modifier.size(17.dp))
     }
     Box {
-        IconButton(onClick = { menu = true }, modifier = Modifier.size(32.dp)) {
+        IconButton(onClick = { menu = true }, modifier = Modifier.size(48.dp)) {
             Icon(Icons.Default.MoreVert, "Opções do arquivo", tint = color, modifier = Modifier.size(17.dp))
         }
         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {

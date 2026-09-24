@@ -29,6 +29,7 @@ keystore.properties
 # Scratch files and temporary pipeline data
 scratch/
 all_radio_sources.json
+all_radio_sources.zip
 novas_radios_validadas.json
 *.aab
 

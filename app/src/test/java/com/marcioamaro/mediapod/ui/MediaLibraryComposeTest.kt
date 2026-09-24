@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import com.marcioamaro.mediapod.data.model.PodcastEpisode
 import com.marcioamaro.mediapod.data.model.PodcastShow
@@ -69,9 +70,9 @@ class MediaLibraryComposeTest {
         compose.setContent {
             MaterialTheme { Row { MediaItemActions(repo, LibraryKind.VIDEO, "VIDEO:/Movies/clip.mp4", null, Color.Black) } }
         }
-        compose.onNodeWithContentDescription("Favoritar").performClick()
+        compose.onNodeWithContentDescription("Favoritar").assertHeightIsAtLeast(48.dp).performClick()
         assertTrue("VIDEO:/Movies/clip.mp4" in repo.state.value.favorites)
-        compose.onNodeWithContentDescription("Opções do arquivo").performClick()
+        compose.onNodeWithContentDescription("Opções do arquivo").assertHeightIsAtLeast(48.dp).performClick()
         compose.onNodeWithText("Adicionar à playlist").performClick()
         compose.onNodeWithText("+ Criar playlist").performClick()
         compose.onNodeWithText("Nome").performTextInput("Cinema")

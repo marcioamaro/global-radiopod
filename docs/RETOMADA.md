@@ -6,7 +6,7 @@ execução autorizada. Confira alterações locais antes de editar. Não reinici
 zero nem suponha que uma tarefa em andamento terminou.
 
 ## Estado atual
-- Base: MediaPod Android Kotlin/Compose; versão 0.3.8, código 90.
+- Base: MediaPod Android Kotlin/Compose; versão 0.3.9, código 91.
 - Projeto: `D:\\global-radiopod - Copia`; shell PowerShell.
 - Alterações anteriores extensas e não commitadas: preservar.
 - Pedido prioritário concluído: rótulos Top 20, busca independente dos Tops e build 0.3.6 (88).
@@ -28,7 +28,14 @@ zero nem suponha que uma tarefa em andamento terminou.
   8. Validação automatizada: 205 testes unitários passaram (0 falhas) e APK debug compilado (`app/build/outputs/apk/debug/app-debug.apk`).
 
 ## Próximo passo concreto
-Acompanhar a validação do usuário com o aparelho conectado testando o Cast de MP3 e vídeos locais na TV/Nest Mini, e em seguida prosseguir com os itens pendentes da checklist (Item 08 - Geografia e Item 18 - Acessibilidade/Tradução).
+Validar fisicamente o Cast de MP3 e vídeo local em TV/Nest Mini com o aparelho conectado. Em seguida, continuar a auditoria das 523 localidades de rádio restantes, alterando somente registros com evidência da própria emissora ou fonte pública confiável.
+
+## Avaliação local — 24/09/2026
+- `python scripts/check_project.py` aprovado: 41.551 rádios, quatro rankings Top 20, 74 recursos de texto em sete idiomas e backup automático desativado.
+- A suíte histórica em `reports/checklist-accessibility-tests.log` passou, mas pertence ao código anterior ao renomeio de namespace e à versão 0.3.8. A suíte atual `:app:testDebugUnitTest` gerou 60 XMLs, totalizando 206 testes, sem falhas nem erros.
+- Corrigido: `debug` usa `debugConfig`; os botões Favoritar e Opções da biblioteca têm alvo de 48 dp com ícones de 17 dp; APKs/AABs/ZIP legados saíram do índice e permanecem locais, protegidos por `.gitignore`.
+- O refactor incompleto de `IpodClassicScreen.kt`, que bloqueava a compilação, foi retirado sem afetar as alterações de Cast. `:app:assembleRelease` concluiu e gerou somente o APK 0.3.9 (91) em `app/build/outputs/apk/release/app-release.apk`.
+- Geografia: Rádio Evangelizar Família foi corrigida para Curitiba/PR a partir da página oficial da emissora; restam 523 entradas sem localidade confirmada.
 
 
 ## Verificação
