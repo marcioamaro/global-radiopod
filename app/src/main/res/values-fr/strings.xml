@@ -172,9 +172,6 @@
     <string name="settings_tag_configure">CONFIGURER</string>
     <string name="settings_chassis_anim_title">Effet Visuel du Dos</string>
     <string name="settings_chassis_anim_desc">Affiche le boîtier métallique classique en appuyant sur À propos</string>
-    <string name="settings_group_streaming_stability">Diffusion et Stabilité</string>
-    <string name="settings_pure_audio_title">Diffusion Économique et Stable</string>
-    <string name="settings_pure_audio_desc">Privilégie un flux fluide sans coupure, idéal pour les connexions lentes</string>
     <string name="settings_group_battery_bg">Arrière-plan et Batterie</string>
     <string name="settings_battery_bg_title">Lecture en Arrière-plan sans Interruption</string>
     <string name="settings_battery_bg_desc">Empêche le système de couper votre musique lorsque l\'écran est éteint ou verrouillé</string>

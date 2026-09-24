@@ -172,9 +172,6 @@
     <string name="settings_tag_configure">CONFIGURA</string>
     <string name="settings_chassis_anim_title">Effetto Visivo Posteriore</string>
     <string name="settings_chassis_anim_desc">Mostra la classica scocca metallica toccando Info</string>
-    <string name="settings_group_streaming_stability">Streaming e Stabilità</string>
-    <string name="settings_pure_audio_title">Trasmissione Economica e Stabile</string>
-    <string name="settings_pure_audio_desc">Privilegia una riproduzione fluida senza interruzioni, ideale per connessioni lente</string>
     <string name="settings_group_battery_bg">Background e Batteria</string>
     <string name="settings_battery_bg_title">Riproduzione in Background senza Pause</string>
     <string name="settings_battery_bg_desc">Impedisce al sistema di interrompere la musica a schermo spento o bloccato</string>

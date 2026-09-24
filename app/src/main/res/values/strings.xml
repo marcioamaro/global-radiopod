@@ -172,9 +172,6 @@
     <string name="settings_tag_configure">SET UP</string>
     <string name="settings_chassis_anim_title">Rear Case Visual Effect</string>
     <string name="settings_chassis_anim_desc">Displays the classic metal finish when tapping About</string>
-    <string name="settings_group_streaming_stability">Streaming and Stability</string>
-    <string name="settings_pure_audio_title">Economical &amp; Stable Streaming</string>
-    <string name="settings_pure_audio_desc">Prioritizes smooth continuous playback, ideal for slower connections</string>
     <string name="settings_group_battery_bg">Background &amp; Battery</string>
     <string name="settings_battery_bg_title">Uninterrupted Background Playback</string>
     <string name="settings_battery_bg_desc">Prevents the system from pausing audio when the screen is off or locked</string>

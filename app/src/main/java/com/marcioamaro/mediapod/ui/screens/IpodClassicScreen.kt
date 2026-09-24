@@ -3252,99 +3252,7 @@ private fun IpodSettingsScreen(
             }
         }
 
-        // Animação da Traseira do MediaPod (Easter Egg)
-        item {
-            val isChassisAnimEnabled = viewModel?.isChassisBackAnimationEnabled?.collectAsState()?.value ?: false
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(Color(0x33000000))
-                    .clickable { viewModel?.toggleChassisBackAnimationEnabled() }
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.settings_chassis_anim_title),
-                        color = backlightTextPrimary,
-                        fontSize = (12f * fontScale).sp,
-                        fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
-                        fontFamily = fontFamily
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = stringResource(R.string.settings_chassis_anim_desc),
-                        color = backlightTextSecondary,
-                        fontSize = (11f * fontScale).sp,
-                        lineHeight = (15f * fontScale).sp,
-                        fontFamily = fontFamily
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = if (isChassisAnimEnabled) stringResource(R.string.settings_tag_enabled) else stringResource(R.string.settings_tag_disabled),
-                    color = if (isChassisAnimEnabled) backlightHighlight else backlightTextSecondary,
-                    fontSize = (11f * fontScale).sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = fontFamily
-                )
-            }
-        }
-
-        // --- 6. ESTABILIDADE & MODO STREAMING PURO ---
-        item {
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = stringResource(R.string.settings_group_streaming_stability),
-                color = backlightTextSecondary,
-                fontSize = (12f * fontScale).sp,
-                fontWeight = FontWeight.Black,
-                fontFamily = fontFamily
-            )
-        }
-        item {
-            val isPureAudio = viewModel?.isPureAudioModeEnabled?.collectAsState()?.value ?: false
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(Color(0x33000000))
-                    .clickable { viewModel?.togglePureAudioMode() }
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.settings_pure_audio_title),
-                        color = backlightTextPrimary,
-                        fontSize = (12f * fontScale).sp,
-                        fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
-                        fontFamily = fontFamily
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = stringResource(R.string.settings_pure_audio_desc),
-                        color = backlightTextSecondary,
-                        fontSize = (11f * fontScale).sp,
-                        lineHeight = (15f * fontScale).sp,
-                        fontFamily = fontFamily
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = if (isPureAudio) stringResource(R.string.settings_tag_enabled) else stringResource(R.string.settings_tag_disabled),
-                    color = if (isPureAudio) backlightHighlight else backlightTextSecondary,
-                    fontSize = (11f * fontScale).sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = fontFamily
-                )
-            }
-        }
-
-        // --- 7. SEGUNDO PLANO E BATERIA ---
+        // --- 6. SEGUNDO PLANO E BATERIA ---
         item {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
@@ -3816,7 +3724,7 @@ private fun IpodAboutScreen(
 
             // Data da versão aaaa.mm.dd e número da versão
             Text(
-                text = "2026.09.24 - Versão 0.3.10 (92)",
+                text = "2026.09.24 - Versão 0.3.11 (93)",
                 color = backlightTextSecondary,
                 fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Bold,

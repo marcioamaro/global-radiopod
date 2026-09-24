@@ -172,9 +172,6 @@
     <string name="settings_tag_configure">EINRICHTEN</string>
     <string name="settings_chassis_anim_title">Rückseiten-Optikeffekt</string>
     <string name="settings_chassis_anim_desc">Zeigt das klassische Metallgehäuse beim Antippen von Über an</string>
-    <string name="settings_group_streaming_stability">Streaming und Stabilität</string>
-    <string name="settings_pure_audio_title">Sparsame &amp; stabile Übertragung</string>
-    <string name="settings_pure_audio_desc">Priorisiert kontinuierlichen Klang ohne Aussetzer, ideal für langsamere Verbindungen</string>
     <string name="settings_group_battery_bg">Hintergrund &amp; Akku</string>
     <string name="settings_battery_bg_title">Unterbrechungsfreie Hintergrund-Wiedergabe</string>
     <string name="settings_battery_bg_desc">Verhindert, dass das System die Musik bei ausgeschaltetem oder gesperrtem Bildschirm stoppt</string>

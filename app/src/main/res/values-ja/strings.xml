@@ -172,9 +172,6 @@
     <string name="settings_tag_configure">設定</string>
     <string name="settings_chassis_anim_title">背面メタルケース効果</string>
     <string name="settings_chassis_anim_desc">「情報」画面タップ時にクラシックな鏡面ステンレスの背面を表示します</string>
-    <string name="settings_group_streaming_stability">ストリーミング ＆ 安定性</string>
-    <string name="settings_pure_audio_title">省パケット・安定ストリーミング</string>
-    <string name="settings_pure_audio_desc">途切れのない安定した再生を最優先します（低速回線に最適）</string>
     <string name="settings_group_battery_bg">バックグラウンド ＆ バッテリー</string>
     <string name="settings_battery_bg_title">バックグラウンドでの連続再生</string>
     <string name="settings_battery_bg_desc">画面オフやロック時でも音声が途切れないよう保護します</string>

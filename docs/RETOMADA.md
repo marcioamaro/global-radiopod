@@ -6,7 +6,7 @@ execução autorizada. Confira alterações locais antes de editar. Não reinici
 zero nem suponha que uma tarefa em andamento terminou.
 
 ## Estado atual
-- Base: MediaPod Android Kotlin/Compose; versão 0.3.10, código 92.
+- Base: MediaPod Android Kotlin/Compose; versão 0.3.11, código 93.
 - Projeto: `D:\\global-radiopod - Copia`; shell PowerShell.
 - Alterações anteriores extensas e não commitadas: preservar.
 - Pedido prioritário concluído: rótulos Top 20, busca independente dos Tops e build 0.3.6 (88).
@@ -40,6 +40,8 @@ Validar fisicamente o Cast de MP3 e vídeo local em TV/Nest Mini com o aparelho 
 - Biblioteca e Configurações: Minha biblioteca usa moldura LCD, abas e fonte/escala ativas; atualização de catálogo e diagnóstico passaram a usar controles LCD. `MediaLibraryComposeTest` passou (3/3).
 - Modal de playlists: a UI deixou de usar `Dialog` do Android e passou a ser hospedada no conteúdo LCD de `IpodClassicScreen`; ela recebe o limite do visor e não cobre a carcaça ou a roda. `MediaLibraryComposeTest` passou (3/3); `:app:compileDebugKotlin` e `:app:assembleRelease` passaram. APK release 0.3.9 (91) atualizado.
 - Minha biblioteca removida por solicitação: foram eliminados o item do menu raiz, `PERSONAL_LIBRARY`, a tela `PersonalLibraryScreen` e o recurso `library_title` nos sete idiomas. O repositório de mídia continua para playlists, favoritos, recentes, recuperação de arquivos e backup. Versão 0.3.10 (92) gerada com `:app:assembleRelease`; checkpoint local `40bbb65` criado. Próximo passo: obter aprovação explícita para enviar o conteúdo ao GitHub `origin` e executar `git push origin internaciona`.
+- Capas oficiais: a auditoria brasileira gravou 15 imagens únicas declaradas pelas páginas das emissoras e retirou 470 imagens repetidas de agregadores. O script `scripts/official_radio_artwork.py` produz a evidência em `reports/official-brazil-radio-artwork.json`. Easter egg: a primeira exibição agora desativa-o de forma persistente e o gesto de agitar não pode reativá-lo; o item Efeito Visual da Traseira saiu de Configurações. A transmissão econômica apenas alterna um estado de modo de reprodução e não implementa economia de dados ou estabilização; aguardar decisão do usuário antes de alterá-la.
+- Transmissão Econômica e Estável removida por solicitação: não restaram interface, preferência persistida, estado de player, enum de modo ou indicação no serviço. `:app:compileDebugKotlin` passou. Próximo passo: validar fisicamente o Cast de MP3 e vídeo local; depois, continuar a auditoria geográfica com fontes verificáveis.
 
 
 ## Verificação

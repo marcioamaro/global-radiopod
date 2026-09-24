@@ -233,22 +233,6 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         setChassisBackAnimationEnabled(!_isChassisBackAnimationEnabled.value)
     }
 
-    private val _isPureAudioModeEnabled = MutableStateFlow(
-        prefs.isPureAudioModeEnabled()
-    )
-    val isPureAudioModeEnabled: StateFlow<Boolean> = _isPureAudioModeEnabled.asStateFlow()
-
-    fun setPureAudioModeEnabled(enabled: Boolean) {
-        _isPureAudioModeEnabled.value = enabled
-        prefs.setPureAudioModeEnabled(enabled)
-        playerManager.setPureAudioUserPreference(enabled)
-        soundAndHaptics.performClickHaptic()
-    }
-
-    fun togglePureAudioMode() {
-        setPureAudioModeEnabled(!_isPureAudioModeEnabled.value)
-    }
-
     val favorites: StateFlow<List<RadioStation>> = repository.favoritesFlow
         .map { list -> list.sortedBy { it.name.trim().lowercase() } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

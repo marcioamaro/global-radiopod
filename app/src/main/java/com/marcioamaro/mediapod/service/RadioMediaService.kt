@@ -908,17 +908,10 @@ class RadioMediaService : MediaLibraryService() {
             else -> "Streaming de Áudio Digital"
         }
 
-        val mode = playerManager.playbackMode.value
         val subText = when {
             localAudio != null -> "Música"
             podcast != null -> "Podcast"
-            station != null -> {
-                when (mode) {
-                    com.marcioamaro.mediapod.player.PlaybackMode.AUDIO_ONLY -> "Rádio Ao Vivo • Modo Estável 🔊"
-                    com.marcioamaro.mediapod.player.PlaybackMode.FALLBACK_URL -> "Rádio Ao Vivo • Fonte Alternativa 🔊"
-                    com.marcioamaro.mediapod.player.PlaybackMode.FULL -> "Rádio Ao Vivo"
-                }
-            }
+            station != null -> "Rádio Ao Vivo"
             else -> null
         }
 

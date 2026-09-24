@@ -172,9 +172,6 @@
     <string name="settings_tag_configure">CONFIGURAR</string>
     <string name="settings_chassis_anim_title">Efeito Visual da Traseira</string>
     <string name="settings_chassis_anim_desc">Exibe o visual metálico clássico do aparelho ao tocar em Sobre</string>
-    <string name="settings_group_streaming_stability">Transmissão e Estabilidade</string>
-    <string name="settings_pure_audio_title">Transmissão Econômica e Estável</string>
-    <string name="settings_pure_audio_desc">Foca no som contínuo sem interrupções, ideal para conexões mais lentas</string>
     <string name="settings_group_battery_bg">Segundo Plano e Bateria</string>
     <string name="settings_battery_bg_title">Tocar em Segundo Plano sem Pausas</string>
     <string name="settings_battery_bg_desc">Evita que o sistema interrompa sua música com a tela apagada ou bloqueada</string>

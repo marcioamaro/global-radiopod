@@ -86,7 +86,6 @@ class IpodPreferencesManager private constructor(context: Context) {
         private const val KEY_DOCK_SHOW_SECONDS = "key_dock_show_seconds"
         private const val KEY_CHASSIS_BACK_ANIMATION_ENABLED = "key_chassis_back_animation_enabled"
         private const val KEY_BRICK_HIGH_SCORES_JSON = "key_brick_high_scores_json"
-        private const val KEY_PURE_AUDIO_MODE = "key_pure_audio_mode"
         private const val KEY_RANDOM_HARDWARE_COLORS_ENABLED = "key_random_hardware_colors_enabled"
         private const val KEY_IS_24H_CLOCK = "key_is_24h_clock"
         private const val MAX_RECENTS = 20
@@ -105,14 +104,6 @@ class IpodPreferencesManager private constructor(context: Context) {
      * Modo Streaming Puro (Apenas Áudio): Quando ativado, desativa permanentemente a extração
      * e atualização de metadados ICY/ID3 de músicas/artistas do stream para eliminar sobrecarga e travamentos.
      */
-    fun isPureAudioModeEnabled(): Boolean {
-        return prefs.getBoolean(KEY_PURE_AUDIO_MODE, false)
-    }
-
-    fun setPureAudioModeEnabled(enabled: Boolean) {
-        prefs.edit().putBoolean(KEY_PURE_AUDIO_MODE, enabled).apply()
-    }
-
     fun isChassisBackAnimationEnabled(): Boolean {
         return prefs.getBoolean(KEY_CHASSIS_BACK_ANIMATION_ENABLED, false)
     }

@@ -115,9 +115,6 @@ class RadioPlayerManager private constructor(private val context: Context) {
     private val _rdsInfo = MutableStateFlow(RdsInfo())
     val rdsInfo: StateFlow<RdsInfo> = _rdsInfo.asStateFlow()
 
-    private val _playbackMode = MutableStateFlow(PlaybackMode.FULL)
-    val playbackMode: StateFlow<PlaybackMode> = _playbackMode.asStateFlow()
-
     private val _nowPlaying = MutableStateFlow(
         NowPlayingMetadata(
             title = "Rádio Pod",
@@ -129,10 +126,6 @@ class RadioPlayerManager private constructor(private val context: Context) {
         )
     )
     val nowPlaying: StateFlow<NowPlayingMetadata> = _nowPlaying.asStateFlow()
-
-    fun setPureAudioUserPreference(enabled: Boolean) {
-        _playbackMode.value = if (enabled) PlaybackMode.AUDIO_ONLY else PlaybackMode.FULL
-    }
 
     private val _visualizerAmplitudes = MutableStateFlow(List(16) { 0.1f })
     val visualizerAmplitudes: StateFlow<List<Float>> = _visualizerAmplitudes.asStateFlow()
