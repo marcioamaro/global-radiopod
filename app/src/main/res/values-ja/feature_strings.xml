@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="library_title">マイライブラリ</string>
     <string name="library_continue">続ける</string>
     <string name="library_bookmarks">ブックマーク</string>
     <string name="library_subscriptions">購読</string>

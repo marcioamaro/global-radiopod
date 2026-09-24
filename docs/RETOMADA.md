@@ -6,7 +6,7 @@ execução autorizada. Confira alterações locais antes de editar. Não reinici
 zero nem suponha que uma tarefa em andamento terminou.
 
 ## Estado atual
-- Base: MediaPod Android Kotlin/Compose; versão 0.3.9, código 91.
+- Base: MediaPod Android Kotlin/Compose; versão 0.3.10, código 92.
 - Projeto: `D:\\global-radiopod - Copia`; shell PowerShell.
 - Alterações anteriores extensas e não commitadas: preservar.
 - Pedido prioritário concluído: rótulos Top 20, busca independente dos Tops e build 0.3.6 (88).
@@ -39,6 +39,7 @@ Validar fisicamente o Cast de MP3 e vídeo local em TV/Nest Mini com o aparelho 
 - Playlists: as interações de criar, renomear, escolher, mover e remover agora usam modal LCD com cores do tema selecionado; `MediaLibraryComposeTest` passou (3/3) e o APK release 0.3.9 foi recompilado.
 - Biblioteca e Configurações: Minha biblioteca usa moldura LCD, abas e fonte/escala ativas; atualização de catálogo e diagnóstico passaram a usar controles LCD. `MediaLibraryComposeTest` passou (3/3).
 - Modal de playlists: a UI deixou de usar `Dialog` do Android e passou a ser hospedada no conteúdo LCD de `IpodClassicScreen`; ela recebe o limite do visor e não cobre a carcaça ou a roda. `MediaLibraryComposeTest` passou (3/3); `:app:compileDebugKotlin` e `:app:assembleRelease` passaram. APK release 0.3.9 (91) atualizado.
+- Minha biblioteca removida por solicitação: foram eliminados o item do menu raiz, `PERSONAL_LIBRARY`, a tela `PersonalLibraryScreen` e o recurso `library_title` nos sete idiomas. O repositório de mídia continua para playlists, favoritos, recentes, recuperação de arquivos e backup. Versão 0.3.10 (92) gerada com `:app:assembleRelease`; próximo passo é criar o checkpoint e enviar ao remoto.
 
 
 ## Verificação

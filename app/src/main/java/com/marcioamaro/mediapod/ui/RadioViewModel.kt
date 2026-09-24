@@ -40,7 +40,6 @@ import kotlinx.coroutines.launch
 
 enum class IpodScreenDestination {
     MAIN_MENU,
-    PERSONAL_LIBRARY,
     RADIO_MENU,
     NOW_PLAYING_RDS,
     FAVORITES,
@@ -1165,7 +1164,6 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         soundAndHaptics.performHeavyHaptic()
 
         when (currentScreen) {
-            IpodScreenDestination.PERSONAL_LIBRARY -> Unit
             IpodScreenDestination.MAIN_MENU -> {
                 when (index) {
                     0 -> navigateTo(IpodScreenDestination.RADIO_MENU)
@@ -1189,8 +1187,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                     9 -> enterDockMode()
                     10 -> navigateTo(IpodScreenDestination.SETTINGS_THEMES)
                     11 -> navigateTo(IpodScreenDestination.ABOUT)
-                    12 -> navigateTo(IpodScreenDestination.PERSONAL_LIBRARY)
-                    13 -> exitApplication()
+                    12 -> exitApplication()
                 }
             }
             IpodScreenDestination.AUDIO_OUTPUT_MENU -> {
@@ -2172,8 +2169,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun getItemCountForCurrentScreen(): Int {
         return when (_uiState.value.currentScreen) {
-            IpodScreenDestination.PERSONAL_LIBRARY -> 0
-            IpodScreenDestination.MAIN_MENU -> 14
+            IpodScreenDestination.MAIN_MENU -> 13
             IpodScreenDestination.AUDIO_OUTPUT_MENU -> audioRouteManager.availableDevices.value.size
             IpodScreenDestination.RADIO_MENU -> 9
             IpodScreenDestination.PODCASTS_MENU -> 9

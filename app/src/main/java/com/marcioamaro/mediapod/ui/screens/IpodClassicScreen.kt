@@ -461,7 +461,7 @@ fun IpodClassicScreen(
                     }
 
                     IpodHeader(
-                        title = if (uiState.currentScreen == IpodScreenDestination.PERSONAL_LIBRARY) stringResource(R.string.library_title) else getScreenTitle(uiState),
+                        title = getScreenTitle(uiState),
                         status = playbackStatus,
                         isHoldLocked = uiState.isHoldLocked,
                         sleepTimerMinutes = sleepTimerMinutes,
@@ -503,11 +503,6 @@ fun IpodClassicScreen(
                     Box(modifier = Modifier.fillMaxSize()) {
                         com.marcioamaro.mediapod.ui.components.LcdPlaylistModalHost {
                             when (uiState.currentScreen) {
-                            IpodScreenDestination.PERSONAL_LIBRARY -> {
-                                com.marcioamaro.mediapod.ui.components.LcdFeatureTheme(backlightBg, backlightTextPrimary, fontFamily, fontScale, isBold) {
-                                    if (viewModel != null) PersonalLibraryScreen(viewModel, backlightBg, backlightTextPrimary, backlightTextSecondary, backlightHighlight, fontFamily, fontScale, isBold)
-                                }
-                            }
                             IpodScreenDestination.MAIN_MENU -> {
                                 IpodRootHomeScreen(
                                     selectedIndex = uiState.selectedIndex,
@@ -1481,7 +1476,6 @@ fun IpodClassicScreen(
 private fun getScreenTitle(uiState: UiState): String {
     return when (uiState.currentScreen) {
         IpodScreenDestination.MAIN_MENU -> "MediaPod + Radio / Podcast"
-        IpodScreenDestination.PERSONAL_LIBRARY -> "Minha biblioteca"
         IpodScreenDestination.AUDIO_OUTPUT_MENU -> "Saída de Áudio"
         IpodScreenDestination.RADIO_MENU -> "Rádio"
         IpodScreenDestination.NOW_PLAYING_RDS -> "Agora Tocando"
@@ -3822,7 +3816,7 @@ private fun IpodAboutScreen(
 
             // Data da versão aaaa.mm.dd e número da versão
             Text(
-                text = "2026.09.24 - Versão 0.3.9 (91)",
+                text = "2026.09.24 - Versão 0.3.10 (92)",
                 color = backlightTextSecondary,
                 fontSize = (12f * fontScale).sp,
                 fontWeight = FontWeight.Bold,

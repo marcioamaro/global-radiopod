@@ -33,7 +33,7 @@ import com.marcioamaro.mediapod.R
 data class RootMenuItem(
     val title: String,
     val icon: ImageVector,
-    val destination: Int // 0: Radio, 1: MP3, 2: Video, 3: Game, 4: Car, 5: About, 12: Close App
+    val destination: Int
 )
 
 @Composable
@@ -66,8 +66,7 @@ fun IpodRootHomeScreen(
         RootMenuItem(stringResource(R.string.menu_dock_mode), Icons.Default.Schedule, 9),
         RootMenuItem(stringResource(R.string.menu_settings), Icons.Default.Settings, 10),
         RootMenuItem(stringResource(R.string.menu_about), Icons.Default.Info, 11),
-        RootMenuItem(stringResource(R.string.library_title), Icons.Default.Bookmarks, 12),
-        RootMenuItem(stringResource(R.string.menu_close_app), Icons.Default.PowerSettingsNew, 13)
+        RootMenuItem(stringResource(R.string.menu_close_app), Icons.Default.PowerSettingsNew, 12)
     )
 
     val listState = rememberLazyListState()

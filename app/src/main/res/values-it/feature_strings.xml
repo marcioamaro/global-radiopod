@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="library_title">La mia raccolta</string>
     <string name="library_continue">Continua</string>
     <string name="library_bookmarks">Segnalibri</string>
     <string name="library_subscriptions">Abbonamenti</string>
