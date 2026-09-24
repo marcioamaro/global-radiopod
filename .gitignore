@@ -20,3 +20,20 @@ debug.keystore
 __pycache__/
 *.pyc
 *.bak_*
+
+# Private signing material remains local
+*.jks
+*.keystore
+keystore.properties
+
+# Scratch files and temporary pipeline data
+scratch/
+all_radio_sources.json
+novas_radios_validadas.json
+*.aab
+
+# Large pipeline reports (keep logs, exclude data)
+reports/catalog-refresh-20260922/
+reports/media-rankings/
+reports/ibge-municipios.json
+reports/mediapod-catalog.zip
