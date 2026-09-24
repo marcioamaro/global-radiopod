@@ -29,6 +29,7 @@ class RadioAuditAndSearchTest {
             override suspend fun insertFavorite(entity: FavoriteStationEntity) {}
             override suspend fun deleteFavorite(entity: FavoriteStationEntity) {}
             override suspend fun deleteFavoriteById(stationId: String) {}
+            override suspend fun deleteAllFavorites() {}
         }
         repository = RadioRepository(fakeDao)
     }

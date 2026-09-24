@@ -1,49 +1,35 @@
 package com.example.data.repository
 
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
-import org.junit.Before
+import android.app.Application
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
+import org.junit.Assert.*
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [33], application = Application::class)
 class RadioRankingRepositoryTest {
-
-    private lateinit var rankingRepository: RadioRankingRepository
-
-    @Before
-    fun setup() {
-        rankingRepository = RadioRankingRepository.getInstance()
-    }
-
-    @Test
-    fun testGetTopBrazilReturnsStations() = runBlocking {
-        val list = rankingRepository.getTopBrazil(limit = 20)
-        assertNotNull(list)
-        assertFalse(list.isEmpty())
-        assertTrue(list.size <= 20)
-        // Todas as estações do Top Brasil devem pertencer ao Brasil
-        assertTrue(list.all { it.countryCode.equals("BR", ignoreCase = true) || it.country.contains("Brasil", ignoreCase = true) })
-    }
-
-    @Test
-    fun testGetTopWorldReturnsStations() = runBlocking {
-        val list = rankingRepository.getTopWorld(limit = 20)
-        assertNotNull(list)
-        assertFalse(list.isEmpty())
-        assertTrue(list.size <= 20)
-    }
-
-    @Test
-    fun testTopBrazilSortedByVotes() = runBlocking {
-        val list = rankingRepository.getTopBrazil(limit = 10)
-        if (list.size >= 2) {
-            for (i in 0 until list.size - 1) {
-                assertTrue(
-                    "Top Brasil deve estar ordenado descendentemente por votos",
-                    list[i].votes >= list[i + 1].votes
-                )
-            }
+    @Test fun allTwentyStationsRetainPopularityOrder() = runBlocking {
+        PublishedRankings.initialize(ApplicationProvider.getApplicationContext<Context>())
+        val repo = RadioRankingRepository.getInstance()
+        val brazil = repo.getTopBrazil(100)
+        val world = repo.getTopWorld(100)
+        for (stations in listOf(brazil, world)) {
+            assertEquals(20, stations.size)
+            assertEquals(20, stations.map { it.id }.distinct().size)
+            assertEquals((1..20).toList(), stations.map { it.rankPosition })
+            assertTrue(stations.all { it.streamUrl.startsWith("http") })
         }
+        assertEquals("Band FM", brazil.first().name)
+        assertEquals("Antena 1 FM", brazil[1].name)
+        assertTrue(brazil.all { it.countryCode == "BR" })
+        assertEquals("RTL", world.first().name)
+        assertTrue(world.map { it.countryCode }.distinct().size > 3)
+        assertEquals(brazil.take(3), repo.getTopBrazil(3))
+        assertTrue(repo.getTopWorld(-1).isEmpty())
     }
 }
