@@ -123,3 +123,14 @@ regressões pertinentes e gerar APK/AAB; não publicar automaticamente.
   `:app:assembleRelease` (R8/lint aprovados). `output-metadata.json` confirma
   `versionCode 102` e `versionName 0.3.20`; teste físico no carro permanece
   pendente.
+
+- 25/09/2026 — Android Auto com telefone bloqueado: adicionada a capacidade
+  `Player.COMMAND_SET_MEDIA_ITEM` na conexão Media3, permitindo ao controlador
+  selecionar/restaurar a rádio em segundo plano sem exigir desbloqueio do celular.
+  `:app:compileDebugKotlin` aprovado; confirmar em aparelho real no Item 10.
+
+- 25/09/2026 — Release 0.3.21 (103): corrigido o player de vídeo, que comparava
+  o vídeo após sobrescrever `_currentVideo` e por isso nunca trocava do primeiro
+  item. A correção também trata `STATE_ENDED`. `:app:assembleRelease` aprovado
+  (R8/lint); `output-metadata.json` confirma `versionCode 103` e `versionName
+  0.3.21`.

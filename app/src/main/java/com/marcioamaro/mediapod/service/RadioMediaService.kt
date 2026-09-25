@@ -1113,6 +1113,9 @@ class RadioMediaService : MediaLibraryService() {
 
             val playerCommands = defaultResult.availablePlayerCommands.buildUpon()
                 .add(Player.COMMAND_PLAY_PAUSE)
+                // Obrigatório para o Android Auto selecionar/restaurar a rádio
+                // enquanto a Activity do telefone está em segundo plano ou bloqueada.
+                .add(Player.COMMAND_SET_MEDIA_ITEM)
                 .add(Player.COMMAND_PREPARE)
                 .add(Player.COMMAND_STOP)
                 .add(Player.COMMAND_SEEK_BACK)

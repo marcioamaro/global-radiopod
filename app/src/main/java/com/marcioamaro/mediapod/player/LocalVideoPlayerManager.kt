@@ -118,26 +118,35 @@ class LocalVideoPlayerManager private constructor(private val context: Context) 
         // Pausar rádio ou MP3 em execução
         RadioPlayerManager.getInstance(context).pause()
 
-        _currentVideo.value = video
-        _durationMs.value = video.durationMs
-        _currentPositionMs.value = 0L
+        val previousVideo = _currentVideo.value
 
         val routeManager = AudioRouteManager.getInstance(context)
         if (routeManager.isCastingActive()) {
+            _currentVideo.value = video
+            _durationMs.value = video.durationMs
+            _currentPositionMs.value = 0L
             exoPlayer.pause()
             _isPlaying.value = true
             routeManager.updateCastMedia()
             return
         }
 
-        // Se já for o mesmo vídeo carregado, mantenha a posição e retome se necessário
-        if (_currentVideo.value?.id == video.id && exoPlayer.playbackState != Player.STATE_IDLE) {
+        // Comparar antes de substituir o estado. Antes, _currentVideo já recebia
+        // 'video' acima e todo item era tratado como o primeiro vídeo carregado.
+        // O estado ENDED também precisa recriar a mídia para reiniciar corretamente.
+        if (previousVideo?.id == video.id &&
+            exoPlayer.playbackState != Player.STATE_IDLE &&
+            exoPlayer.playbackState != Player.STATE_ENDED
+        ) {
             if (!exoPlayer.isPlaying) {
                 exoPlayer.play()
             }
             return
         }
 
+        _currentVideo.value = video
+        _durationMs.value = video.durationMs
+        _currentPositionMs.value = 0L
         val mediaItem = MediaItem.fromUri(video.contentUri)
         exoPlayer.setMediaItem(mediaItem)
         exoPlayer.seekTo(com.marcioamaro.mediapod.data.repository.MediaLibraryRepository.getInstance(context).position(video.libraryKey()))

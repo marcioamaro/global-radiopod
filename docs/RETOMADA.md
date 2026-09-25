@@ -12,7 +12,7 @@ exibida na tela Sobre (`IpodClassicScreen.kt`). Conferir ambos antes de gerar o
 APK ou AAB.
 
 ## Estado atual
-- Base: MediaPod Android Kotlin/Compose; versão 0.3.20, código 102.
+- Base: MediaPod Android Kotlin/Compose; versão 0.3.21, código 103.
 - Projeto: `D:\\global-radiopod - Copia`; shell PowerShell.
 - Alterações anteriores extensas e não commitadas: preservar.
 - Pedido prioritário concluído: rótulos Top 20, busca independente dos Tops e build 0.3.6 (88).
@@ -36,8 +36,9 @@ APK ou AAB.
 ## Próximo passo concreto
 Validar em Android Auto físico a retomada da última rádio e a identificação da
 estação: conectar ao carro repetidas vezes, confirmar o início após a negociação de
-750 ms e a ausência de “Unknown source” em Favoritas, Recentes e retomada. Depois,
-validar visualmente em AMOLED os dois ciclos de Dock, bateria e a reprodução/autoplay.
+750 ms, inclusive com o telefone bloqueado, e a ausência de “Unknown source” em
+Favoritas, Recentes e retomada. Depois, validar visualmente em AMOLED os dois
+ciclos de Dock, bateria e a reprodução/autoplay.
 
 ## Avaliação local — 24/09/2026
 - `python scripts/check_project.py` aprovado: 41.551 rádios, quatro rankings Top 20, 74 recursos de texto em sete idiomas e backup automático desativado.
@@ -110,6 +111,18 @@ validar visualmente em AMOLED os dois ciclos de Dock, bateria e a reprodução/a
 - Release 0.3.20 (102) — 25/09/2026: correção do Android Auto incorporada,
   versão e tela Sobre sincronizadas em 2026.09.25. `:app:assembleRelease`
   passou em 4m33s com R8, lint e assinatura; APK confirmado por
+  `output-metadata.json`.
+
+- Android Auto em segundo plano (25/09/2026): a sessão passou a anunciar
+  `Player.COMMAND_SET_MEDIA_ITEM`, requisito do Media3 para o controlador do carro
+  selecionar e restaurar rádios enquanto a Activity está bloqueada. A trava não é
+  mais aplicada pelo contrato de comandos do app. `:app:compileDebugKotlin`
+  passou; validar no veículo.
+
+- Release 0.3.21 (103) — 25/09/2026: correção do player de vídeo incorporada;
+  seleção de outro vídeo agora compara o item anterior antes de atualizar o
+  estado e reinicia corretamente itens em `ENDED`. `:app:assembleRelease`
+  passou em 4m40s com R8, lint e assinatura; APK confirmado por
   `output-metadata.json`.
 
 
