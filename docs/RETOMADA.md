@@ -12,7 +12,7 @@ exibida na tela Sobre (`IpodClassicScreen.kt`). Conferir ambos antes de gerar o
 APK ou AAB.
 
 ## Estado atual
-- Base: MediaPod Android Kotlin/Compose; versão 0.3.21, código 103.
+- Base: MediaPod Android Kotlin/Compose; versão 0.3.22, código 104.
 - Projeto: `D:\\global-radiopod - Copia`; shell PowerShell.
 - Alterações anteriores extensas e não commitadas: preservar.
 - Pedido prioritário concluído: rótulos Top 20, busca independente dos Tops e build 0.3.6 (88).
@@ -140,6 +140,28 @@ Não inicie dois processos Gradle simultâneos. Antes de repetir um build,
 verifique se o anterior terminou. Processos da sessão anterior podem não existir.
 
 ## Continuidade
+
+Diagnóstico Alpha FM 101.7 (25/09/2026): APK debug instalado no aparelho ADB
+`HMQ8PJHY4LHI7PNZ`. O log confirmou EOF no stream AAC da Alpha e respostas 404/400
+nas URLs de fallback geradas automaticamente; evidências em
+`reports/alpha-fm-debug-log.txt` e `reports/alpha-fm-debug-after-fix.txt`.
+`RadioStation.getAllStreamCandidates()` foi ajustado para não gerar endpoints
+StreamTheWorld; `:app:compileDebugKotlin` e `:app:assembleDebug` passaram.
+Pendente: desinstalar/reinstalar ou limpar dados para remover URLs antigas
+persistidas e repetir o teste físico da primeira execução.
+
+Teste limpo repetido (25/09/2026): após reinstalação, a Alpha ainda encerrou a
+URL oficial `RADIO_ALPHAFM_ADP.aac` com EOF, mas não houve mais HTTP 404/400 nem
+fallback artificial; o player repetiu somente a URL cadastrada. Evidência em
+`reports/alpha-fm-clean-test.txt`. O servidor da emissora continua sendo o
+fator externo observado; não há fonte alternativa cadastrada no catálogo.
+Na segunda tentativa a transmissão estabilizou no aparelho, confirmando a
+recuperação esperada sem os fallbacks artificiais.
+
+Release 0.3.22 (104) preparada em 25/09/2026: versão e tela Sobre atualizadas;
+`:app:assembleRelease` passou e `output-metadata.json` confirmou `versionCode
+104`/`versionName 0.3.22`; commit/push desta entrega ainda pendentes.
+
 Os documentos sobrevivem ao fechamento da IDE. A execução requer uma sessão do
 agente aberta; não é prometida execução autônoma com a IDE fechada. Ao iniciar uma
 nova sessão neste diretório, AGENTS.md direciona a leitura das pendências.

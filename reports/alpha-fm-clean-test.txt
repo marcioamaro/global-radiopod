@@ -1,0 +1,927 @@
+--------- beginning of main
+09-25 16:54:43.898 18565 18565 E Zygote  : process_name_ptr:18565 com.marcioamaro.mediapod
+09-25 16:54:43.899 18565 18565 E Zygote  : SetMemoryProtected process_name_ptr:18565 com.marcioamaro.mediapod
+09-25 16:54:43.904 18565 18565 I oamaro.mediapod: Late-enabling -Xcheck:jni
+09-25 16:54:43.935 18565 18565 I oamaro.mediapod: Using generational CollectorTypeCMC GC.
+09-25 16:54:43.971 18565 18565 D nativeloader: Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+--------- beginning of system
+09-25 16:54:43.976 18565 18565 I ActivityThread: Current dynamic renderEngine type=0
+09-25 16:54:43.995 18565 23248 D MiuiDownscaleImpl: set override inverted scale : 1.0
+09-25 16:54:44.001 18565 23248 D AppScoutStateMachine: 18565-ScoutStateMachinecreated
+09-25 16:54:44.006 18565 18565 I RENDER_TURBO: onActivityThreadCreate not in white list, pkg=com.marcioamaro.mediapod, type=aristotle
+09-25 16:54:44.024 18565 18565 D ActivityThread: setEmbeddedParam packageName=com.marcioamaro.mediapod processName=com.marcioamaro.mediapod isEmbedded=false isIsolated=false
+09-25 16:54:44.551 18565 18565 D nativeloader: Configuring clns-10 for other apk /data/app/~~rsS3j3X3inkSJ7bhUvKrQw==/com.marcioamaro.mediapod-Ky2qhPJ1FEK1WzTSkGjgyg==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~rsS3j3X3inkSJ7bhUvKrQw==/com.marcioamaro.mediapod-Ky2qhPJ1FEK1WzTSkGjgyg==/lib/arm64:/data/app/~~rsS3j3X3inkSJ7bhUvKrQw==/com.marcioamaro.mediapod-Ky2qhPJ1FEK1WzTSkGjgyg==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/com.marcioamaro.mediapod
+09-25 16:54:44.555 18565 18565 I oamaro.mediapod: AssetManager2(0xb4000071bd013578) locale list changing from [] to [pt-BR]
+09-25 16:54:44.558 18565 18565 E MiuiPreloadClassImpl: invoke error.
+09-25 16:54:44.558 18565 23253 D MiuiMonitorThread: Shared singleton Thread for stability monitor start
+09-25 16:54:44.560 18565 18565 D HWUI    : [HWUI] Flag vulkan_enhance_pipeline_cache enabled
+09-25 16:54:44.560 18565 18565 D HWUI    : [HWUI] EnhanceVkPipelineCache is disabled
+09-25 16:54:44.560 18565 18565 D HWUI    : [HWUI] Flag ddre enabled
+09-25 16:54:44.562 18565 18565 V GraphicsEnvironment: Currently set values for:
+09-25 16:54:44.562 18565 18565 V GraphicsEnvironment:   angle_gl_driver_selection_pkgs=[com.android.angle, com.linecorp.b612.android, com.campmobile.snow, com.google.android.apps.tachyon]
+09-25 16:54:44.562 18565 18565 V GraphicsEnvironment:   angle_gl_driver_selection_values=[angle, native, native, native]
+09-25 16:54:44.562 18565 18565 V GraphicsEnvironment: com.marcioamaro.mediapod is not listed in per-application setting
+09-25 16:54:44.562 18565 18565 V GraphicsEnvironment: ANGLE allowlist from config: com.dreamgames.royalmatch com.dts.freefiremax com.dxx.firenow com.gramgames.mergedragons com.ludo.king com.mojang.minecraftpe com.my.defense com.nintendo.zaka com.os.airforce com.playrix.fishdomdd.gplay io.teslatech.callbreak jp.konami.prospia net.peakgames.toonblast
+09-25 16:54:44.562 18565 18565 V GraphicsEnvironment: com.marcioamaro.mediapod is not listed in ANGLE allowlist or settings, returning default
+09-25 16:54:44.562 18565 18565 V GraphicsEnvironment: App is not on the allowlist for updatable production driver.
+09-25 16:54:44.566 18565 23253 I ActivityThread: TrafficStats init done
+09-25 16:54:44.575 18565 18565 D ResMonitorStub: The current process type is: third_party_app, process name is: com.marcioamaro.mediapod
+09-25 16:54:44.576 18565 23253 E ashmem  : Pinning is deprecated since Android Q. Please use trim or other methods.
+09-25 16:54:44.581 18565 23253 I ForceDarkHelperStubImpl: initialize for com.marcioamaro.mediapod , ForceDarkAppConfig: null
+09-25 16:54:44.582 18565 23253 D nativeloader: Load libforcedarkimpl.so using system ns (caller=/system_ext/framework/miui-framework.jar): ok
+09-25 16:54:44.582 18565 23253 D HWUI    : JNI_OnLoad success
+09-25 16:54:44.582 18565 23253 I MiuiForceDarkConfig: setConfig density:3.000000, mainRule:0, secondaryRule:0, tertiaryRule:0
+09-25 16:54:44.584 18565 18565 W FirebaseApp: Default FirebaseApp failed to initialize because no default options were found. This usually means that com.google.gms:google-services was not applied to your gradle project.
+09-25 16:54:44.584 18565 18565 I FirebaseInitProvider: FirebaseApp initialization unsuccessful
+09-25 16:54:44.588 18565 18565 D WM-WrkMgrInitializer: Initializing WorkManager with default configuration.
+09-25 16:54:44.589 18565 23253 I ActivityThread: Miui Feature Init done
+09-25 16:54:44.638 18565 18565 D WM-PackageManagerHelper: androidx.work.impl.background.systemjob.SystemJobService enabled
+09-25 16:54:44.638 18565 18565 D WM-Schedulers: Created SystemJobScheduler and enabled SystemJobService
+09-25 16:54:44.646 18565 23361 D WM-ForceStopRunnable: The default process name was not specified.
+09-25 16:54:44.652 18565 23361 D WM-ForceStopRunnable: Performing cleanup operations.
+09-25 16:54:44.752 18565 18565 I NativeTurboSchedManager: Load libmiui_runtime
+09-25 16:54:44.752 18565 18565 E TurboSchedMonitor: failed to find setSchedAffinity method com.marcioamaro.mediapod
+09-25 16:54:44.752 18565 23375 D WM-PackageManagerHelper: Skipping component enablement for androidx.work.impl.background.systemalarm.RescheduleReceiver
+09-25 16:54:44.754 18565 18565 E TurboSchedMonitor: failed to find setSchedAffinity method com.marcioamaro.mediapod
+09-25 16:54:45.104 18565 18565 E TurboSchedMonitor: failed to find setSchedAffinity method com.marcioamaro.mediapod
+09-25 16:54:45.104 18565 18565 E TurboSchedMonitor: failed to find setSchedAffinity method com.marcioamaro.mediapod
+09-25 16:54:45.124 18565 18565 D ServiceWatchdog: Watchdog agendado a cada 15min
+09-25 16:54:45.136 18565 18565 W libc    : Access denied finding property "ro.vendor.perf.scroll_opt"
+09-25 16:54:45.143 18565 18565 D nativeloader: Load libpowerhalwrap_jni.so using system ns (caller=/system_ext/framework/mediatek-framework.jar): ok
+09-25 16:54:45.143 18565 18565 I PowerHalWrapper: PowerHalWrapper.getInstance 
+09-25 16:54:45.143 18565 18565 I PowerHalWrapper: PowerHalWrapper.getInstance 
+09-25 16:54:45.144 18565 18565 I M-ProMotion: M-ProMotion is disabled
+09-25 16:54:45.145 18565 18565 D FramePredict: FramePredict init: false
+09-25 16:54:45.146 18565 18565 I Choreographer: Skipped 67 frames!  The application may be doing too much work on its main thread.
+09-25 16:54:45.147 18565 18565 D HWUI    : [HWUI] Flag vulkan_enhance_pipeline_cache enabled
+09-25 16:54:45.147 18565 18565 D HWUI    : [HWUI] EnhanceVkPipelineCache is disabled
+09-25 16:54:45.147 18565 18565 D HWUI    : [HWUI] Flag ddre enabled
+09-25 16:54:45.147 18565 18565 D oamaro.mediapod: blurUtils, initBackgroundBlurMinInterval processName(com.marcioamaro.mediapod), inWhiteLists(0)
+09-25 16:54:45.149 18565 23253 I ActivityThread: HardwareRenderer preload  done
+09-25 16:54:45.150 18565 18565 I oamaro.mediapod: AssetManager2(0xb4000071bd0122b8) locale list changing from [] to [pt-BR]
+09-25 16:54:45.162 18565 23481 I DisplayManager: Choreographer implicitly registered for the refresh rate.
+09-25 16:54:45.164 18565 23481 W libc    : Access denied finding property "vendor.migl.debug"
+09-25 16:54:45.164 18565 23481 I libMiGL : EnableDR: 0
+09-25 16:54:45.164 18565 23481 D libMiGL : mDFIInterval: -1
+09-25 16:54:45.164 18565 23481 D MMUD    : mtk_memory_debug_init com.marcioamaro.mediapod 0xb40000706d035060
+09-25 16:54:45.169 18565 23361 W JobInfo : Requested important-while-foreground flag for job0 is ignored and takes no effect
+09-25 16:54:45.171 18565 23361 D WM-SystemJobScheduler: Scheduling work ID c7c0fdc4-6d73-42ef-92c3-4ce6f9a1a9c2Job ID 0
+09-25 16:54:45.172 18565 18565 D CompatChangeReporter: Compat change id reported: 377864165; UID 10577; state: ENABLED
+09-25 16:54:45.173 18565 23481 I mali    : [MEMPROF] Memory instrumentation via debugfs enabled
+09-25 16:54:45.173 18565 18565 D DesktopModeFlags: Toggle override initialized to: OVERRIDE_UNSET
+09-25 16:54:45.174 18565 23481 D MMUD    : get_leak_baseline 3246391296
+09-25 16:54:45.177 18565 18565 D DecorView: updateFreeformOutlineFromActivity, inFreeform=false,inFreeformWindowMode=false
+09-25 16:54:45.179 18565 18565 D WmSystemUiDebug: set navigation bar color,Alpha=0.0, RGB:0,0,0 caller:androidx.activity.EdgeToEdgeApi29.setUp:322 androidx.activity.EdgeToEdge.enable:95 androidx.activity.EdgeToEdge.enable$default:69 com.marcioamaro.mediapod.MainActivity.onCreate:81 android.app.Activity.performCreate:9380 android.app.Activity.performCreate:9323 android.app.Instrumentation.callActivityOnCreate:1537 android.app.ActivityThread.performLaunchActivity:4685 android.app.ActivityThread.handleLaunchActivity:4932 android.app.servertransaction.LaunchActivityItem.execute:222 
+09-25 16:54:45.185 18565 23361 D WM-GreedyScheduler: Starting tracking for c7c0fdc4-6d73-42ef-92c3-4ce6f9a1a9c2
+09-25 16:54:45.189 18565 23481 W HidlServiceManagement: hwservicemanager is not supported on the device.
+09-25 16:54:45.189 18565 23481 I HidlServiceManagement: Trying to get transport of android.hardware.configstore@1.0::ISurfaceFlingerConfigs/default without hwservicemanager
+09-25 16:54:45.200 18565 23481 D HWUI    : [HWUI] Flag vulkan_enhance_pipeline_cache enabled
+09-25 16:54:45.200 18565 23481 D HWUI    : [HWUI] EnhanceVkPipelineCache is disabled
+09-25 16:54:45.200 18565 23481 D HWUI    : [HWUI] Flag ddre enabled
+09-25 16:54:45.200 18565 23481 D SKIA    : [Skia] Flag vulkan_enhance_pipeline_cache enabled
+09-25 16:54:45.200 18565 23481 D SKIA    : [Skia] EnhanceVkPipelineCache is false
+09-25 16:54:45.202 18565 18565 D Activity: Activity = ActivityInfo{3dc9621 com.marcioamaro.mediapod.MainActivity}, Resume onConfigurationChanged = {1.0 724mcc18mnc [pt_BR] ldltr sw407dp w407dp h904dp 480dpi nrml long widecg port night finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1220, 2712) mAppBounds=Rect(0, 0 - 1220, 2712) mMaxBounds=Rect(0, 0 - 1220, 2712) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mActivityType=standard mAlwaysOnTop=undefined mRotation=ROTATION_0 mInSplitScreen=false letterBoxed=false foScaled=false isSpecificEmbedded=false embeddingScale=1.0} s.2 fontWeightAdjustment=0/d/0 themeChanged=0 themeChangedFlags=0 display=0 extraData = Bundle[{}] screenType=0/0}
+09-25 16:54:45.202 18565 23481 D HWUI    : MiShaderPrecompile handle com.marcioamaro.mediapod, isSksl: 0, isAppInPreCacheList: 0, isGpuVersionChanged: 0, isSkslChanged: 0
+09-25 16:54:45.228 18565 18565 E TurboSchedMonitor: failed to find setSchedAffinity method com.marcioamaro.mediapod
+09-25 16:54:45.229 18565 18565 E TurboSchedMonitor: failed to find setSchedAffinity method com.marcioamaro.mediapod
+09-25 16:54:45.232 18565 23371 D WM-ConstraintTracker: NetworkStateTracker24: initial state = NetworkState(isConnected=true, isValidated=true, isMetered=false, isNotRoaming=true)
+09-25 16:54:45.232 18565 23371 D WM-NetworkStateTracker: Registering network callback
+09-25 16:54:45.239 18565 23520 D WM-NetworkStateTracker: Network capabilities changed: [ Transports: WIFI Capabilities: NOT_METERED&INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&VALIDATED&NOT_ROAMING&FOREGROUND&NOT_CONGESTED&NOT_SUSPENDED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED LinkUpBandwidth>=3121Kbps LinkDnBandwidth>=65248Kbps TransportInfo: <SSID: <unknown ssid>, BSSID: 02:00:00:00:00:00, MAC: 02:00:00:00:00:00, IP: /192.168.3.101, Security type: 2, Supplicant state: COMPLETED, Wi-Fi standard: 11ax, RSSI: -76, Link speed: 1201Mbps, Tx Link speed: 1201Mbps, Max Supported Tx Link speed: 1200Mbps, Rx Link speed: 1201Mbps, Max Supported Rx Link speed: 1200Mbps, Frequency: 5745MHz, Net ID: -1, Metered hint: false, score: 52, isUsable: true, CarrierMerged: false, SubscriptionId: -1, IsPrimary: -1, Trusted: true, Restricted: false, Ephemeral: false, OEM paid: false, OEM private: false, OSU AP: false, FQDN: <none>, Provider friendly name: <none>, Requesting package name: <none><none>MLO Information: , Is TID-To-Link negotiation supported by the AP: false, AP MLD Address: <none>, AP MLO Link Id: <none>, AP MLO Affiliated links: <none>, Vendor Data: <none>> SignalStrength: -76 UnderlyingNetworks: Null]
+09-25 16:54:45.240 18565 23371 D WM-PackageManagerHelper: androidx.work.impl.background.systemalarm.RescheduleReceiver enabled
+09-25 16:54:45.241 18565 23370 D WM-GreedyScheduler: Constraints met: Scheduling work ID WorkGenerationalId(workSpecId=c7c0fdc4-6d73-42ef-92c3-4ce6f9a1a9c2, generation=0)
+09-25 16:54:45.253 18565 18565 I ExoPlayerImpl: Init 1ebd5d0 [AndroidXMedia3/1.5.1] [aristotle, 2306EPN60G, Xiaomi, 36]
+09-25 16:54:45.259 18565 23370 D WM-Processor: Processor: processing WorkGenerationalId(workSpecId=c7c0fdc4-6d73-42ef-92c3-4ce6f9a1a9c2, generation=0)
+09-25 16:54:45.270 18565 18565 D AudioSystem: onNewService: media.audio_policy service obtained 0xb40000721d044330
+09-25 16:54:45.271 18565 18565 D AudioSystem: getService: checking for service media.audio_policy: 0xb40000721d044330
+09-25 16:54:45.280 18565 18565 I oamaro.mediapod: hiddenapi: Accessing hidden method Landroid/media/AudioTrack;->getLatency()I (runtime_flags=0, domain=platform, api=unsupported) from Landroidx/media3/exoplayer/audio/AudioTrackPositionTracker; (domain=app, TargetSdkVersion=36) using reflection: allowed
+09-25 16:54:45.321 18565 18565 D AudioSystem: onNewServiceWithAdapter: media.audio_flinger service obtained 0xb4000070fd066870
+09-25 16:54:45.327 18565 18565 D AudioSystem: getService: checking for service media.audio_flinger: 0xb40000721d042990
+09-25 16:54:45.331 18565 18565 I AudioEffect: set 0xb40000716d026010 uuid: 0x7fcda1d1e0 timeLow 0bed4300
+09-25 16:54:45.363 18565 18565 I AudioEffect: set() 0xb40000716d026010 OK effect: EqualizerBundle id: -1 status 0 enabled 0 pid 18565
+09-25 16:54:45.363 18565 18565 I AudioEffect: getParameter: param: 0, param2: -1
+09-25 16:54:45.364 18565 18565 I AudioEffect: getParameter: param: 7, param2: -1
+09-25 16:54:45.364 18565 18565 I AudioEffect: getParameter: param: 8, param2: 0
+09-25 16:54:45.364 18565 18565 I AudioEffect: getParameter: param: 8, param2: 1
+09-25 16:54:45.365 18565 18565 I AudioEffect: getParameter: param: 8, param2: 2
+09-25 16:54:45.365 18565 18565 I AudioEffect: getParameter: param: 8, param2: 3
+09-25 16:54:45.365 18565 18565 I AudioEffect: getParameter: param: 8, param2: 4
+09-25 16:54:45.366 18565 18565 I AudioEffect: getParameter: param: 8, param2: 5
+09-25 16:54:45.366 18565 18565 I AudioEffect: getParameter: param: 8, param2: 6
+09-25 16:54:45.367 18565 18565 I AudioEffect: getParameter: param: 8, param2: 7
+09-25 16:54:45.367 18565 18565 I AudioEffect: getParameter: param: 8, param2: 8
+09-25 16:54:45.367 18565 18565 I AudioEffect: getParameter: param: 8, param2: 9
+09-25 16:54:45.368 18565 18565 I AudioEffect: enable 0xb40000716d026010
+09-25 16:54:45.368 18565 18565 I AudioEffect: getParameter: param: 1, param2: -1
+09-25 16:54:45.368 18565 18565 I AudioEffect: setParameter(): 0xb40000716d026010, param: 2, param2: 0
+09-25 16:54:45.368 18565 18565 I AudioEffect: setParameter(): 0xb40000716d026010, param: 2, param2: 1
+09-25 16:54:45.369 18565 18565 I AudioEffect: setParameter(): 0xb40000716d026010, param: 2, param2: 2
+09-25 16:54:45.369 18565 18565 I AudioEffect: setParameter(): 0xb40000716d026010, param: 2, param2: 3
+09-25 16:54:45.369 18565 18565 I AudioEffect: setParameter(): 0xb40000716d026010, param: 2, param2: 4
+09-25 16:54:45.370 18565 18565 I AudioEffect: set 0xb40000716d01a020 uuid: 0x7fcda1d220 timeLow fe3199be
+09-25 16:54:45.373 18565 18565 I AudioEffect: set() 0xb40000716d01a020 OK effect: Loudness Enhancer id: -1 status 0 enabled 0 pid 18565
+09-25 16:54:45.373 18565 18565 I AudioEffect: setParameter(): 0xb40000716d01a020, param: 0, param2: -1
+09-25 16:54:45.376 18565 18565 I ExoPlayerImpl: Init 8b16583 [AndroidXMedia3/1.5.1] [aristotle, 2306EPN60G, Xiaomi, 36]
+09-25 16:54:45.398 18565 18565 V MediaRouter: Selecting route: RouteInfo{ name=Telefone, description=null, status=null, category=RouteCategory{ name=Sistema types=ROUTE_TYPE_LIVE_AUDIO ROUTE_TYPE_LIVE_VIDEO  groupable=false }, supportedTypes=ROUTE_TYPE_LIVE_AUDIO ROUTE_TYPE_LIVE_VIDEO , presentationDisplay=null }
+09-25 16:54:45.399 18565 18565 I MediaRouter: Skip setBluetoothA2dpOn(): types=8388615, isPlaybackActive()=false, BT route=null
+09-25 16:54:45.400 18565 18565 I GlobalMediaRouter: Found default route: MediaRouter.RouteInfo{ uniqueId=DEFAULT_ROUTE, name=Telefone, description=null, iconUri=null, enabled=true, isSystemRoute=true, connectionState=0, canDisconnect=false, playbackType=0, playbackStream=3, deviceType=0, volumeHandling=1, volume=15, volumeMax=15, presentationDisplayId=-1, extras=null, settingsIntent=null, providerPackageName=android }
+09-25 16:54:45.400 18565 18565 I GlobalMediaRouter: Unselecting the current route because it is no longer selectable: null
+09-25 16:54:45.403 18565 18565 E TurboSchedMonitor: failed to find setSchedAffinity method com.marcioamaro.mediapod
+09-25 16:54:45.404 18565 18565 E TurboSchedMonitor: failed to find setSchedAffinity method com.marcioamaro.mediapod
+09-25 16:54:45.408 18565 18565 E TurboSchedMonitor: failed to find setSchedAffinity method com.marcioamaro.mediapod
+09-25 16:54:45.408 18565 18565 E TurboSchedMonitor: failed to find setSchedAffinity method com.marcioamaro.mediapod
+09-25 16:54:45.422 18565 18565 W MessageMonitor: PerfMonitor: Slow Operation: Activity com.marcioamaro.mediapod/.MainActivity onResume took 220ms
+09-25 16:54:45.425 18565 18565 I SurfaceFactory: [static] sSurfaceFactory = com.mediatek.view.impl.SurfaceFactoryImpl@489b0a9
+09-25 16:54:45.426 18565 23471 I PowerHalWrapper: PowerHalWrapper.getInstance 
+09-25 16:54:45.428 18565 18565 D RenderLite: trim renderNode enable: false
+09-25 16:54:45.437 18565 18565 D FramePredict: init success
+09-25 16:54:45.438 18565 23565 E FramePredict: registerContentObserver fail
+09-25 16:54:45.442 18565 18565 E MI-PreRender: init cloud whiteList failed
+09-25 16:54:45.445 18565 18565 D oamaro.mediapod: MiuiProcessManagerServiceStub setSchedFifo
+09-25 16:54:45.445 18565 18565 I MiuiProcessManagerImpl: setSchedFifo pid:18565, mode:3
+09-25 16:54:45.446 18565 23481 W libc    : Access denied finding property "ro.vendor.display.iris_x7.support"
+09-25 16:54:45.446 18565 23481 I pwIrisCR: isCnVersion = 0, isSupportIris = 0
+09-25 16:54:45.448 18565 23481 D HWUI    : TAG_DDRE, CanvasContext::setDdreActivities: 
+09-25 16:54:45.448 18565 18565 I ForceDarkHelperStubImpl: setViewRootImplForceDark: false for com.marcioamaro.mediapod.MainActivity@4167c30, reason: AppDarkModeEnable
+09-25 16:54:45.444 18565 18565 W RenderThread: type=1400 audit(0.0:41130): avc:  denied  { read } for  name="u:object_r:vendor_displayfeature_prop:s0" dev="tmpfs" ino=570 scontext=u:r:untrusted_app:s0:c65,c258,c512,c768 tcontext=u:object_r:vendor_displayfeature_prop:s0 tclass=file permissive=0 app=com.marcioamaro.mediapod
+09-25 16:54:45.456 18565 18565 D InputEventReceiver: Input log is disabled in InputEventReceiver.
+09-25 16:54:45.459 18565 18565 D WM-WorkerWrapper: Starting work for com.marcioamaro.mediapod.util.ServiceWatchdogWorker
+09-25 16:54:45.496 18565 18565 I DynamiteModule: Considering local module com.google.android.gms.cast.framework.dynamite:0 and remote module com.google.android.gms.cast.framework.dynamite:263436001
+09-25 16:54:45.496 18565 18565 I DynamiteModule: Selected remote version of com.google.android.gms.cast.framework.dynamite, version >= 263436001
+09-25 16:54:45.496 18565 18565 V DynamiteModule: Dynamite loader version >= 2, using loadModule2NoCrashUtils
+09-25 16:54:45.499 18565 23474 D ServiceWatchdog: Nenhum estado de playback salvo. Nada a restaurar.
+09-25 16:54:45.506 18565 18565 W System  : ClassLoader referenced unknown path: 
+09-25 16:54:45.506 18565 18565 D nativeloader: Configuring clns-11 for other apk . target_sdk_version=37, uses_libraries=, library_path=/data/app/~~qIQw-AQX2UKTTzWxtsnlTw==/com.google.android.gms-gOXA_p36e8XQG3LeRSZ-pQ==/lib/arm64:/data/app/~~qIQw-AQX2UKTTzWxtsnlTw==/com.google.android.gms-gOXA_p36e8XQG3LeRSZ-pQ==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/com.google.android.gms
+09-25 16:54:45.508 18565 18565 I oamaro.mediapod: AssetManager2(0xb4000071bd027d98) locale list changing from [] to [pt-BR]
+09-25 16:54:45.521 18565 18565 I oamaro.mediapod: AssetManager2(0xb4000071bd027438) locale list changing from [] to [pt-BR]
+09-25 16:54:45.522 18565 18565 I oamaro.mediapod: AssetManager2(0xb4000071bd02af98) locale list changing from [] to [pt-BR]
+09-25 16:54:45.525 18565 18565 I CastDynamiteModuleImpl: sl created by ClassLoader dalvik.system.DelegateLastClassLoader[DexPathList[[zip file "/data/app/~~qIQw-AQX2UKTTzWxtsnlTw==/com.google.android.gms-gOXA_p36e8XQG3LeRSZ-pQ==/split_DynamiteModulesC_installtime.apk"],nativeLibraryDirectories=[/data/app/~~qIQw-AQX2UKTTzWxtsnlTw==/com.google.android.gms-gOXA_p36e8XQG3LeRSZ-pQ==/split_DynamiteModulesC_installtime.apk!/lib/arm64-v8a, /system/lib64, /system_ext/lib64]]].
+09-25 16:54:45.529 18565 18565 E TurboSchedMonitor: failed to find setSchedAffinity method com.marcioamaro.mediapod
+09-25 16:54:45.530 18565 18565 E TurboSchedMonitor: failed to find setSchedAffinity method com.marcioamaro.mediapod
+09-25 16:54:45.542 18565 18565 V MediaRouter: Selecting route: RouteInfo{ name=Telefone, description=null, status=null, category=RouteCategory{ name=Sistema types=ROUTE_TYPE_LIVE_AUDIO ROUTE_TYPE_LIVE_VIDEO  groupable=false }, supportedTypes=ROUTE_TYPE_LIVE_AUDIO ROUTE_TYPE_LIVE_VIDEO , presentationDisplay=null }
+09-25 16:54:45.548 18565 23481 D HWUI    : [HWUI] Flag vulkan_enhance_pipeline_cache enabled
+09-25 16:54:45.548 18565 23481 D HWUI    : [HWUI] EnhanceVkPipelineCache is disabled
+09-25 16:54:45.548 18565 23481 D HWUI    : [HWUI] Flag ddre enabled
+09-25 16:54:45.550 18565 18565 I ComputilityLevel: getComputilityLevel(): 4
+09-25 16:54:45.688 18565 18565 E oamaro.mediapod: [perfctl] 18565 18565 FPSGO ver:7
+09-25 16:54:45.688 18565 18565 E oamaro.mediapod: [perfctl] 1 1 1 0
+09-25 16:54:45.688 18565 18565 D BufferQueueConsumer: [](id:488500000000,api:0,p:-1,c:18565) connect: controlledByApp=false
+09-25 16:54:45.689 18565 18565 D BLASTBufferQueue: [VRI[MainActivity]#0](f:0,a:0) constructor()
+09-25 16:54:45.689 18565 18565 D BLASTBufferQueue: [VRI[MainActivity]#0](f:0,a:0) update width=1220 height=2712 format=-1 mTransformHint=0
+09-25 16:54:45.696 18565 18565 D VRI[MainActivity]: vri.reportNextDraw 0 Rect(0, 0 - 1220, 2712) android.view.ViewRootImpl.performTraversals:5619 android.view.ViewRootImpl.doTraversal:4166 android.view.ViewRootImpl$TraversalRunnable.run:12568 android.view.Choreographer$CallbackRecord.run:2040 android.view.Choreographer$CallbackRecord.run:2049 
+09-25 16:54:45.696 18565 18565 D VRI[MainActivity]: vri.Setup new sync=wmsSync-VRI[MainActivity]#0
+09-25 16:54:45.710 18565 23481 I GrallocExtra: gralloc_extra_query:is_SW3D 0
+09-25 16:54:45.712 18565 23481 I GrallocExtra: gralloc_extra_query:is_SW3D 0
+09-25 16:54:45.712 18565 23481 W libc    : Access denied finding property "ro.vendor.display.iris_x7.support"
+09-25 16:54:45.712 18565 23481 D BLASTBufferQueue: [VRI[MainActivity]#0](f:0,a:1) acquireNextBufferLocked size=1220x2712 mFrameNumber=1 applyTransaction=true mTimestamp=2373471363141(auto) mPendingTransactions.size=0 graphicBufferId=79736067850241 transform=0
+09-25 16:54:45.708 18565 18565 W RenderThread: type=1400 audit(0.0:41131): avc:  denied  { read } for  name="u:object_r:vendor_displayfeature_prop:s0" dev="tmpfs" ino=570 scontext=u:r:untrusted_app:s0:c65,c258,c512,c768 tcontext=u:object_r:vendor_displayfeature_prop:s0 tclass=file permissive=0 app=com.marcioamaro.mediapod
+09-25 16:54:45.714 18565 18565 D VRI[MainActivity]: vri.reportDrawFinished 0 0 Rect(0, 0 - 1220, 2712)
+09-25 16:54:45.718 18565 18565 D WM-SystemJobService: onStartJob for WorkGenerationalId(workSpecId=c7c0fdc4-6d73-42ef-92c3-4ce6f9a1a9c2, generation=0)
+09-25 16:54:45.733 18565 18565 W MR2Provider: setDynamicRouteDescriptors: No matching routeController found. routingController=RoutingController{ id=com.android.server.media/.SystemMediaRoute2Provider:SYSTEM_SESSION, selectedRoutes={[com.android.server.media/.SystemMediaRoute2Provider:DEFAULT_ROUTE]}, selectableRoutes={[]}, deselectableRoutes={[]} }
+09-25 16:54:45.740 18565 23371 D WM-Processor: Work WorkGenerationalId(workSpecId=c7c0fdc4-6d73-42ef-92c3-4ce6f9a1a9c2, generation=0) is already enqueued for processing
+09-25 16:54:45.741 18565 23371 I WM-WorkerWrapper: Worker result SUCCESS for Work [ id=c7c0fdc4-6d73-42ef-92c3-4ce6f9a1a9c2, tags={ com.marcioamaro.mediapod.util.ServiceWatchdogWorker } ]
+09-25 16:54:45.745 18565 18565 D WM-Processor: Processor c7c0fdc4-6d73-42ef-92c3-4ce6f9a1a9c2 executed; reschedule = false
+09-25 16:54:45.745 18565 18565 D WM-GreedyScheduler: Stopping tracking for WorkGenerationalId(workSpecId=c7c0fdc4-6d73-42ef-92c3-4ce6f9a1a9c2, generation=0)
+09-25 16:54:45.746 18565 18565 D WM-SystemJobService: c7c0fdc4-6d73-42ef-92c3-4ce6f9a1a9c2 executed on JobScheduler
+09-25 16:54:45.795 18565 18565 I MediaRouterProxy: Set up output switcher flags: true (from module), true (from CastOptions)
+09-25 16:54:45.795 18565 18565 I MediaRouterProxy: media transfer = true, session transfer = true, transfer to local = false, in-app output switcher = false
+09-25 16:54:45.796 18565 18565 I HandWritingStubImpl: refreshLastKeyboardType: 1
+09-25 16:54:45.797 18565 18565 I HandWritingStubImpl: getCurrentKeyboardType: 1
+09-25 16:54:45.800 18565 18565 I oamaro.mediapod: AssetManager2(0xb4000071bd02d518) locale list changing from [] to [pt-BR]
+09-25 16:54:45.835 18565 23375 D WM-GreedyScheduler: Cancelling work ID c7c0fdc4-6d73-42ef-92c3-4ce6f9a1a9c2
+09-25 16:54:45.838 18565 18565 D HWUI    : ImageDecoder_nDecodeBitmap: width = 346, height = 509, encodedFormat = 4
+09-25 16:54:45.840 18565 18565 W HWUI    : Image decoding logging dropped!
+09-25 16:54:45.867 18565 23375 D WM-SystemJobScheduler: Scheduling work ID c7c0fdc4-6d73-42ef-92c3-4ce6f9a1a9c2Job ID 0
+09-25 16:54:45.949 18565 23375 D WM-NetworkStateTracker: Unregistering network callback
+09-25 16:54:46.114 18565 18565 I Choreographer: Skipped 33 frames!  The application may be doing too much work on its main thread.
+09-25 16:54:46.120 18565 18565 D InsetsController: hide(ime(), fromIme=false)
+09-25 16:54:46.120 18565 18565 I ImeTracker: com.marcioamaro.mediapod:b27b3875: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+09-25 16:54:46.120 18565 18565 I HandWritingStubImpl: getCurrentKeyboardType: 1
+09-25 16:54:46.153 18565 18565 E TurboSchedMonitor: failed to find setSchedAffinity method com.marcioamaro.mediapod
+09-25 16:54:46.153 18565 18565 E TurboSchedMonitor: failed to find setSchedAffinity method com.marcioamaro.mediapod
+09-25 16:54:46.351 18565 23725 D TransportRuntime.SQLiteEventStore: Storing event with priority=VERY_LOW, name=CAST_SENDER_SDK for destination cct
+09-25 16:54:46.366 18565 23725 D TransportRuntime.JobInfoScheduler: Scheduling upload for context TransportContext(cct, VERY_LOW, MSRodHRwczovL2ZpcmViYXNlbG9nZ2luZy5nb29nbGVhcGlzLmNvbS92MGNjL2xvZy9iYXRjaD9mb3JtYXQ9anNvbl9wcm90bzNc) with jobId=-125884720 in 86400000ms(Backend next call timestamp 0). Attempt 1
+09-25 16:54:46.862 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=2374615, downTime=2374615, phoneEventTime=16:54:46.856 } moveCount:0
+09-25 16:54:46.866 18565 18565 D VRI[MainActivity]: getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+09-25 16:54:46.913 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=2374661, downTime=2374615, phoneEventTime=16:54:46.902 } moveCount:0
+09-25 16:54:47.064 18565 23242 I oamaro.mediapod: Compiler allocated 6534KB to compile void android.view.ViewRootImpl.performTraversals()
+09-25 16:54:47.081 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=2374832, downTime=2374832, phoneEventTime=16:54:47.073 } moveCount:0
+09-25 16:54:47.081 18565 18565 D VRI[MainActivity]: getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+09-25 16:54:47.158 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=2374915, downTime=2374832, phoneEventTime=16:54:47.156 } moveCount:0
+09-25 16:54:47.388 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=2375037, downTime=2375037, phoneEventTime=16:54:47.278 } moveCount:0
+09-25 16:54:47.388 18565 18565 D VRI[MainActivity]: getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+09-25 16:54:47.396 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=2375104, downTime=2375037, phoneEventTime=16:54:47.345 } moveCount:0
+09-25 16:54:47.504 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=2375231, downTime=2375231, phoneEventTime=16:54:47.472 } moveCount:0
+09-25 16:54:47.504 18565 18565 D VRI[MainActivity]: getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+09-25 16:54:47.580 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=2375310, downTime=2375231, phoneEventTime=16:54:47.551 } moveCount:0
+09-25 16:54:47.935 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=2375692, downTime=2375692, phoneEventTime=16:54:47.933 } moveCount:0
+09-25 16:54:47.935 18565 18565 D VRI[MainActivity]: getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+09-25 16:54:47.942 18565 23481 E LB      : fail to open file: No such file or directory
+09-25 16:54:48.000 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=2375757, downTime=2375692, phoneEventTime=16:54:47.998 } moveCount:0
+09-25 16:54:48.482 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=2376239, downTime=2376239, phoneEventTime=16:54:48.480 } moveCount:0
+09-25 16:54:48.482 18565 18565 D VRI[MainActivity]: getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+09-25 16:54:48.518 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=2376276, downTime=2376239, phoneEventTime=16:54:48.517 } moveCount:0
+09-25 16:54:49.215 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=2376968, downTime=2376968, phoneEventTime=16:54:49.209 } moveCount:0
+09-25 16:54:49.216 18565 18565 D VRI[MainActivity]: getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+09-25 16:54:49.297 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=2377054, downTime=2376968, phoneEventTime=16:54:49.295 } moveCount:0
+09-25 16:54:49.603 18565 18565 I Choreographer: Skipped 32 frames!  The application may be doing too much work on its main thread.
+09-25 16:54:49.658 18565 18565 I PowerHalMgrImpl: perfLockAcq is supported. 
+09-25 16:54:49.888 18565 23684 D libEGL  : Post task 1
+09-25 16:54:49.889 18565 24031 D libEGL  : Worker thread start 476504277952
+09-25 16:54:49.889 18565 24031 D libEGL  : Run task 1
+09-25 16:54:50.750 18565 24041 D ProfileInstaller: Installing profile for com.marcioamaro.mediapod
+09-25 16:54:52.170 18565 18565 D Activity: Activity = ActivityInfo{3dc9621 com.marcioamaro.mediapod.MainActivity}, Resume onConfigurationChanged = {1.0 724mcc18mnc [pt_BR] ldltr sw407dp w407dp h904dp 480dpi nrml long widecg port night finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1220, 2712) mAppBounds=Rect(0, 0 - 1220, 2712) mMaxBounds=Rect(0, 0 - 1220, 2712) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mActivityType=standard mAlwaysOnTop=undefined mRotation=ROTATION_0 mInSplitScreen=false letterBoxed=false foScaled=false isSpecificEmbedded=false embeddingScale=1.0} s.2 fontWeightAdjustment=0/d/0 themeChanged=0 themeChangedFlags=0 display=0 extraData = Bundle[{}] screenType=0/0}
+09-25 16:54:52.205 18565 18565 I HandWritingStubImpl: refreshLastKeyboardType: 1
+09-25 16:54:52.205 18565 18565 I HandWritingStubImpl: getCurrentKeyboardType: 1
+09-25 16:54:52.216 18565 18565 D InsetsController: hide(ime(), fromIme=false)
+09-25 16:54:52.216 18565 18565 I ImeTracker: com.marcioamaro.mediapod:f31397ba: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+09-25 16:54:53.202 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=2380956, downTime=2380956, phoneEventTime=16:54:53.197 } moveCount:0
+09-25 16:54:53.202 18565 18565 D VRI[MainActivity]: getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+09-25 16:54:53.219 18565 23481 E oamaro.mediapod: FrameInsert open fail: No such file or directory
+09-25 16:54:53.310 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=2381067, downTime=2380956, phoneEventTime=16:54:53.308 } moveCount:0
+09-25 16:54:54.068 18565 18565 W FinalizerDaemon: type=1400 audit(0.0:41204): avc:  denied  { getopt } for  path="/dev/socket/usap_pool_primary" scontext=u:r:untrusted_app:s0:c65,c258,c512,c768 tcontext=u:r:zygote:s0 tclass=unix_stream_socket permissive=0 app=com.marcioamaro.mediapod
+09-25 16:54:54.692 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=2382446, downTime=2382446, phoneEventTime=16:54:54.687 } moveCount:0
+09-25 16:54:54.693 18565 18565 D VRI[MainActivity]: getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+09-25 16:54:54.749 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=2382505, downTime=2382446, phoneEventTime=16:54:54.746 } moveCount:0
+09-25 16:54:55.135 18565 23251 D ActivityThread: invoke error.
+09-25 16:54:55.645 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=2383398, downTime=2383398, phoneEventTime=16:54:55.639 } moveCount:0
+09-25 16:54:55.646 18565 18565 D VRI[MainActivity]: getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+09-25 16:54:55.751 18565 24118 I PowerHalMgrImpl: hdl:1927, pid:18565 
+09-25 16:54:55.755 18565 23481 E oamaro.mediapod: legacy_receive_flag: 1
+09-25 16:54:55.756 18565 23481 D oamaro.mediapod: /proc/perfmgr_sbe/sbe_ioctl not exists: No such file or directory
+09-25 16:54:55.758 18565 24118 I PowerHalMgrImpl: hdl:1928, pid:18565 
+09-25 16:54:55.910 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=2383633, downTime=2383398, phoneEventTime=16:54:55.874 } moveCount:10
+09-25 16:54:55.913 18565 18565 I ScrollIdentify: on fling
+09-25 16:54:55.915 18565 24118 I PowerHalMgrImpl: hdl:1932, pid:18565 
+09-25 16:54:56.391 18565 18565 D HWUI    : ImageDecoder_nDecodeBitmap: width = 346, height = 509, encodedFormat = 4
+09-25 16:54:56.393 18565 18565 W HWUI    : Image decoding logging dropped!
+09-25 16:54:56.734 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:56.793 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:56.810 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:56.818 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:56.842 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:56.867 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:56.917 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:56.933 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:56.949 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:56.957 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:56.974 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:57.023 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:57.031 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=2384784, downTime=2384784, phoneEventTime=16:54:57.025 } moveCount:0
+09-25 16:54:57.031 18565 18565 D VRI[MainActivity]: getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+09-25 16:54:57.096 18565 24118 I PowerHalMgrImpl: hdl:1937, pid:18565 
+09-25 16:54:57.100 18565 24118 I PowerHalMgrImpl: hdl:1938, pid:18565 
+09-25 16:54:57.157 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=2384891, downTime=2384784, phoneEventTime=16:54:57.132 } moveCount:5
+09-25 16:54:57.161 18565 18565 I ScrollIdentify: on fling
+09-25 16:54:57.163 18565 24118 I PowerHalMgrImpl: hdl:1941, pid:18565 
+09-25 16:54:57.965 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:57.973 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:57.982 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:57.990 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:57.998 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:58.007 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:58.014 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:58.023 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:58.031 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:58.040 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:58.048 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:58.064 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:58.073 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:58.097 18565 23481 E BLASTBufferQueue: [VRI[MainActivity]#0](f:1,a:4) acquireNextBufferLocked: Can't acquire next buffer. Already acquired max frames 4 max:2 + 2
+09-25 16:54:58.139 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=2385895, downTime=2385895, phoneEventTime=16:54:58.136 } moveCount:0
+09-25 16:54:58.139 18565 18565 D VRI[MainActivity]: getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+09-25 16:54:58.250 18565 24118 I PowerHalMgrImpl: hdl:1946, pid:18565 
+09-25 16:54:58.253 18565 24118 I PowerHalMgrImpl: hdl:1947, pid:18565 
+09-25 16:54:58.519 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=2386272, downTime=2385895, phoneEventTime=16:54:58.513 } moveCount:22
+09-25 16:54:58.577 18565 24118 I PowerHalMgrImpl: hdl:1948, pid:18565 
+09-25 16:54:59.165 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=2386918, downTime=2386918, phoneEventTime=16:54:59.159 } moveCount:0
+09-25 16:54:59.166 18565 18565 D VRI[MainActivity]: getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+09-25 16:54:59.231 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=2386988, downTime=2386918, phoneEventTime=16:54:59.229 } moveCount:0
+09-25 16:54:59.787 18565 24120 D libEGL  : Post task 2
+09-25 16:54:59.787 18565 24031 D libEGL  : Run task 2
+09-25 16:54:59.805 18565 18565 D VRI[MainActivity]: visibilityChanged oldVisibility=true newVisibility=false
+09-25 16:54:59.811 18565 23481 D HWUI    : endAllActiveAnimators on 0xb40000705d155f00 (UnprojectedRipple) with handle 0xb4000070fd09e7f0
+09-25 16:54:59.818 18565 18565 W oamaro.mediapod: Binder 0xb40000707d037140 destroyed after setInheritRt before being parceled.
+09-25 16:54:59.818 18565 18565 D BLASTBufferQueue: [VRI[MainActivity]#0](f:0,a:1) destructor()
+09-25 16:54:59.818 18565 18565 D BufferQueueConsumer: [VRI[MainActivity]#0(BLAST Consumer)0](id:488500000000,api:0,p:-1,c:18565) disconnect: caller 18565
+09-25 16:54:59.823 18565 18565 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=false callback=androidx.activity.OnBackPressedDispatcher$Api34Impl$createOnBackAnimationCallback$1@5cbd1b9
+09-25 16:54:59.830 18565 18565 I AppVisibilityProxy: onAppEnteredBackground
+09-25 16:55:00.655 18565 18565 I ForceDarkHelperStubImpl: setViewRootImplForceDark: false for com.marcioamaro.mediapod.MainActivity@4167c30, reason: AppDarkModeEnable
+09-25 16:55:00.657 18565 23248 D AppScoutStateMachine: 18565-ScoutStateMachinecreated
+09-25 16:55:00.669 18565 18565 I AppVisibilityProxy: onAppEnteredForeground
+09-25 16:55:00.670 18565 18565 E ActivityThread:  fail in deliverResultsIfNeeded java.lang.NullPointerException: Attempt to invoke virtual method 'java.lang.String android.os.Bundle.getString(java.lang.String)' on a null object reference
+09-25 16:55:00.671 18565 18565 D Activity: Activity = ActivityInfo{3dc9621 com.marcioamaro.mediapod.MainActivity}, Resume onConfigurationChanged = {1.0 724mcc18mnc [pt_BR] ldltr sw407dp w407dp h904dp 480dpi nrml long widecg port night finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1220, 2712) mAppBounds=Rect(0, 0 - 1220, 2712) mMaxBounds=Rect(0, 0 - 1220, 2712) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mActivityType=standard mAlwaysOnTop=undefined mRotation=ROTATION_0 mInSplitScreen=false letterBoxed=false foScaled=false isSpecificEmbedded=false embeddingScale=1.0} s.2 fontWeightAdjustment=0/d/0 themeChanged=0 themeChangedFlags=0 display=0 extraData = Bundle[{}] screenType=0/0}
+09-25 16:55:00.702 18565 18565 D BufferQueueConsumer: [](id:488500000001,api:0,p:-1,c:18565) connect: controlledByApp=false
+09-25 16:55:00.702 18565 18565 D BLASTBufferQueue: [VRI[MainActivity]#1](f:0,a:0) constructor()
+09-25 16:55:00.702 18565 18565 D BLASTBufferQueue: [VRI[MainActivity]#1](f:0,a:0) update width=1220 height=2712 format=-1 mTransformHint=0
+09-25 16:55:00.703 18565 18565 D VRI[MainActivity]: vri.reportNextDraw 0 Rect(0, 0 - 1220, 2712) android.view.ViewRootImpl.performTraversals:5619 android.view.ViewRootImpl.doTraversal:4166 android.view.ViewRootImpl$TraversalRunnable.run:12568 android.view.Choreographer$CallbackRecord.run:2040 android.view.Choreographer$CallbackRecord.run:2049 
+09-25 16:55:00.703 18565 18565 D VRI[MainActivity]: vri.Setup new sync=wmsSync-VRI[MainActivity]#2
+09-25 16:55:00.724 18565 23481 D BLASTBufferQueue: [VRI[MainActivity]#1](f:0,a:1) acquireNextBufferLocked size=1220x2712 mFrameNumber=1 applyTransaction=true mTimestamp=2388483007141(auto) mPendingTransactions.size=0 graphicBufferId=79736067850248 transform=0
+09-25 16:55:00.724 18565 18565 D VRI[MainActivity]: vri.reportDrawFinished 0 0 Rect(0, 0 - 1220, 2712)
+09-25 16:55:00.746 18565 18565 I HandWritingStubImpl: refreshLastKeyboardType: 1
+09-25 16:55:00.746 18565 18565 I HandWritingStubImpl: getCurrentKeyboardType: 1
+09-25 16:55:00.765 18565 23242 I oamaro.mediapod: JIT allocated 53KB for stack maps of kotlin.Unit com.marcioamaro.mediapod.MainActivityKt.MainScreen$lambda$214(android.content.Context, com.marcioamaro.mediapod.ui.RadioViewModel, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.Composer, int)
+09-25 16:55:00.765 18565 23242 I oamaro.mediapod: Compiler allocated 12MB to compile kotlin.Unit com.marcioamaro.mediapod.MainActivityKt.MainScreen$lambda$214(android.content.Context, com.marcioamaro.mediapod.ui.RadioViewModel, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.State, androidx.compose.runtime.Composer, int)
+09-25 16:55:00.767 18565 18565 D InsetsController: hide(ime(), fromIme=false)
+09-25 16:55:00.767 18565 18565 I ImeTracker: com.marcioamaro.mediapod:5512c92c: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+09-25 16:55:00.997 18565 23242 I oamaro.mediapod: Compiler allocated 4167KB to compile kotlin.Unit com.marcioamaro.mediapod.ui.components.ClickWheelKt.ClickWheel_TuJAPZ8$lambda$39(float, long, long, com.marcioamaro.mediapod.ui.components.ClickWheelEngine, kotlin.jvm.functions.Function1, kotlin.jvm.functions.Function0, kotlin.jvm.functions.Function0, kotlin.jvm.functions.Function0, kotlin.jvm.functions.Function0, long, kotlin.jvm.functions.Function0, androidx.compose.foundation.layout.BoxWithConstraintsScope, androidx.compose.runtime.Composer, int)
+09-25 16:55:02.479 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=2390236, downTime=2390236, phoneEventTime=16:55:02.476 } moveCount:0
+09-25 16:55:02.479 18565 18565 D VRI[MainActivity]: getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+09-25 16:55:02.565 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=2390323, downTime=2390236, phoneEventTime=16:55:02.564 } moveCount:0
+09-25 16:55:03.890 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=2391647, downTime=2391647, phoneEventTime=16:55:03.888 } moveCount:0
+09-25 16:55:03.891 18565 18565 D VRI[MainActivity]: getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+09-25 16:55:03.989 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=2391747, downTime=2391647, phoneEventTime=16:55:03.988 } moveCount:0
+09-25 16:55:05.147 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=2392905, downTime=2392905, phoneEventTime=16:55:05.145 } moveCount:0
+09-25 16:55:05.147 18565 18565 D VRI[MainActivity]: getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+09-25 16:55:05.246 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=2393004, downTime=2392905, phoneEventTime=16:55:05.245 } moveCount:0
+09-25 16:55:09.461 18565 24308 D libEGL  : Post task 3
+09-25 16:55:09.462 18565 24031 D libEGL  : Run task 3
+09-25 16:55:15.410 18565 18565 W MR2     : registerTransferCallback: Ignoring the same callback
+09-25 16:55:15.410 18565 18565 W MR2     : registerControllerCallback: Ignoring the same callback
+09-25 16:55:24.269 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=2412018, downTime=2412018, phoneEventTime=16:55:24.259 } moveCount:0
+09-25 16:55:24.270 18565 18565 D VRI[MainActivity]: getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+09-25 16:55:24.319 18565 18565 I MIUIInput: [MotionEvent] ViewRootImpl windowName 'com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=2412075, downTime=2412018, phoneEventTime=16:55:24.316 } moveCount:0
+09-25 16:55:24.324 18565 18565 D DefaultPlaybackCoord: setNavigationContext() chamado: source=FAVORITES, items=53
+09-25 16:55:26.821 18565 24278 W MIUIScout App: Enter APP_SCOUT_WARNING State
+09-25 16:55:26.821 18565 24278 W MIUIScout App:  (Current message:null)
+09-25 16:55:26.828 18565 24278 D AppScoutStateMachine: dump trace dirName = 2026-09-25-16-55-26-18565-APP_SCOUT_WARNING-com.marcioamaro.mediapod
+09-25 16:55:26.833 18565 24633 W MIUIScout App: Event:APP_SCOUT_WARNING Thread:main backtrace:
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at kotlin.collections.ArraysKt___ArraysKt.toCollection(_Arrays.kt:9685)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at kotlin.collections.ArraysKt___ArraysKt.toSet(_Arrays.kt:10021)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at kotlin.collections.SetsKt__SetsKt.setOf(Sets.kt:44)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.marcioamaro.mediapod.data.repository.RadioCatalog.readStation(RadioCatalog.kt:74)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.marcioamaro.mediapod.data.repository.RadioCatalog.read$app(RadioCatalog.kt:42)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.marcioamaro.mediapod.data.repository.RadioCatalog.stations_delegate$lambda$2(RadioCatalog.kt:24)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.marcioamaro.mediapod.data.repository.RadioCatalog$$ExternalSyntheticLambda1.invoke(D8$$SyntheticClass:0)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.marcioamaro.mediapod.data.repository.RadioCatalog.getStations(RadioCatalog.kt:20)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.marcioamaro.mediapod.data.repository.CuratedStations.getStations(CuratedStations.kt:239)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.marcioamaro.mediapod.data.repository.CuratedData.CURATED_GLOBAL_STATIONS_delegate$lambda$10(CuratedStations.kt:233)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.marcioamaro.mediapod.data.repository.CuratedData$$ExternalSyntheticLambda8.invoke(D8$$SyntheticClass:0)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.marcioamaro.mediapod.data.repository.CuratedData.getCURATED_GLOBAL_STATIONS(CuratedStations.kt:232)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.marcioamaro.mediapod.player.coordinator.DefaultPlaybackCoordinator.playItem(DefaultPlaybackCoordinator.kt:317)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.marcioamaro.mediapod.player.coordinator.DefaultPlaybackCoordinator.play(DefaultPlaybackCoordinator.kt:308)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.marcioamaro.mediapod.ui.RadioViewModel.onRadioClicked(RadioViewModel.kt:1692)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.marcioamaro.mediapod.ui.RadioViewModel.playStation(RadioViewModel.kt:1731)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.marcioamaro.mediapod.ui.RadioViewModel.playStation$default(RadioViewModel.kt:1695)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.marcioamaro.mediapod.MainActivityKt.MainScreen$lambda$214$lambda$213$lambda$178$lambda$98$lambda$97(MainActivity.kt:534)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.marcioamaro.mediapod.MainActivityKt$$ExternalSyntheticLambda18.invoke(D8$$SyntheticClass:0)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.marcioamaro.mediapod.ui.screens.FavoritesScreenKt.FavoritesScreen_r2xNNj4$lambda$27$lambda$26$lambda$23$lambda$22(FavoritesScreen.kt:253)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.marcioamaro.mediapod.ui.screens.FavoritesScreenKt$$ExternalSyntheticLambda0.invoke(D8$$SyntheticClass:0)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at androidx.compose.foundation.ClickableNode$clickPointerInput$3.invoke-k-4lQ0M(Clickable.kt:639)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at androidx.compose.foundation.ClickableNode$clickPointerInput$3.invoke(Clickable.kt:633)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at androidx.compose.foundation.gestures.TapGestureDetectorKt$detectTapAndPress$2$1.invokeSuspend(TapGestureDetector.kt:255)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at kotlinx.coroutines.DispatchedTaskKt.resume(DispatchedTask.kt:163)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at kotlinx.coroutines.DispatchedTaskKt.dispatch(DispatchedTask.kt:152)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at kotlinx.coroutines.CancellableContinuationImpl.dispatchResume(CancellableContinuationImpl.kt:470)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at kotlinx.coroutines.CancellableContinuationImpl.resumeImpl$kotlinx_coroutines_core(CancellableContinuationImpl.kt:504)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at kotlinx.coroutines.CancellableContinuationImpl.resumeImpl$kotlinx_coroutines_core$default(CancellableContinuationImpl.kt:493)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at kotlinx.coroutines.CancellableContinuationImpl.resumeWith(CancellableContinuationImpl.kt:359)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at androidx.compose.ui.input.pointer.SuspendingPointerInputModifierNodeImpl$PointerEventHandlerCoroutine.offerPointerEvent(SuspendingPointerInputFilter.kt:719)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at androidx.compose.ui.input.pointer.SuspendingPointerInputModifierNodeImpl.dispatchPointerEvent(SuspendingPointerInputFilter.kt:598)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at androidx.compose.ui.input.pointer.SuspendingPointerInputModifierNodeImpl.onPointerEvent-H0pRuoY(SuspendingPointerInputFilter.kt:620)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at androidx.compose.foundation.AbstractClickableNode.onPointerEvent-H0pRuoY(Clickable.kt:1044)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at androidx.compose.ui.input.pointer.Node.dispatchMainEventPass(HitPathTracker.kt:387)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at androidx.compose.ui.input.pointer.Node.dispatchMainEventPass(HitPathTracker.kt:373)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at androidx.compose.ui.input.pointer.Node.dispatchMainEventPass(HitPathTracker.kt:373)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at androidx.compose.ui.input.pointer.Node.dispatchMainEventPass(HitPathTracker.kt:373)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at androidx.compose.ui.input.pointer.NodeParent.dispatchMainEventPass(HitPathTracker.kt:229)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at androidx.compose.ui.input.pointer.HitPathTracker.dispatchChanges(HitPathTracker.kt:144)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at androidx.compose.ui.input.pointer.PointerInputEventProcessor.process-BIzXfog(PointerInputEventProcessor.kt:120)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at androidx.compose.ui.platform.AndroidComposeView.sendMotionEvent-8iAsVTc(AndroidComposeView.android.kt:1993)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at androidx.compose.ui.platform.AndroidComposeView.handleMotionEvent-8iAsVTc(AndroidComposeView.android.kt:1944)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at androidx.compose.ui.platform.AndroidComposeView.dispatchTouchEvent(AndroidComposeView.android.kt:1828)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewGroup.dispatchTransformedTouchEvent(ViewGroup.java:3171)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewGroup.dispatchTouchEvent(ViewGroup.java:2851)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewGroup.dispatchTransformedTouchEvent(ViewGroup.java:3171)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewGroup.dispatchTouchEvent(ViewGroup.java:2851)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewGroup.dispatchTransformedTouchEvent(ViewGroup.java:3171)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewGroup.dispatchTouchEvent(ViewGroup.java:2851)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewGroup.dispatchTransformedTouchEvent(ViewGroup.java:3171)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewGroup.dispatchTouchEvent(ViewGroup.java:2851)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.android.internal.policy.DecorView.superDispatchTouchEvent(DecorView.java:611)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.android.internal.policy.PhoneWindow.superDispatchTouchEvent(PhoneWindow.java:2041)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.app.Activity.dispatchTouchEvent(Activity.java:4762)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.android.internal.policy.DecorView.dispatchTouchEvent(DecorView.java:569)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.View.dispatchPointerEvent(View.java:17332)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.xiaomi.mirror.MiuiMirrorImpl.isHandled(MiuiMirrorImpl.java:150)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewRootImpl$ViewPostImeInputStage.processPointerEvent(ViewRootImpl.java:9892)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewRootImpl$ViewPostImeInputStage.onProcess(ViewRootImpl.java:9631)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewRootImpl$InputStage.deliver(ViewRootImpl.java:8962)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewRootImpl$InputStage.onDeliverToNext(ViewRootImpl.java:9025)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewRootImpl$InputStage.forward(ViewRootImpl.java:8991)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewRootImpl$AsyncInputStage.forward(ViewRootImpl.java:9163)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewRootImpl$InputStage.apply(ViewRootImpl.java:8999)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewRootImpl$AsyncInputStage.apply(ViewRootImpl.java:9220)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewRootImpl$InputStage.deliver(ViewRootImpl.java:8966)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewRootImpl$InputStage.onDeliverToNext(ViewRootImpl.java:9025)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewRootImpl$InputStage.forward(ViewRootImpl.java:8991)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewRootImpl$InputStage.apply(ViewRootImpl.java:8999)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewRootImpl$InputStage.deliver(ViewRootImpl.java:8966)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewRootImpl.deliverInputEvent(ViewRootImpl.java:12437)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewRootImpl.doProcessInputEvents(ViewRootImpl.java:12357)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewRootImpl.enqueueInputEvent(ViewRootImpl.java:12292)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewRootImpl.processRawInputEvent(ViewRootImpl.java:12870)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.ViewRootImpl$WindowInputEventReceiver.onInputEvent(ViewRootImpl.java:12609)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.view.InputEventReceiver.dispatchInputEvent(InputEventReceiver.java:342)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.os.MessageQueue.nativePollOnce(Native Method)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.os.MessageQueue.nextLegacy(MessageQueue.java:951)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.os.MessageQueue.next(MessageQueue.java:1094)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.os.Looper.loopOnce(Looper.java:217)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.os.Looper.loop(Looper.java:365)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at android.app.ActivityThread.main(ActivityThread.java:10054)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at java.lang.reflect.Method.invoke(Native Method)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:616)
+09-25 16:55:26.833 18565 24633 W MIUIScout App:     at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1115)
+09-25 16:55:26.964 18565 23238 I oamaro.mediapod: Thread[2,tid=23238,WaitingInMainSignalCatcherLoop,Thread*=0xb4000070ad0102c0,peer=0x2001640,"Signal Catcher"]: reacting to signal 3
+09-25 16:55:26.964 18565 23238 I oamaro.mediapod: 
+09-25 16:55:27.230 18565 23238 I oamaro.mediapod: Wrote stack traces to tombstoned
+09-25 16:55:27.666 18565 23243 I oamaro.mediapod: Background young concurrent mark compact GC freed 12MB AllocSpace bytes, 0(0B) LOS objects, 30% free, 22MB/32MB, paused 2.173ms,5.278ms total 49.999ms
+09-25 16:55:29.322 18565 24278 W MIUIScout App: Enter APP_SCOUT_HANG state
+09-25 16:55:29.322 18565 24278 W MIUIScout App:  (Current message:null)
+09-25 16:55:29.323 18565 24278 D AppScoutStateMachine: dump trace dirName = 2026-09-25-16-55-29-18565-APP_SCOUT_HANG-com.marcioamaro.mediapod
+09-25 16:55:29.328 18565 25035 W MIUIScout App: Event:APP_SCOUT_HANG Thread:main backtrace:
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at java.util.HashMap$Node.<init>(HashMap.java:286)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at java.util.LinkedHashMap$Entry.<init>(LinkedHashMap.java:226)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at java.util.LinkedHashMap.newNode(LinkedHashMap.java:299)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at java.util.HashMap.putVal(HashMap.java:637)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at java.util.HashMap.put(HashMap.java:618)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at java.util.HashSet.add(HashSet.java:230)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at kotlin.collections.ArraysKt___ArraysKt.toCollection(_Arrays.kt:9686)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at kotlin.collections.ArraysKt___ArraysKt.toSet(_Arrays.kt:10021)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at kotlin.collections.SetsKt__SetsKt.setOf(Sets.kt:44)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.marcioamaro.mediapod.data.repository.RadioCatalog.readStation(RadioCatalog.kt:74)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.marcioamaro.mediapod.data.repository.RadioCatalog.read$app(RadioCatalog.kt:42)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.marcioamaro.mediapod.data.repository.RadioCatalog.stations_delegate$lambda$2(RadioCatalog.kt:24)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.marcioamaro.mediapod.data.repository.RadioCatalog$$ExternalSyntheticLambda1.invoke(D8$$SyntheticClass:0)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.marcioamaro.mediapod.data.repository.RadioCatalog.getStations(RadioCatalog.kt:20)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.marcioamaro.mediapod.data.repository.CuratedStations.getStations(CuratedStations.kt:239)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.marcioamaro.mediapod.data.repository.CuratedData.CURATED_GLOBAL_STATIONS_delegate$lambda$10(CuratedStations.kt:233)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.marcioamaro.mediapod.data.repository.CuratedData$$ExternalSyntheticLambda8.invoke(D8$$SyntheticClass:0)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.marcioamaro.mediapod.data.repository.CuratedData.getCURATED_GLOBAL_STATIONS(CuratedStations.kt:232)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.marcioamaro.mediapod.player.coordinator.DefaultPlaybackCoordinator.playItem(DefaultPlaybackCoordinator.kt:317)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.marcioamaro.mediapod.player.coordinator.DefaultPlaybackCoordinator.play(DefaultPlaybackCoordinator.kt:308)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.marcioamaro.mediapod.ui.RadioViewModel.onRadioClicked(RadioViewModel.kt:1692)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.marcioamaro.mediapod.ui.RadioViewModel.playStation(RadioViewModel.kt:1731)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.marcioamaro.mediapod.ui.RadioViewModel.playStation$default(RadioViewModel.kt:1695)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.marcioamaro.mediapod.MainActivityKt.MainScreen$lambda$214$lambda$213$lambda$178$lambda$98$lambda$97(MainActivity.kt:534)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.marcioamaro.mediapod.MainActivityKt$$ExternalSyntheticLambda18.invoke(D8$$SyntheticClass:0)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.marcioamaro.mediapod.ui.screens.FavoritesScreenKt.FavoritesScreen_r2xNNj4$lambda$27$lambda$26$lambda$23$lambda$22(FavoritesScreen.kt:253)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.marcioamaro.mediapod.ui.screens.FavoritesScreenKt$$ExternalSyntheticLambda0.invoke(D8$$SyntheticClass:0)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at androidx.compose.foundation.ClickableNode$clickPointerInput$3.invoke-k-4lQ0M(Clickable.kt:639)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at androidx.compose.foundation.ClickableNode$clickPointerInput$3.invoke(Clickable.kt:633)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at androidx.compose.foundation.gestures.TapGestureDetectorKt$detectTapAndPress$2$1.invokeSuspend(TapGestureDetector.kt:255)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at kotlinx.coroutines.DispatchedTaskKt.resume(DispatchedTask.kt:163)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at kotlinx.coroutines.DispatchedTaskKt.dispatch(DispatchedTask.kt:152)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at kotlinx.coroutines.CancellableContinuationImpl.dispatchResume(CancellableContinuationImpl.kt:470)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at kotlinx.coroutines.CancellableContinuationImpl.resumeImpl$kotlinx_coroutines_core(CancellableContinuationImpl.kt:504)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at kotlinx.coroutines.CancellableContinuationImpl.resumeImpl$kotlinx_coroutines_core$default(CancellableContinuationImpl.kt:493)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at kotlinx.coroutines.CancellableContinuationImpl.resumeWith(CancellableContinuationImpl.kt:359)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at androidx.compose.ui.input.pointer.SuspendingPointerInputModifierNodeImpl$PointerEventHandlerCoroutine.offerPointerEvent(SuspendingPointerInputFilter.kt:719)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at androidx.compose.ui.input.pointer.SuspendingPointerInputModifierNodeImpl.dispatchPointerEvent(SuspendingPointerInputFilter.kt:598)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at androidx.compose.ui.input.pointer.SuspendingPointerInputModifierNodeImpl.onPointerEvent-H0pRuoY(SuspendingPointerInputFilter.kt:620)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at androidx.compose.foundation.AbstractClickableNode.onPointerEvent-H0pRuoY(Clickable.kt:1044)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at androidx.compose.ui.input.pointer.Node.dispatchMainEventPass(HitPathTracker.kt:387)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at androidx.compose.ui.input.pointer.Node.dispatchMainEventPass(HitPathTracker.kt:373)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at androidx.compose.ui.input.pointer.Node.dispatchMainEventPass(HitPathTracker.kt:373)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at androidx.compose.ui.input.pointer.Node.dispatchMainEventPass(HitPathTracker.kt:373)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at androidx.compose.ui.input.pointer.NodeParent.dispatchMainEventPass(HitPathTracker.kt:229)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at androidx.compose.ui.input.pointer.HitPathTracker.dispatchChanges(HitPathTracker.kt:144)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at androidx.compose.ui.input.pointer.PointerInputEventProcessor.process-BIzXfog(PointerInputEventProcessor.kt:120)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at androidx.compose.ui.platform.AndroidComposeView.sendMotionEvent-8iAsVTc(AndroidComposeView.android.kt:1993)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at androidx.compose.ui.platform.AndroidComposeView.handleMotionEvent-8iAsVTc(AndroidComposeView.android.kt:1944)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at androidx.compose.ui.platform.AndroidComposeView.dispatchTouchEvent(AndroidComposeView.android.kt:1828)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewGroup.dispatchTransformedTouchEvent(ViewGroup.java:3171)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewGroup.dispatchTouchEvent(ViewGroup.java:2851)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewGroup.dispatchTransformedTouchEvent(ViewGroup.java:3171)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewGroup.dispatchTouchEvent(ViewGroup.java:2851)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewGroup.dispatchTransformedTouchEvent(ViewGroup.java:3171)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewGroup.dispatchTouchEvent(ViewGroup.java:2851)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewGroup.dispatchTransformedTouchEvent(ViewGroup.java:3171)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewGroup.dispatchTouchEvent(ViewGroup.java:2851)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.android.internal.policy.DecorView.superDispatchTouchEvent(DecorView.java:611)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.android.internal.policy.PhoneWindow.superDispatchTouchEvent(PhoneWindow.java:2041)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.app.Activity.dispatchTouchEvent(Activity.java:4762)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.android.internal.policy.DecorView.dispatchTouchEvent(DecorView.java:569)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.View.dispatchPointerEvent(View.java:17332)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.xiaomi.mirror.MiuiMirrorImpl.isHandled(MiuiMirrorImpl.java:150)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewRootImpl$ViewPostImeInputStage.processPointerEvent(ViewRootImpl.java:9892)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewRootImpl$ViewPostImeInputStage.onProcess(ViewRootImpl.java:9631)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewRootImpl$InputStage.deliver(ViewRootImpl.java:8962)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewRootImpl$InputStage.onDeliverToNext(ViewRootImpl.java:9025)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewRootImpl$InputStage.forward(ViewRootImpl.java:8991)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewRootImpl$AsyncInputStage.forward(ViewRootImpl.java:9163)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewRootImpl$InputStage.apply(ViewRootImpl.java:8999)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewRootImpl$AsyncInputStage.apply(ViewRootImpl.java:9220)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewRootImpl$InputStage.deliver(ViewRootImpl.java:8966)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewRootImpl$InputStage.onDeliverToNext(ViewRootImpl.java:9025)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewRootImpl$InputStage.forward(ViewRootImpl.java:8991)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewRootImpl$InputStage.apply(ViewRootImpl.java:8999)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewRootImpl$InputStage.deliver(ViewRootImpl.java:8966)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewRootImpl.deliverInputEvent(ViewRootImpl.java:12437)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewRootImpl.doProcessInputEvents(ViewRootImpl.java:12357)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewRootImpl.enqueueInputEvent(ViewRootImpl.java:12292)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewRootImpl.processRawInputEvent(ViewRootImpl.java:12870)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.ViewRootImpl$WindowInputEventReceiver.onInputEvent(ViewRootImpl.java:12609)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.view.InputEventReceiver.dispatchInputEvent(InputEventReceiver.java:342)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.os.MessageQueue.nativePollOnce(Native Method)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.os.MessageQueue.nextLegacy(MessageQueue.java:951)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.os.MessageQueue.next(MessageQueue.java:1094)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.os.Looper.loopOnce(Looper.java:217)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.os.Looper.loop(Looper.java:365)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at android.app.ActivityThread.main(ActivityThread.java:10054)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at java.lang.reflect.Method.invoke(Native Method)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:616)
+09-25 16:55:29.328 18565 25035 W MIUIScout App:     at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1115)
+09-25 16:55:29.346 18565 23918 D MIUIScout ANR: get period history msg: (Current message:null)
+09-25 16:55:29.346 18565 23918 D MIUIScout ANR: get period history msg:messages for the same target android.view.Choreographer$FrameHandler execute time>50ms (count=255 totalwalltime=774ms h=android.view.Choreographer$FrameHandler whatORcallback=android.view.Choreographer$FrameDisplayEventReceiver)
+09-25 16:55:29.346 18565 23918 D MIUIScout ANR: get period history msg:messages for the same target android.os.Handler execute time>50ms (count=257 totalwalltime=263ms h=android.os.Handler whatORcallback=androidx.compose.ui.platform.AndroidUiDispatcher$dispatchCallback$1)
+09-25 16:55:29.346 18565 23918 D MIUIScout ANR: get period history msg:In recent 20s, total historyMsgCount=512
+09-25 16:55:29.351 18565 23918 W MIUIScout ANR: Print Message Id: 0 MessageInfo: { when=-5s27ms callback=androidx.compose.ui.platform.AndroidUiDispatcher$dispatchCallback$1 target=android.os.Handler }
+09-25 16:55:29.351 18565 23918 W MIUIScout ANR: Print Message Id: 1 MessageInfo: { when=-4s991ms what=1 target=android.view.GestureDetector$GestureHandler }
+09-25 16:55:29.351 18565 23918 W MIUIScout ANR: Print Message Id: 2 MessageInfo: { when=-4s791ms what=2 arg1=3 target=android.view.GestureDetector$GestureHandler }
+09-25 16:55:29.351 18565 23918 W MIUIScout ANR: Print Message Id: 3 MessageInfo: { when=-4s783ms what=3 target=android.view.GestureDetector$GestureHandler }
+09-25 16:55:29.351 18565 23918 W MIUIScout ANR: Print Message Id: 4 MessageInfo: { when=-4s766ms what=3 target=android.view.GestureDetector$GestureHandler }
+09-25 16:55:29.351 18565 23918 W MIUIScout ANR: (Print messages: 5, polling=false, quitting=false)
+09-25 16:55:29.357 18565 23238 I oamaro.mediapod: Thread[2,tid=23238,WaitingInMainSignalCatcherLoop,Thread*=0xb4000070ad0102c0,peer=0x2001640,"Signal Catcher"]: reacting to signal 3
+09-25 16:55:29.357 18565 23238 I oamaro.mediapod: 
+09-25 16:55:29.376 18565 18565 I libc    : handling signal: 35
+09-25 16:55:29.379 18565 18565 E libc    : get api level success, 31
+09-25 16:55:29.379 18565 18565 I libc    : Requested dump for pid 18565 (oamaro.mediapod)
+09-25 16:55:29.379 18565 18565 I libc    : debuggerd_dispatch_pseudothread start. crashing tid: 18565
+09-25 16:55:29.394 18565 18565 I libc    : crash_dump pid: 25047
+09-25 16:55:29.655 18565 23238 I oamaro.mediapod: Wrote stack traces to tombstoned
+09-25 16:55:31.071 18565 23243 I oamaro.mediapod: Background young concurrent mark compact GC freed 22MB AllocSpace bytes, 0(0B) LOS objects, 25% free, 40MB/53MB, paused 2.041ms,15.295ms total 139.371ms
+09-25 16:55:31.159 18565 18565 D nativeloader: Load libmisight_jni.so using system ns (caller=/system_ext/framework/miui-framework.jar): ok
+09-25 16:55:31.159 18565 18565 D MiSight::  sendEvent id=901003007
+09-25 16:55:31.159 18565 18565 D MiSightJni: MiSight: Java_com_miui_misight_MiSight_nativeSendEvent enter called. '{"PackageName":"com.marcioamaro.mediapod","Duration":6836}'
+09-25 16:55:31.159 18565 18565 D MiEvent : MiEvent: this 0x7fcda233f0, paylod=0xb40000721d0e2530
+09-25 16:55:31.159 18565 18565 D MiEvent : flatten EventId 901003007 -t 1790366131 -paraList {"Duration":6836,"PackageName":"com.marcioamaro.mediapod"}
+09-25 16:55:31.159 18565 18565 D MiEvent : report:EventId 901003007 -t 1790366131 -paraList {"Duration":6836,"PackageName":"com.marcioamaro.mediapod"} success
+09-25 16:55:31.159 18565 18565 D MiEvent : ~MiEvent: this 0x7fcda233f0, paylod=0xb40000721d0e2530
+09-25 16:55:31.166 18565 18565 I Choreographer: Skipped 821 frames!  The application may be doing too much work on its main thread.
+09-25 16:55:31.308 18565 18565 I MediaSessionImpl: Init f0e63f8 [AndroidXMedia3/1.5.1] [aristotle, 2306EPN60G, Xiaomi, 36]
+09-25 16:55:31.314 18565 23918 I HWUI    : Davey! duration=6990ms; Flags=160, FrameTimelineVsyncId=1915380, IntendedVsync=2412083173664, Vsync=2418924840057, InputEventId=363402831, HandleInputStart=2418925595451, AnimationStart=2418925596989, PerformTraversalsStart=2418994097989, DrawStart=2418994445913, FrameDeadline=2412098358722, FrameStartTime=2418925223220, FrameInterval=8333333, WorkloadTarget=10000000, FlingPosition=0, FlingFrameInterval=0, InputEventTime=2412075949000, InputEventAction=1, FirstTimeForInputEventAction=2412075949000, InputEventSignal=1, WindowMode=1, SyncQueued=2419038941913, SyncStart=2419039009682, IssueDrawCommandsStart=2419039447759, SwapBuffers=2419064654836, FrameCompleted=2419073246528, DequeueBufferDuration=58231, QueueBufferDuration=271384, GpuCompleted=2419073246528, SwapBuffersCompleted=2419065304066, DisplayPresentTime=0, CommandSubmissionCompleted=2419064654836, 
+09-25 16:55:31.365 18565 18565 W HWUI    : Image decoding logging dropped!
+09-25 16:55:31.409 18565 18565 W HWUI    : Image decoding logging dropped!
+09-25 16:55:31.411 18565 18565 W EpFrameworkFactory: activated: false jar exist: false
+09-25 16:55:31.427 18565 18565 W HWUI    : Image decoding logging dropped!
+09-25 16:55:31.441 18565 18565 W HWUI    : Image decoding logging dropped!
+09-25 16:55:31.457 18565 18565 W HWUI    : Image decoding logging dropped!
+09-25 16:55:31.473 18565 18565 W HWUI    : Image decoding logging dropped!
+09-25 16:55:31.488 18565 18565 W HWUI    : Image decoding logging dropped!
+09-25 16:55:31.558 18565 25175 W HWUI    : Image decoding logging dropped!
+09-25 16:55:31.563 18565 23242 I oamaro.mediapod: Compiler allocated 4750KB to compile void com.marcioamaro.mediapod.ui.components.IpodHeaderKt.IpodHeader-S4lxPQ8(java.lang.String, com.marcioamaro.mediapod.player.RadioPlaybackStatus, boolean, int, long, long, long, androidx.compose.ui.text.font.FontFamily, float, boolean, boolean, kotlin.jvm.functions.Function0, kotlin.jvm.functions.Function0, float, java.lang.String, boolean, androidx.compose.ui.Modifier, androidx.compose.runtime.Composer, int, int, int)
+09-25 16:55:31.597 18565 23479 W HWUI    : Image decoding logging dropped!
+09-25 16:55:31.597 18565 23476 W HWUI    : Image decoding logging dropped!
+09-25 16:55:32.855 18565 23541 W VideoCapabilities: Unsupported mime image/vnd.android.heic
+09-25 16:55:32.856 18565 23541 W VideoCapabilities: Unsupported mime image/vnd.android.heic
+09-25 16:55:32.857 18565 23541 W VideoCapabilities: Unsupported mime video/dolby-vision
+09-25 16:55:32.858 18565 23541 W VideoCapabilities: Unsupported mime video/dolby-vision
+09-25 16:55:32.859 18565 23541 W VideoCapabilities: Unrecognized profile/level 32768/256 for video/mp4v-es
+09-25 16:55:32.866 18565 23541 W VideoCapabilities: could not parse integer range: 2697-1535
+09-25 16:55:32.906 18565 23541 W VideoCapabilities: Unsupported mime image/vnd.android.heic
+09-25 16:55:32.906 18565 23541 W VideoCapabilities: Unsupported mime image/vnd.android.heic
+09-25 16:55:32.907 18565 23541 W VideoCapabilities: Unsupported mime image/vnd.android.heic
+09-25 16:55:32.907 18565 23541 W VideoCapabilities: Unsupported mime image/vnd.android.heic
+09-25 16:55:32.907 18565 23541 W VideoCapabilities: Unsupported mime video/dolby-vision
+09-25 16:55:32.907 18565 23541 W VideoCapabilities: Unsupported mime video/dolby-vision
+09-25 16:55:32.907 18565 23541 W VideoCapabilities: Unsupported mime video/dolby-vision
+09-25 16:55:32.908 18565 23541 W VideoCapabilities: Unsupported mime video/dolby-vision
+09-25 16:55:32.908 18565 23541 W VideoCapabilities: Unsupported mime video/dolby-vision
+09-25 16:55:32.908 18565 23541 W VideoCapabilities: Unsupported mime video/dolby-vision
+09-25 16:55:32.909 18565 23541 W VideoCapabilities: Unrecognized profile/level 32768/256 for video/mp4v-es
+09-25 16:55:32.909 18565 23541 W VideoCapabilities: Unrecognized profile/level 32768/256 for video/mp4v-es
+09-25 16:55:32.913 18565 23541 W Utils   : could not parse long range '2697-1535'
+09-25 16:55:32.913 18565 23541 W Utils   : could not parse long range '2697-1535'
+09-25 16:55:32.935 18565 23541 I DMCodecAdapterFactory: Creating an asynchronous MediaCodec adapter for track type audio
+09-25 16:55:32.935 18565 23541 D MediaCodec: CreateByComponentName: name c2.android.aac.decoder
+09-25 16:55:32.938 18565 23541 I MediaCodec: MediaCodec::MediaCodec()
+09-25 16:55:32.940 18565 23541 D CCodecBufferChannel: mBufferCountTrace=0 mIsUserLoad=1
+09-25 16:55:32.940 18565 23541 I MediaCodec: init video box disabled for codec not supported
+09-25 16:55:32.940 18565 23541 D MediaCodec: [0xb4000070ad2988d0] init: CCodec 0xb40000716d09e8b0, CCodecBufferChannel 0xb40000705d0fd6c0
+09-25 16:55:32.952 18565 25206 D MediaCodec: [0xb4000070ad2988d0] setState: 1
+09-25 16:55:32.952 18565 25206 I MediaCodec: [mId: 0] [audio-debug-dec] setState: INITIALIZING
+09-25 16:55:32.953 18565 25206 D CCodec  : allocate(c2.android.aac.decoder)
+09-25 16:55:32.957 18565 25206 I ApexCodecsLazy: Failed to load libcom.android.media.swcodec.apexcodecs.so: dlopen failed: library "libcom.android.media.swcodec.apexcodecs.so" not found
+09-25 16:55:32.957 18565 25206 I Codec2Client: Available Codec2 services: "default" "default9" "software"
+09-25 16:55:32.959 18565 25206 I CCodec  : setting up 'default' as default (vendor) store
+09-25 16:55:32.984 18565 25206 I CCodec  : Created component [c2.android.aac.decoder] for [c2.android.aac.decoder]
+09-25 16:55:32.984 18565 25206 D CCodecBufferChannel: [0xb40000705d0fd6c0] setComponent: mName c2.android.aac.decoder#270, mPipelineWatcher 0xb40000705d0fdbb8
+09-25 16:55:32.984 18565 25206 D CCodecBufferChannel: PipelineWatcher debug info [c2.android.aac.decoder#270] enable=0
+09-25 16:55:32.985 18565 25206 D CCodecConfig: read media type: audio/mp4a-latm
+09-25 16:55:32.991 18565 25206 D ReflectedParamUpdater: extent() != 1 for single value type: algo.buffers.max-count.values
+09-25 16:55:32.992 18565 25206 D ReflectedParamUpdater: extent() != 1 for single value type: output.subscribed-indices.values
+09-25 16:55:32.992 18565 25206 D ReflectedParamUpdater: extent() != 1 for single value type: input.buffers.allocator-ids.values
+09-25 16:55:32.992 18565 25206 D ReflectedParamUpdater: extent() != 1 for single value type: output.buffers.allocator-ids.values
+09-25 16:55:32.992 18565 25206 D ReflectedParamUpdater: extent() != 1 for single value type: algo.buffers.allocator-ids.values
+09-25 16:55:32.992 18565 25206 D ReflectedParamUpdater: extent() != 1 for single value type: output.buffers.pool-ids.values
+09-25 16:55:32.993 18565 25206 D ReflectedParamUpdater: extent() != 1 for single value type: algo.buffers.pool-ids.values
+09-25 16:55:32.999 18565 25206 I CCodecConfig: query failed after returning 21 values (BAD_INDEX)
+09-25 16:55:32.999 18565 25206 D CCodecConfig: c2 config diff is Dict {
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::u32 coded.aac-packaging.value = 0
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::u32 coded.bitrate.value = 64000
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::u32 coded.pl.level = 0
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::u32 coded.pl.profile = 8192
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::i32 coding.drc.album-mode.value = 0
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::float coding.drc.attenuation-factor.value = 1
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::float coding.drc.boost-factor.value = 1
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::i32 coding.drc.compression-mode.value = 3
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::i32 coding.drc.effect-type.value = 3
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::float coding.drc.encoded-level.value = 0.25
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::float coding.drc.reference-level.value = -16
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::u32 input.buffers.max-size.value = 8192
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::u32 input.delay.value = 0
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   string input.media-type.value = "audio/mp4a-latm"
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::u32 output.delay.value = 2
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::float output.drc.output-loudness.value = 0.25
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::u32 output.large-frame.max-size = 0
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::u32 output.large-frame.threshold-size = 0
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   string output.media-type.value = "audio/raw"
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::u32 raw.channel-count.value = 1
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::u32 raw.channel-mask.value = 0
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::u32 raw.max-channel-count.value = 8
+09-25 16:55:32.999 18565 25206 D CCodecConfig:   c2::u32 raw.sample-rate.value = 44100
+09-25 16:55:32.999 18565 25206 D CCodecConfig: }
+09-25 16:55:32.999 18565 25206 D MediaCodec: [0xb4000070ad2988d0] setState: 2
+09-25 16:55:32.999 18565 25206 I MediaCodec: [mId: 0] [audio-debug-dec] setState: INITIALIZED
+09-25 16:55:33.002 18565 25206 I MediaCodec: MediaCodec will operate in async mode
+09-25 16:55:33.003 18565 23541 D MediaCodec: [0xb4000070ad2988d0] init: CCodec 0xb40000716d09e8b0, CCodecBufferChannel 0xb40000705d0fd6c0
+09-25 16:55:33.003 18565 23541 I MediaCodec: [mId: 0] [audio-debug-dec] configure: ClientName: com.marcioamaro.mediapod ComponentName: c2.android.aac.decoder
+09-25 16:55:33.003 18565 23541 I MediaCodec: [mId: 0] [audio-debug-dec] configure: ClientFormat: AMessage(what = 0x00000000) = {
+09-25 16:55:33.003 18565 23541 I MediaCodec:   string log-session-id = "PwyLbWNfU7bsOc5a"
+09-25 16:55:33.003 18565 23541 I MediaCodec:   int32_t sample-rate = 22050
+09-25 16:55:33.003 18565 23541 I MediaCodec:   int32_t importance = 1000
+09-25 16:55:33.003 18565 23541 I MediaCodec:   string mime = "audio/mp4a-latm"
+09-25 16:55:33.003 18565 23541 I MediaCodec:   int32_t channel-count = 2
+09-25 16:55:33.003 18565 23541 I MediaCodec:   int32_t priority = 0
+09-25 16:55:33.003 18565 23541 I MediaCodec:   int32_t max-output-channel-count = 99
+09-25 16:55:33.003 18565 23541 I MediaCodec:   Buffer csd-0 = {
+09-25 16:55:33.003 18565 23541 I MediaCodec:     00000000:  13 90                                             ..
+09-25 16:55:33.003 18565 23541 I MediaCodec:   }
+09-25 16:55:33.003 18565 23541 I MediaCodec: }
+09-25 16:55:33.007 18565 23541 E MediaCodec: Media Quality Service not found.
+09-25 16:55:33.007 18565 23541 I MediaCodec: configure : init video box disabled
+09-25 16:55:33.007 18565 25206 D MediaCodec: [0xb4000070ad2988d0] setState: 3
+09-25 16:55:33.007 18565 25206 I MediaCodec: [mId: 0] [audio-debug-dec] setState: CONFIGURING
+09-25 16:55:33.008 18565 25206 D CCodec  : [c2.android.aac.decoder] buffers are bound to CCodec for this session
+09-25 16:55:33.009 18565 25206 D CCodecConfig: no c2 equivalents for log-session-id
+09-25 16:55:33.009 18565 25206 D CCodecConfig: no c2 equivalents for importance
+09-25 16:55:33.009 18565 25206 D CCodecConfig: no c2 equivalents for flags
+09-25 16:55:33.011 18565 25206 D CCodecConfig: c2 config diff is   c2::u32 raw.channel-count.value = 2
+09-25 16:55:33.011 18565 25206 D CCodecConfig:   c2::u32 raw.sample-rate.value = 22050
+09-25 16:55:33.011 18565 25206 D CCodec  : encoding statistics level = 0
+09-25 16:55:33.011 18565 25206 D CCodec  : setup formats input: AMessage(what = 0x00000000) = {
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t aac-drc-album-mode = 0
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t aac-drc-boost-level = 127
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t aac-drc-cut-level = 127
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t aac-drc-effect-type = 3
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t aac-encoded-target-level = -1
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t aac-max-output-channel_count = 8
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t aac-target-ref-level = 64
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t bitrate = 64000
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t channel-count = 2
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t channel-mask = 0
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t level = 0
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t max-input-size = 8192
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t max-output-channel-count = 8
+09-25 16:55:33.011 18565 25206 D CCodec  :   string mime = "audio/mp4a-latm"
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t profile = 2
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t sample-rate = 22050
+09-25 16:55:33.011 18565 25206 D CCodec  : }
+09-25 16:55:33.011 18565 25206 D CCodec  : setup formats output: AMessage(what = 0x00000000) = {
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t aac-drc-album-mode = 0
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t aac-drc-boost-level = 127
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t aac-drc-cut-level = 127
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t aac-drc-effect-type = 3
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t aac-drc-output-loudness = -1
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t aac-encoded-target-level = -1
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t aac-max-output-channel_count = 8
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t aac-target-ref-level = 64
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t buffer-batch-max-output-size = 0
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t buffer-batch-threshold-output-size = 0
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t channel-count = 2
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t channel-mask = 0
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t max-output-channel-count = 8
+09-25 16:55:33.011 18565 25206 D CCodec  :   string mime = "audio/raw"
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t sample-rate = 22050
+09-25 16:55:33.011 18565 25206 D CCodec  :   int32_t android._config-pcm-encoding = 2
+09-25 16:55:33.011 18565 25206 D CCodec  : }
+09-25 16:55:33.012 18565 25206 I CCodecConfig: query failed after returning 21 values (BAD_INDEX)
+09-25 16:55:33.012 18565 25206 E oamaro.mediapod: Failed to query component interface for required system resources: 6
+09-25 16:55:33.013 18565 25206 D MediaCodec: [0xb4000070ad2988d0] setState: 4
+09-25 16:55:33.013 18565 25206 I MediaCodec: [mId: 0] [audio-debug-dec] setState: CONFIGURED
+09-25 16:55:33.014 18565 23541 D MediaCodec: keep callback message for reclaim
+09-25 16:55:33.014 18565 25206 D MediaCodec: [0xb4000070ad2988d0] setState: 5
+09-25 16:55:33.014 18565 25206 I MediaCodec: [mId: 0] [audio-debug-dec] setState: STARTING
+09-25 16:55:33.030 18565 25206 D C2Store : Using DMABUF Heaps
+09-25 16:55:33.030 18565 25206 D CCodecBufferChannel: [c2.android.aac.decoder#270] Created input block pool with allocatorID 16 => poolID 17 - OK (0)
+09-25 16:55:33.030 18565 25206 I CCodecBufferChannel: [mId: 0] [audio-debug-dec] start: inputFormat: AMessage(what = 0x00000000) = {
+09-25 16:55:33.030 18565 25206 I CCodecBufferChannel:   int32_t aac-drc-album-mode = 0
+09-25 16:55:33.030 18565 25206 I CCodecBufferChannel:   int32_t aac-drc-boost-level = 127
+09-25 16:55:33.030 18565 25206 I CCodecBufferChannel:   int32_t aac-drc-cut-level = 127
+09-25 16:55:33.030 18565 25206 I CCodecBufferChannel:   int32_t aac-drc-effect-type = 3
+09-25 16:55:33.030 18565 25206 I CCodecBufferChannel:   int32_t aac-encoded-target-level = -1
+09-25 16:55:33.030 18565 25206 I CCodecBufferChannel:   int32_t aac-max-output-channel_count = 8
+09-25 16:55:33.030 18565 25206 I CCodecBufferChannel:   int32_t aac-target-ref-level = 64
+09-25 16:55:33.030 18565 25206 I CCodecBufferChannel:   int32_t bitrate = 64000
+09-25 16:55:33.030 18565 25206 I CCodecBufferChannel:   int32_t channel-count = 2
+09-25 16:55:33.030 18565 25206 I CCodecBufferChannel:   int32_t channel-mask = 0
+09-25 16:55:33.030 18565 25206 I CCodecBufferChannel:   int32_t level = 0
+09-25 16:55:33.030 18565 25206 I CCodecBufferChannel:   int32_t max-input-size = 8192
+09-25 16:55:33.030 18565 25206 I CCodecBufferChannel:   int32_t max-output-channel-count = 8
+09-25 16:55:33.030 18565 25206 I CCodecBufferChannel:   string mime = "audio/mp4a-latm"
+09-25 16:55:33.030 18565 25206 I CCodecBufferChannel:   int32_t profile = 2
+09-25 16:55:33.030 18565 25206 I CCodecBufferChannel:   int32_t sample-rate = 22050
+09-25 16:55:33.030 18565 25206 I CCodecBufferChannel: }
+09-25 16:55:33.034 18565 25206 I CCodecBufferChannel: [c2.android.aac.decoder#270] Created output block pool with allocatorID 16 => poolID 164 - OK
+09-25 16:55:33.034 18565 25206 D CCodecBufferChannel: [c2.android.aac.decoder#270] Configured output block pool ids 164 => OK
+09-25 16:55:33.034 18565 25206 D CCodecBufferChannel: [0xb40000705d0fd6c0] [c2.android.aac.decoder#270] start: output->outputDelay 2, output->numSlots 6
+09-25 16:55:33.034 18565 25206 I CCodecBufferChannel: [mId: 0] [audio-debug-dec] start: outputFormat: AMessage(what = 0x00000000) = {
+09-25 16:55:33.034 18565 25206 I CCodecBufferChannel:   int32_t aac-drc-album-mode = 0
+09-25 16:55:33.034 18565 25206 I CCodecBufferChannel:   int32_t aac-drc-boost-level = 127
+09-25 16:55:33.034 18565 25206 I CCodecBufferChannel:   int32_t aac-drc-cut-level = 127
+09-25 16:55:33.034 18565 25206 I CCodecBufferChannel:   int32_t aac-drc-effect-type = 3
+09-25 16:55:33.034 18565 25206 I CCodecBufferChannel:   int32_t aac-drc-output-loudness = -1
+09-25 16:55:33.034 18565 25206 I CCodecBufferChannel:   int32_t aac-encoded-target-level = -1
+09-25 16:55:33.034 18565 25206 I CCodecBufferChannel:   int32_t aac-max-output-channel_count = 8
+09-25 16:55:33.034 18565 25206 I CCodecBufferChannel:   int32_t aac-target-ref-level = 64
+09-25 16:55:33.034 18565 25206 I CCodecBufferChannel:   int32_t buffer-batch-max-output-size = 0
+09-25 16:55:33.034 18565 25206 I CCodecBufferChannel:   int32_t buffer-batch-threshold-output-size = 0
+09-25 16:55:33.034 18565 25206 I CCodecBufferChannel:   int32_t channel-count = 2
+09-25 16:55:33.034 18565 25206 I CCodecBufferChannel:   int32_t channel-mask = 0
+09-25 16:55:33.034 18565 25206 I CCodecBufferChannel:   int32_t max-output-channel-count = 8
+09-25 16:55:33.034 18565 25206 I CCodecBufferChannel:   string mime = "audio/raw"
+09-25 16:55:33.034 18565 25206 I CCodecBufferChannel:   int32_t sample-rate = 22050
+09-25 16:55:33.034 18565 25206 I CCodecBufferChannel:   int32_t android._config-pcm-encoding = 2
+09-25 16:55:33.034 18565 25206 I CCodecBufferChannel: }
+09-25 16:55:33.041 18565 25206 D CCodecBuffers: [c2.android.aac.decoder#270:1D-Output.Impl[N]] converted 0 buffers to array mode of 6
+09-25 16:55:33.041 18565 25206 I DMABUFHEAPS: Using DMA-BUF heap named: mtk_mm
+09-25 16:55:33.043 18565 25206 D MediaCodec: [0xb4000070ad2988d0] setState: 6
+09-25 16:55:33.043 18565 25206 I MediaCodec: [mId: 0] [audio-debug-dec] setState: STARTED
+09-25 16:55:33.043 18565 25206 D CCodecBufferChannel: The csd Sample queue
+09-25 16:55:33.047 18565 25206 W oamaro.mediapod: AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-25 16:55:33.057 18565 25215 I MediaCodec: [mId: 0] [audio-debug-dec] queueInputBuffer: index: 1 pts: 1000000000000 timediff: 0
+09-25 16:55:33.059 18565 25215 I MediaCodec: [mId: 0] [audio-debug-dec] queueInputBuffer: index: 2 pts: 1000000046439 timediff: 2
+09-25 16:55:33.061 18565 25215 I MediaCodec: [mId: 0] [audio-debug-dec] queueInputBuffer: index: 3 pts: 1000000092878 timediff: 2
+09-25 16:55:33.078 18565 25206 D PipelineWatcher: [0xb40000705d0fdbb8] pipelineFull: too many frames in pipeline (6)
+09-25 16:55:33.081 18565 23544 D PipelineWatcher: [0xb40000705d0fdbb8] pipelineFull: too many frames in pipeline (6)
+09-25 16:55:33.081 18565 25206 D CCodecConfig: c2 config diff is   c2::u32 raw.channel-mask.value = 12
+09-25 16:55:33.081 18565 25206 D CCodecConfig:   c2::u32 raw.sample-rate.value = 44100
+09-25 16:55:33.081 18565 25206 D CCodecBuffers: [c2.android.aac.decoder#270:Output[N]] popFromStashAndRegister: at 1000000000000us, output format changed to AMessage(what = 0x00000000) = {
+09-25 16:55:33.081 18565 25206 D CCodecBuffers:   int32_t aac-drc-album-mode = 0
+09-25 16:55:33.081 18565 25206 D CCodecBuffers:   int32_t aac-drc-boost-level = 127
+09-25 16:55:33.081 18565 25206 D CCodecBuffers:   int32_t aac-drc-cut-level = 127
+09-25 16:55:33.081 18565 25206 D CCodecBuffers:   int32_t aac-drc-effect-type = 3
+09-25 16:55:33.081 18565 25206 D CCodecBuffers:   int32_t aac-drc-output-loudness = -1
+09-25 16:55:33.081 18565 25206 D CCodecBuffers:   int32_t aac-encoded-target-level = -1
+09-25 16:55:33.081 18565 25206 D CCodecBuffers:   int32_t aac-max-output-channel_count = 8
+09-25 16:55:33.081 18565 25206 D CCodecBuffers:   int32_t aac-target-ref-level = 64
+09-25 16:55:33.081 18565 25206 D CCodecBuffers:   int32_t buffer-batch-max-output-size = 0
+09-25 16:55:33.081 18565 25206 D CCodecBuffers:   int32_t buffer-batch-threshold-output-size = 0
+09-25 16:55:33.081 18565 25206 D CCodecBuffers:   int32_t channel-count = 2
+09-25 16:55:33.081 18565 25206 D CCodecBuffers:   int32_t channel-mask = 12
+09-25 16:55:33.081 18565 25206 D CCodecBuffers:   int32_t max-output-channel-count = 8
+09-25 16:55:33.081 18565 25206 D CCodecBuffers:   string mime = "audio/raw"
+09-25 16:55:33.081 18565 25206 D CCodecBuffers:   int32_t sample-rate = 44100
+09-25 16:55:33.081 18565 25206 D CCodecBuffers:   int32_t android._config-pcm-encoding = 2
+09-25 16:55:33.081 18565 25206 D CCodecBuffers: }
+09-25 16:55:33.081 18565 25206 I MediaCodec: isHDR: standard =0,transfer = 0
+09-25 16:55:33.101 18565 23541 D AudioTrack: getMinFrameCount(): getMinFrameCount = 3770: afFrameCount = 2048, afSampleRate = 48000, afLatency = 128
+09-25 16:55:33.101 18565 23541 E AudioTrack: Failed to load XML file: odm/etc/audio/audio_lowpower_app_list.xml
+09-25 16:55:33.101 18565 23541 D AudioTrack: INSP: type=audio,case=1,set=0xb40000705d06f650,stream_type=-1,sample_rate=44100,format=0x1,channel_mask=0x3,frame_count=15080,flags=0x0,notification_frames=0,session_id=569,transfer_type=3,uid=10577,pid=18565
+09-25 16:55:33.101 18565 23541 D AudioTrack: INSP: type=audio,case=1,attributes=1,content_type=2,usage=1,source=-1,flags=0xa00
+09-25 16:55:33.110 18565 23541 I AudioTrackImpl: initAudioTrackImpl()
+09-25 16:55:33.110 18565 23541 D AudioTrack: set(): (sessionId=569), mcallback is 1, streamType -1, sampleRate 44100, format 0x1, channelMask 0x3, frameCount 15080, flags 0, notificationFrames 0,transferType 3, mClientAttributionSource AttributionSourceState{pid: 18565, uid: 10577, deviceId: 0, packageName: com.marcioamaro.mediapod, attributionTag: (null), token: binder:0xb40000707d01f8b0, renouncedPermissions: [], next: []}
+09-25 16:55:33.111 18565 23541 D AudioTrack: set(): Building AudioTrack with attributes: usage = 1, content = 2, flags = 0xa00, tags = []
+09-25 16:55:33.111 18565 23541 D AudioTrack: set(): 0xb40000705d06f650, Create AudioTrackThread, tid = 25218
+09-25 16:55:33.118 18565 23541 D AudioTrack: 0xb40000705d06f650 adjust notify for com.marcioamaro.mediapod from 0 to 1881.
+09-25 16:55:33.152 18565 23541 D AudioTrack: createTrack_l(93): 0xb40000705d06f650, mCblk = 0x72e39bb000, mLatency = 469, mAfLatency = 128, frameCount = 15080, mSampleRate = 44100, mFlags = 0x8, mReqFrameCount = 15080, mNotificationFramesAct = 1881
+09-25 16:55:33.159 18565 23251 I AudioTrackImpl: before scaleVolumeForVideo L:1.000000 R:1.000000 and the pakage is com.marcioamaro.mediapod
+09-25 16:55:33.159 18565 23251 D AudioTrack: AudioTrack::setVolume L:1.000000 R:1.000000 sessionid=569
+09-25 16:55:33.161 18565 23541 D android.media.AudioTrack: setStereoVolume setParameters is 1.0, rightVolume is 1.0, isMuted is false, mIsLastMute is false, mNeedNotifyedNative is true
+09-25 16:55:33.161 18565 23541 D AudioTrackImpl: setMediaSetMute(93): Parameter media_set_track_muted is 0 return
+09-25 16:55:33.161 18565 23541 I AudioTrackImpl: before scaleVolumeForVideo L:1.000000 R:1.000000 and the pakage is com.marcioamaro.mediapod
+09-25 16:55:33.161 18565 23541 D AudioTrack: AudioTrack::setVolume L:1.000000 R:1.000000 sessionid=569
+09-25 16:55:33.164 18565 23541 I AudioTrack: start(93): prior state:STATE_STOPPED packageName: com.marcioamaro.mediapod
+09-25 16:55:33.164 18565 23544 I AudioTrackImpl: before scaleVolumeForVideo L:1.000000 R:1.000000 and the pakage is com.marcioamaro.mediapod
+09-25 16:55:33.166 18565 18565 D MediaRouter: onRestoreRoute() : route=RouteInfo{ name=Telefone, description=null, status=null, category=RouteCategory{ name=Sistema types=ROUTE_TYPE_LIVE_AUDIO ROUTE_TYPE_LIVE_VIDEO  groupable=false }, supportedTypes=ROUTE_TYPE_LIVE_AUDIO ROUTE_TYPE_LIVE_VIDEO , presentationDisplay=null }
+09-25 16:55:33.166 18565 18565 V MediaRouter: Selecting route: RouteInfo{ name=Telefone, description=null, status=null, category=RouteCategory{ name=Sistema types=ROUTE_TYPE_LIVE_AUDIO ROUTE_TYPE_LIVE_VIDEO  groupable=false }, supportedTypes=ROUTE_TYPE_LIVE_AUDIO ROUTE_TYPE_LIVE_VIDEO , presentationDisplay=null }
+09-25 16:55:33.314 18565 23541 D AudioRepeatStartCheck: [AudioRepeatStartStopCheck], enter: uid = 10577, session = 569, uidnowTime = 0
+09-25 16:55:33.314 18565 23541 D AudioRepeatStartCheck: [AudioRepeatStartStopCheck] isAnomaly = 0
+09-25 16:55:33.314 18565 23544 D AudioTrack: AudioTrack::setVolume L:1.000000 R:1.000000 sessionid=569
+09-25 16:55:33.314 18565 23541 W EpFrameworkFactory: activated: false jar exist: false
+09-25 16:55:33.318 18565 23541 D AudioSystem: +setParameters(): AudioTrack-Process=18565;AudioTrack-AudioThread=23541 
+09-25 16:55:33.325 18565 23251 D AudioTrack: onAudioDeviceUpdate AudioPortDebug[ID:00000003] deviceType:AUDIO_DEVICE_OUT_SPEAKER(00000002)
+09-25 16:55:33.326 18565 23251 D BatteryNotifier: Batteryhandler init with status: 0
+09-25 16:55:33.326 18565 23251 D BatteryNotifier: batteryHandler::send audio device update msg! 10577, 18565, 569, 2
+09-25 16:55:33.326 18565 25223 D BatteryNotifier: BatteryNotifier::update device to power insight! 10577, 18565, 569, 2
+09-25 16:55:33.396 18565 23541 D AudioTrack: getTimestamp_l(93): device stall time corrected using current time 2421155773374
+09-25 16:55:33.417 18565 23541 D AudioTrack: getTimestamp_l(93): stale timestamp time corrected, currentTimeNanos: 2139043022819 < limitNs: 2420795034220 < mStartNs: 2420923034220
+09-25 16:55:33.417 18565 23541 W AudioTrack: getTimestamp_l(93): retrograde timestamp time corrected, 2420795034220 < 2421165991759
+09-25 16:55:34.350 18565 25206 D PipelineWatcher: [0xb40000705d0fdbb8] pipelineFull: too many frames in pipeline (6)
+09-25 16:55:34.571 18565 25206 D CCodecBufferChannel: [c2.android.aac.decoder#270] input EOS
+09-25 16:55:34.985 18565 23541 D AudioTrack: stop(93): 0xb40000705d06f650, prior state:STATE_ACTIVE packageName: com.marcioamaro.mediapod
+09-25 16:55:34.985 18565 23541 D AudioTrack: stop(93): prior state:STATE_ACTIVE
+09-25 16:55:34.985 18565 23541 D AudioTrack: stop(93): called with 88064 frames delivered
+09-25 16:55:34.985 18565 23541 D AudioTrackShared: this(0xb40000708d0d6b50), mCblk(0x72e39bb000), front(73382), mIsOut 1, interrupt() FUTEX_WAKE
+09-25 16:55:34.987 18565 23541 D AudioTrack: stop(93): 0xb40000705d06f650 stop done
+09-25 16:55:35.305 18565 25161 D libEGL  : Post task 4
+09-25 16:55:35.306 18565 24031 D libEGL  : Run task 4
+09-25 16:55:35.486 18565 18565 W RadioPlayerManager: Fim de fluxo recebido para 'ALPHA FM 101.7'. Alternando para próxima fonte...
+09-25 16:55:35.525 18565 18565 W RadioPlayerManager: Penalizada URL (https://27403.live.streamtheworld.com/RADIO_ALPHAFM_ADP.aac). Tentativa 1 com fonte reserva: https://27403.live.streamtheworld.com/RADIO_ALPHAFM_ADP.aac (Agente: ExoPlayer) por motivo: Fim prematuro do fluxo (EOF)
+09-25 16:55:35.832 18565 25206 D MediaCodec: [0xb4000070ad2988d0] setState: 7
+09-25 16:55:35.832 18565 25206 I MediaCodec: [mId: 0] [audio-debug-dec] setState: FLUSHING
+09-25 16:55:35.833 18565 25206 I CCodecBufferChannel: [mId: 0] [audio-debug-dec] flush: flushing 0 works
+09-25 16:55:35.833 18565 25206 D MediaCodec: [0xb4000070ad2988d0] setState: 8
+09-25 16:55:35.833 18565 25206 I MediaCodec: [mId: 0] [audio-debug-dec] setState: FLUSHED
+09-25 16:55:35.834 18565 23541 D MediaCodec: keep callback message for reclaim
+09-25 16:55:35.834 18565 25206 D MediaCodec: [0xb4000070ad2988d0] setState: 6
+09-25 16:55:35.835 18565 25206 I MediaCodec: [mId: 0] [audio-debug-dec] setState: STARTED
+09-25 16:55:35.836 18565 25206 I CCodecConfig: query failed after returning 21 values (BAD_INDEX)
+09-25 16:55:35.851 18565 25468 D AudioTrack: flush(93): 0xb40000705d06f650, prior state:STATE_STOPPED
+09-25 16:55:35.851 18565 25468 D AudioTrack: stop(93): 0xb40000705d06f650, prior state:STATE_FLUSHED packageName: com.marcioamaro.mediapod
+09-25 16:55:35.852 18565 25468 D AudioTrack: stop(93): prior state:STATE_FLUSHED
+09-25 16:55:35.852 18565 25468 D AudioTrack: ~AudioTrack(sessionID=569)
+09-25 16:55:35.852 18565 25468 D AudioTrack: ~AudioTrack(93): 0xb40000705d06f650, calling stop()
+09-25 16:55:35.852 18565 25468 D AudioTrack: stop(93): 0xb40000705d06f650, prior state:STATE_FLUSHED packageName: com.marcioamaro.mediapod
+09-25 16:55:35.852 18565 25468 D AudioTrack: stop(93): prior state:STATE_FLUSHED
+09-25 16:55:35.852 18565 25468 D AudioTrack: stopAndJoinCallbacks(93) done
+09-25 16:55:36.753 18565 23481 W RenderInspector: QueueBuffer time out on com.marcioamaro.mediapod/com.marcioamaro.mediapod.MainActivity, count=1, avg=12 ms, max=12 ms.
+09-25 16:55:37.469 18565 18565 I HandWritingStubImpl: refreshLastKeyboardType: 1
+09-25 16:55:37.469 18565 18565 I HandWritingStubImpl: getCurrentKeyboardType: 1
+09-25 16:55:37.476 18565 18565 D InsetsController: hide(ime(), fromIme=false)
+09-25 16:55:37.476 18565 18565 I ImeTracker: com.marcioamaro.mediapod:4a365e76: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+09-25 16:55:38.029 18565 25206 I MediaCodec: [mId: 0] [audio-debug-dec] Stats 5015ms:Client:com.marcioamaro.mediapod,Component:c2.android.aac.decoder,Qin:44,DQin:0/0,Render:0,Drop:43,DQout:0/0
+09-25 16:55:38.030 18565 25206 D MediaCodec: [0xb4000070ad2988d0] setState: 7
+09-25 16:55:38.030 18565 25206 I MediaCodec: [mId: 0] [audio-debug-dec] setState: FLUSHING
+09-25 16:55:38.031 18565 25206 I CCodecBufferChannel: [mId: 0] [audio-debug-dec] flush: flushing 1 works
+09-25 16:55:38.031 18565 25206 D MediaCodec: [0xb4000070ad2988d0] setState: 8
+09-25 16:55:38.031 18565 25206 I MediaCodec: [mId: 0] [audio-debug-dec] setState: FLUSHED
+09-25 16:55:38.031 18565 23541 D MediaCodec: keep callback message for reclaim
+09-25 16:55:38.031 18565 25206 D MediaCodec: [0xb4000070ad2988d0] setState: 6
+09-25 16:55:38.032 18565 25206 I MediaCodec: [mId: 0] [audio-debug-dec] setState: STARTED
+09-25 16:55:38.032 18565 25206 I CCodecConfig: query failed after returning 21 values (BAD_INDEX)
+09-25 16:55:38.032 18565 25206 D AidlBufferPool: bufferpool2 0xb40000716d0c6068 : 5(40960 size) total buffers - 1(8192 size) used buffers - 48/53 (recycle/alloc) - 5/45 (fetch/transfer)
+09-25 16:55:38.040 18565 25215 W MediaCodec: [mId: 0] [audio-debug-dec] queueInputBuffer: Input time interval reaches 3469ms before pts: 1000000000000
+09-25 16:55:38.041 18565 25215 I MediaCodec: [mId: 0] [audio-debug-dec] queueInputBuffer: index: 0 pts: 1000000000000 timediff: 3469
+09-25 16:55:38.049 18565 25215 I MediaCodec: [mId: 0] [audio-debug-dec] queueInputBuffer: index: 1 pts: 1000000046439 timediff: 8
+09-25 16:55:38.051 18565 25215 I MediaCodec: [mId: 0] [audio-debug-dec] queueInputBuffer: index: 2 pts: 1000000092878 timediff: 2
+09-25 16:55:38.073 18565 23541 D AudioTrack: getMinFrameCount(): getMinFrameCount = 3770: afFrameCount = 2048, afSampleRate = 48000, afLatency = 128
+09-25 16:55:38.073 18565 23541 E AudioTrack: Failed to load XML file: odm/etc/audio/audio_lowpower_app_list.xml
+09-25 16:55:38.073 18565 23541 D AudioTrack: INSP: type=audio,case=1,set=0xb40000705d0986f0,stream_type=-1,sample_rate=44100,format=0x1,channel_mask=0x3,frame_count=15080,flags=0x0,notification_frames=0,session_id=569,transfer_type=3,uid=10577,pid=18565
+09-25 16:55:38.073 18565 23541 D AudioTrack: INSP: type=audio,case=1,attributes=1,content_type=2,usage=1,source=-1,flags=0xa00
+09-25 16:55:38.073 18565 23541 I AudioTrackImpl: initAudioTrackImpl()
+09-25 16:55:38.073 18565 23541 D AudioTrack: set(): (sessionId=569), mcallback is 1, streamType -1, sampleRate 44100, format 0x1, channelMask 0x3, frameCount 15080, flags 0, notificationFrames 0,transferType 3, mClientAttributionSource AttributionSourceState{pid: 18565, uid: 10577, deviceId: 0, packageName: com.marcioamaro.mediapod, attributionTag: (null), token: binder:0xb40000707d01f8b0, renouncedPermissions: [], next: []}
+09-25 16:55:38.073 18565 23541 D AudioTrack: set(): Building AudioTrack with attributes: usage = 1, content = 2, flags = 0xa00, tags = []
+09-25 16:55:38.074 18565 23541 D AudioTrack: set(): 0xb40000705d0986f0, Create AudioTrackThread, tid = 25555
+09-25 16:55:38.078 18565 23541 D AudioTrack: 0xb40000705d0986f0 adjust notify for com.marcioamaro.mediapod from 0 to 1881.
+09-25 16:55:38.083 18565 23541 D AudioTrack: createTrack_l(95): 0xb40000705d0986f0, mCblk = 0x72f1bd8000, mLatency = 469, mAfLatency = 128, frameCount = 15080, mSampleRate = 44100, mFlags = 0x8, mReqFrameCount = 15080, mNotificationFramesAct = 1881
+09-25 16:55:38.087 18565 23544 I AudioTrackImpl: before scaleVolumeForVideo L:1.000000 R:1.000000 and the pakage is com.marcioamaro.mediapod
+09-25 16:55:38.087 18565 23544 D AudioTrack: AudioTrack::setVolume L:1.000000 R:1.000000 sessionid=569
+09-25 16:55:38.089 18565 23541 D android.media.AudioTrack: setStereoVolume setParameters is 1.0, rightVolume is 1.0, isMuted is false, mIsLastMute is false, mNeedNotifyedNative is true
+09-25 16:55:38.089 18565 23541 D AudioTrackImpl: setMediaSetMute(95): Parameter media_set_track_muted is 0 return
+09-25 16:55:38.089 18565 23541 I AudioTrackImpl: before scaleVolumeForVideo L:1.000000 R:1.000000 and the pakage is com.marcioamaro.mediapod
+09-25 16:55:38.089 18565 23541 D AudioTrack: AudioTrack::setVolume L:1.000000 R:1.000000 sessionid=569
+09-25 16:55:38.098 18565 23541 D AudioSystem: +setParameters(): AudioTrack-Process=18565;AudioTrack-AudioThread=23541 
+09-25 16:55:38.125 18565 25215 W MediaCodec: [mId: 0] [audio-debug-dec] queueInputBuffer: Average input time interval reaches 221ms for 16 inputs by pts: 1000000743024
+09-25 16:55:38.350 18565 23541 I AudioTrack: start(95): prior state:STATE_STOPPED packageName: com.marcioamaro.mediapod
+09-25 16:55:38.351 18565 23918 I AudioTrackImpl: before scaleVolumeForVideo L:1.000000 R:1.000000 and the pakage is com.marcioamaro.mediapod
+09-25 16:55:38.352 18565 18565 D MediaRouter: onRestoreRoute() : route=RouteInfo{ name=Telefone, description=null, status=null, category=RouteCategory{ name=Sistema types=ROUTE_TYPE_LIVE_AUDIO ROUTE_TYPE_LIVE_VIDEO  groupable=false }, supportedTypes=ROUTE_TYPE_LIVE_AUDIO ROUTE_TYPE_LIVE_VIDEO , presentationDisplay=null }
+09-25 16:55:38.352 18565 18565 V MediaRouter: Selecting route: RouteInfo{ name=Telefone, description=null, status=null, category=RouteCategory{ name=Sistema types=ROUTE_TYPE_LIVE_AUDIO ROUTE_TYPE_LIVE_VIDEO  groupable=false }, supportedTypes=ROUTE_TYPE_LIVE_AUDIO ROUTE_TYPE_LIVE_VIDEO , presentationDisplay=null }
+09-25 16:55:38.415 18565 23541 D AudioRepeatStartCheck: [AudioRepeatStartStopCheck], enter: uid = 10577, session = 569, uidnowTime = 1790366133
+09-25 16:55:38.415 18565 23541 D AudioRepeatStartCheck: [AudioRepeatStartStopCheck] uid = 10577, uidbeforeTimeGap = 0, uidnowTimeGap = 5, consecutiveStartCnt = 2
+09-25 16:55:38.415 18565 23541 D AudioRepeatStartCheck: [AudioRepeatStartStopCheck] isAnomaly = 0
+09-25 16:55:38.415 18565 23918 D AudioTrack: AudioTrack::setVolume L:1.000000 R:1.000000 sessionid=569
+09-25 16:55:38.419 18565 23544 D AudioTrack: onAudioDeviceUpdate AudioPortDebug[ID:00000003] deviceType:AUDIO_DEVICE_OUT_SPEAKER(00000002)
+09-25 16:55:38.419 18565 23544 D BatteryNotifier: batteryHandler::send audio device update msg! 10577, 18565, 569, 2
+09-25 16:55:38.420 18565 25223 D BatteryNotifier: BatteryNotifier::update device to power insight! 10577, 18565, 569, 2
+09-25 16:55:38.436 18565 23541 D AudioTrack: getTimestamp_l(95): stale timestamp time corrected, currentTimeNanos: 2425080220067 < limitNs: 2425982117990 < mStartNs: 2426110117990
+09-25 16:55:38.780 18565 25215 W MediaCodec: [mId: 0] [audio-debug-dec] queueInputBuffer: Average input time interval reaches 119ms for 4 inputs by pts: 1000001068097
+09-25 16:55:40.576 18565 25206 D PipelineWatcher: [0xb40000705d0fdbb8] pipelineFull: too many frames in pipeline (6)
+09-25 16:55:40.577 18565 25567 D PipelineWatcher: [0xb40000705d0fdbb8] pipelineFull: too many frames in pipeline (6)
+09-25 16:55:43.036 18565 25206 I MediaCodec: [mId: 0] [audio-debug-dec] Stats 5006ms:Client:com.marcioamaro.mediapod,Component:c2.android.aac.decoder,Qin:119,DQin:0/0,Render:0,Drop:107,DQout:0/0
+09-25 16:55:43.150 18565 23541 D AudioTrackImpl: [audioTrackData][fine] 5s(f:5008 m:0 s:0 k:0 z:0) : pid 18565 uid 10577 sessionId 569 sr 44100 ch 2 fmt 1 maxAmplitude 5731
+09-25 16:55:43.211 18565 25206 D AidlBufferPool: bufferpool2 0xb40000716d0c6068 : 5(40960 size) total buffers - 1(8192 size) used buffers - 168/173 (recycle/alloc) - 10/164 (fetch/transfer)
+09-25 16:55:43.213 18565 25206 D PipelineWatcher: [0xb40000705d0fdbb8] pipelineFull: too many frames in pipeline (6)
+09-25 16:55:43.213 18565 25567 D PipelineWatcher: [0xb40000705d0fdbb8] pipelineFull: too many frames in pipeline (6)
+09-25 16:55:43.529 18565 18565 I HandWritingStubImpl: refreshLastKeyboardType: 1
+09-25 16:55:43.529 18565 18565 I HandWritingStubImpl: getCurrentKeyboardType: 1
+09-25 16:55:43.531 18565 18565 D InsetsController: hide(ime(), fromIme=false)
+09-25 16:55:43.532 18565 18565 I ImeTracker: com.marcioamaro.mediapod:d3a509d: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+09-25 16:55:44.026 18565 25206 D PipelineWatcher: [0xb40000705d0fdbb8] pipelineFull: too many frames in pipeline (6)
+09-25 16:55:44.026 18565 23248 D PipelineWatcher: [0xb40000705d0fdbb8] pipelineFull: too many frames in pipeline (6)
+09-25 16:55:44.933 18565 25206 D PipelineWatcher: [0xb40000705d0fdbb8] pipelineFull: too many frames in pipeline (6)
+09-25 16:55:44.934 18565 23248 D PipelineWatcher: [0xb40000705d0fdbb8] pipelineFull: too many frames in pipeline (6)
+09-25 16:55:46.206 18565 25206 D PipelineWatcher: [0xb40000705d0fdbb8] pipelineFull: too many frames in pipeline (6)
+09-25 16:55:47.056 18565 25206 D PipelineWatcher: [0xb40000705d0fdbb8] pipelineFull: too many frames in pipeline (6)
+09-25 16:55:47.399 18565 25206 D PipelineWatcher: [0xb40000705d0fdbb8] pipelineFull: too many frames in pipeline (6)
+09-25 16:55:47.403 18565 25567 D PipelineWatcher: [0xb40000705d0fdbb8] pipelineFull: too many frames in pipeline (6)
+09-25 16:55:47.554 18565 23243 I oamaro.mediapod: NativeAlloc concurrent mark compact GC freed 13MB AllocSpace bytes, 18(688KB) LOS objects, 41% free, 34MB/58MB, paused 461us,5.329ms total 85.964ms
+09-25 16:55:48.070 18565 25206 I MediaCodec: [mId: 0] [audio-debug-dec] Stats 5034ms:Client:com.marcioamaro.mediapod,Component:c2.android.aac.decoder,Qin:107,DQin:0/0,Render:0,Drop:108,DQout:0/0
+09-25 16:55:48.151 18565 23541 D AudioTrackImpl: [audioTrackData][fine] 10s(f:10009 m:0 s:0 k:0 z:0) : pid 18565 uid 10577 sessionId 569 sr 44100 ch 2 fmt 1 maxAmplitude 2402
+09-25 16:55:48.624 18565 25206 D AidlBufferPool: bufferpool2 0xb40000716d0c6068 : 5(40960 size) total buffers - 1(8192 size) used buffers - 284/289 (recycle/alloc) - 10/280 (fetch/transfer)

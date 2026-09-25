@@ -134,3 +134,12 @@ regressões pertinentes e gerar APK/AAB; não publicar automaticamente.
   item. A correção também trata `STATE_ENDED`. `:app:assembleRelease` aprovado
   (R8/lint); `output-metadata.json` confirma `versionCode 103` e `versionName
   0.3.21`.
+
+- 25/09/2026 — Diagnóstico da Alpha FM 101.7 no aparelho `HMQ8PJHY4LHI7PNZ`:
+  o stream AAC encerrou com EOF e os fallbacks artificiais do StreamTheWorld
+  retornaram 404/400, atrasando a retomada. Removida a geração automática desses
+  endpoints em `RadioStation.kt`; `:app:compileDebugKotlin` e `:app:assembleDebug`
+  aprovados. APK debug instalado; repetir teste após limpar/restaurar dados para
+  eliminar URLs antigas persistidas.
+  Teste limpo repetido: a primeira conexão recebeu EOF e a segunda estabilizou;
+  não foram observados 404/400 após a remoção dos fallbacks artificiais.

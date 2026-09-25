@@ -65,17 +65,11 @@ data class RadioStation(
                     .removeSuffix("_AAC")
                     .removeSuffix("AAC1")
 
-                val stwVariations = listOf(
-                    "https://playerservices.streamtheworld.com/api/livestream-redirect/${rawMount}.aac",
-                    "https://playerservices.streamtheworld.com/api/livestream-redirect/${rawMount}.mp3",
-                    "https://playerservices.streamtheworld.com/api/livestream-redirect/${cleanMount}.mp3",
-                    "https://playerservices.streamtheworld.com/api/livestream-redirect/${cleanMount}.aac",
-                    "https://playerservices.streamtheworld.com/api/livestream-redirect/${cleanMount}_ADP.aac",
-                    "https://playerservices.streamtheworld.com/api/livestream-redirect/${cleanMount}AAC.aac",
-                    "https://playerservices.streamtheworld.com/api/livestream-redirect/${cleanMount}_SC",
-                    "http://playerservices.streamtheworld.com/api/livestream-redirect/${cleanMount}.mp3",
-                    "http://playerservices.streamtheworld.com/api/livestream-redirect/${rawMount}.aac"
-                )
+                // O StreamTheWorld não possui um padrão universal de mount.
+                // Variações inventadas causam 404 e prolongam a recuperação.
+                // Não inventar endpoints: o catálogo já contém a URL validada e
+                // alternativas explícitas, quando existirem.
+                val stwVariations = emptyList<String>()
                 for (v in stwVariations) {
                     if (!list.contains(v)) {
                         list.add(v)
@@ -107,6 +101,8 @@ data class RadioStation(
         }
 
         // 3. HTTP / HTTPS CROSS-PROTOCOL & STANDARD ICECAST/SHOUTCAST CANDIDATES
+        // StreamTheWorld fica fora: endpoints derivados não são confiáveis.
+        if (!baseRaw.contains("streamtheworld.com", ignoreCase = true)) {
         val cleanUrlNoQuery = baseRaw.substringBefore('?')
         val altProtocol = if (cleanUrlNoQuery.startsWith("http://", ignoreCase = true)) {
             "https://" + cleanUrlNoQuery.substring(7)
@@ -147,6 +143,7 @@ data class RadioStation(
                     list.add(v)
                 }
             }
+        }
         }
         return list.sortedBy { if (it.startsWith("https://", ignoreCase = true)) 0 else 1 }
     }
