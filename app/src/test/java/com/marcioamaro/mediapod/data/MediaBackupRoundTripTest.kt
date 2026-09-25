@@ -47,7 +47,7 @@ class MediaBackupRoundTripTest {
         com.marcioamaro.mediapod.util.DataUsagePolicy(context).remoteArtwork = false
         com.marcioamaro.mediapod.util.DataUsagePolicy(context).preferredBitrate = 64000
         val json = BackupRestoreManager.generateBackupJson(context)
-        assertEquals(29, JSONObject(json).getInt("version"))
+        assertEquals(30, JSONObject(json).getInt("version"))
         val encrypted = BackupCryptoHelper.encryptBackupPayload(json, "test-password".toCharArray())
         val decrypted = BackupCryptoHelper.decryptBackupPayload(encrypted, "test-password".toCharArray())
         podcasts.markEpisodePlayed("episode_backup", false)

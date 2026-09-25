@@ -34,18 +34,34 @@ object BackupCryptoHelper {
     // Segredo mestre exclusivo do aplicativo para derivação simétrica robusta
     private val APP_SECRET = "MediaPod_RetroIpod_SecureBackup_AES256_GCM_2026_Key_V1".toCharArray()
 
-    /**
-     * Criptografa o JSON de backup gerando o payload binário:
-     * [8B MAGIC] + [16B SALT] + [12B IV] + [CIPHERTEXT + 16B GCM AUTH TAG]
-     */
+    /** Identifica apenas os backups antigos que exigem a senha escolhida pelo usuário. */
+    fun requiresPassword(encryptedPayload: ByteArray): Boolean =
+        encryptedPayload.size >= MAGIC_HEADER.size &&
+            encryptedPayload.copyOfRange(0, MAGIC_HEADER.lastIndex).contentEquals(MAGIC_HEADER.copyOfRange(0, MAGIC_HEADER.lastIndex)) &&
+            encryptedPayload[MAGIC_HEADER.lastIndex].toInt() == 0x02
+
+    /** Criptografa novos backups com a chave interna do app, sem solicitar senha ao usuário. */
+    fun encryptBackupPayload(plainJson: String): ByteArray =
+        encryptBackupPayload(plainJson, APP_SECRET, version = 0x01, iterations = ITERATION_COUNT)
+
+    /** Mantido para leitura/teste de backups legados protegidos por senha. */
     fun encryptBackupPayload(plainJson: String, password: CharArray): ByteArray {
         require(password.size >= 8) { "Use uma senha com pelo menos 8 caracteres" }
-        val header = MAGIC_HEADER.copyOf().apply { this[lastIndex] = 0x02 }
+        return encryptBackupPayload(plainJson, password, version = 0x02, iterations = 210_000)
+    }
+
+    private fun encryptBackupPayload(
+        plainJson: String,
+        secret: CharArray,
+        version: Int,
+        iterations: Int
+    ): ByteArray {
+        val header = MAGIC_HEADER.copyOf().apply { this[lastIndex] = version.toByte() }
         val random = SecureRandom()
         val salt = ByteArray(SALT_SIZE).apply { random.nextBytes(this) }
         val iv = ByteArray(IV_SIZE).apply { random.nextBytes(this) }
 
-        val keySpec = PBEKeySpec(password, salt, 210_000, KEY_LENGTH_BIT)
+        val keySpec = PBEKeySpec(secret, salt, iterations, KEY_LENGTH_BIT)
         val keyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
         val keyBytes = keyFactory.generateSecret(keySpec).encoded
         val secretKey = SecretKeySpec(keyBytes, "AES")

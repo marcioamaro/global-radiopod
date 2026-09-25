@@ -18,19 +18,13 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class BackupPasswordDialogTest {
     @get:Rule val compose = createComposeRule()
-    @Test fun exportRequiresLongEnoughMatchingPasswordsAndCanBeCancelled() {
+    @Test fun exportDoesNotRequestPassword() {
         compose.setContent {
             val actions = rememberSecureBackupActions { _, _ -> }
             Button(onClick = actions.export) { Text("Exportar") }
         }
         compose.onNodeWithText("Exportar").performClick()
-        compose.onNodeWithText("Continuar").assertIsNotEnabled()
-        compose.onNodeWithText("Senha").performTextInput("safe-password")
-        compose.onNodeWithText("Confirmar senha").performTextInput("different")
-        compose.onNodeWithText("Continuar").assertIsNotEnabled()
-        compose.onNodeWithText("Confirmar senha").performTextReplacement("safe-password")
-        compose.onNodeWithText("Continuar").assertIsEnabled()
-        compose.onNodeWithText("Cancelar").performClick()
         compose.onNodeWithText("Proteger backup").assertDoesNotExist()
+        compose.onNodeWithText("Senha").assertDoesNotExist()
     }
 }

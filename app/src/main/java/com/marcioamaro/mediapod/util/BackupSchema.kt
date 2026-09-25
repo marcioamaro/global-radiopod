@@ -7,7 +7,7 @@ import org.json.JSONObject
 internal object BackupSchema {
     fun validate(root: JSONObject) {
         require(root.get("version") is Number && root.getDouble("version") == root.getInt("version").toDouble())
-        require(root.getInt("version") in 1..29)
+        require(root.getInt("version") in 1..30)
         val objects = listOf("visualPreferences", "audioPreferences", "radioData", "podcastData", "mediaLibrary")
         val arrays = listOf("youtubeVideos", "brickHighScores")
         require((objects + arrays).any(root::has)) { "Empty backup" }
@@ -35,7 +35,19 @@ internal object BackupSchema {
         root.optJSONObject("radioData")?.let { data ->
             listOf("favorites", "recents", "customStations").forEach {
                 collection(data, it)
-                entries(data, it, listOf("id", "name", "streamUrl"), "streamUrl")
+                data.optJSONArray(it)?.let { array ->
+                    for (index in 0 until array.length()) {
+                        val item = array.getJSONObject(index)
+                        listOf("id", "name").forEach { key ->
+                            require(item.get(key) is String && item.getString(key).isNotBlank())
+                        }
+                        // Somente backups legados trazem streamUrl; aceite-os para restauração compatível.
+                        item.optString("streamUrl").takeIf { url -> url.isNotBlank() }?.let { url ->
+                            val uri = java.net.URI(url)
+                            require(uri.scheme in setOf("http", "https") && !uri.host.isNullOrBlank() && uri.userInfo == null)
+                        }
+                    }
+                }
             }
         }
         root.optJSONObject("podcastData")?.let { data ->

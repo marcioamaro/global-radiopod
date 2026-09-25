@@ -6,7 +6,7 @@ execução autorizada. Confira alterações locais antes de editar. Não reinici
 zero nem suponha que uma tarefa em andamento terminou.
 
 ## Estado atual
-- Base: MediaPod Android Kotlin/Compose; versão 0.3.17, código 99.
+- Base: MediaPod Android Kotlin/Compose; versão 0.3.18, código 100.
 - Projeto: `D:\\global-radiopod - Copia`; shell PowerShell.
 - Alterações anteriores extensas e não commitadas: preservar.
 - Pedido prioritário concluído: rótulos Top 20, busca independente dos Tops e build 0.3.6 (88).
@@ -28,11 +28,10 @@ zero nem suponha que uma tarefa em andamento terminou.
   8. Validação automatizada: 205 testes unitários passaram (0 falhas) e APK debug compilado (`app/build/outputs/apk/debug/app-debug.apk`).
 
 ## Próximo passo concreto
-Validar visualmente em aparelho AMOLED o Dock Mode por ao menos dois ciclos de 60 s:
-confirmar o bounce contínuo do conjunto relógio/data, a reflexão dentro da área útil,
-a alternância animada dos controles e o indicador de bateria. Conectar/desconectar o
-carregador para confirmar nível real e raio de carregamento; em seguida, validar
-fisicamente a reprodução de áudio e autoplay.
+Validar em Android Auto físico a retomada da última rádio e a identificação da
+estação: abrir o app e conectar ao carro, confirmar início sem espera fixa e ausência
+de “Unknown source”. Depois, validar visualmente em AMOLED os dois ciclos de Dock,
+bateria e a reprodução/autoplay.
 
 ## Avaliação local — 24/09/2026
 - `python scripts/check_project.py` aprovado: 41.551 rádios, quatro rankings Top 20, 74 recursos de texto em sete idiomas e backup automático desativado.
@@ -74,6 +73,20 @@ fisicamente a reprodução de áudio e autoplay.
   sucesso. O APK release assinado está em
   `app/build/outputs/apk/release/app-release.apk`, e `output-metadata.json`
   confirma a versão 0.3.17 (99).
+
+- Retomada e Android Auto (25/09/2026): removido o atraso fixo de 400 ms na
+  retomada pelo `RadioViewModel`. O `RadioPlayerManager` passou a preparar rádio
+  com `mediaId` `radio_<id>` e `RequestMetadata`, iguais ao catálogo do
+  `RadioMediaService`; antes, o ID cru podia deixar a fonte desconhecida no Android
+  Auto. `:app:testDebugUnitTest` passou. Falta a verificação física com Android Auto.
+
+- Backup sem senha e release 0.3.18 (100) — 25/09/2026: exportações novas são
+  criptografadas com AES-GCM usando a chave interna, sem solicitar senha; URLs de
+  rádios personalizadas seguem no payload cifrado para permitir a restauração. O
+  formato v1 legado restaura automaticamente e o v2 pede a senha original apenas
+  quando detectado. Teste cobre cifra sem texto claro de URL e leitura sem senha.
+  `:app:testDebugUnitTest` e `:app:assembleRelease` passaram; APK assinado em
+  `app/build/outputs/apk/release/app-release.apk`.
 
 
 ## Verificação

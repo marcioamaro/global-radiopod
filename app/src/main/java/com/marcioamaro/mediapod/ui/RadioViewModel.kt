@@ -773,7 +773,8 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         val lastPodcast = prefs.getLastPlayedPodcast()
 
         viewModelScope.launch {
-            kotlinx.coroutines.delay(400) // tempo para inicialização de serviços e memória
+            // O player já está inicializado antes do ViewModel. Não atrasar a retomada
+            // da última rádio por uma espera fixa na abertura do aplicativo.
             if (!prefs.isAutoPlayOnLaunch) return@launch
             if (lastMediaType == "PODCAST" && lastPodcast != null) {
                 playPodcastEpisode(lastPodcast.first, lastPodcast.second)

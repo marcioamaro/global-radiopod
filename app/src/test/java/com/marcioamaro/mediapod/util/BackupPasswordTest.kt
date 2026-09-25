@@ -4,6 +4,14 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class BackupPasswordTest {
+    @Test fun newBackupIsEncryptedAndRestoresWithoutPassword() {
+        val json = "{\"version\":30,\"streamUrl\":\"https://private.example/live\"}"
+        val encrypted = BackupCryptoHelper.encryptBackupPayload(json)
+        assertFalse(String(encrypted, Charsets.UTF_8).contains("private.example"))
+        assertEquals(json, BackupCryptoHelper.decryptBackupPayload(encrypted))
+        assertFalse(BackupCryptoHelper.requiresPassword(encrypted))
+    }
+
     @Test fun personalPasswordAuthenticatesAndWrongPasswordCannotDecrypt() {
         val key = "correct-password".toCharArray()
         val first = BackupCryptoHelper.encryptBackupPayload("{\"version\":29}", key)

@@ -1168,8 +1168,15 @@ class RadioPlayerManager private constructor(private val context: Context) {
             .build()
 
         val mediaItem = MediaItem.Builder()
-            .setMediaId(station.id)
+            // Mantém o mesmo ID estável exposto pelo MediaLibraryService ao Android Auto.
+            // O ID cru fazia o Auto perder a associação com a fonte em algumas retomadas.
+            .setMediaId("radio_${station.id}")
             .setUri(streamUrl)
+            .setRequestMetadata(
+                MediaItem.RequestMetadata.Builder()
+                    .setMediaUri(Uri.parse(streamUrl))
+                    .build()
+            )
             .setLiveConfiguration(liveConfiguration)
             .setMediaMetadata(mediaMetadata)
             .build()

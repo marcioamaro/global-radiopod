@@ -13,6 +13,7 @@ import com.marcioamaro.mediapod.data.preferences.IpodFontSizeScale
 import com.marcioamaro.mediapod.data.preferences.IpodPreferencesManager
 import com.marcioamaro.mediapod.data.preferences.IpodWheelPreset
 import com.marcioamaro.mediapod.data.repository.PodcastRepository
+import com.marcioamaro.mediapod.data.repository.CuratedData
 import com.marcioamaro.mediapod.ui.IpodChassisTheme
 import com.marcioamaro.mediapod.ui.LcdBacklight
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +32,7 @@ object BackupRestoreManager {
         val podcastRepo = PodcastRepository.getInstance(context)
         val db = RadioDatabase.getDatabase(context)
 
-        root.put("version", 29)
+        root.put("version", 30)
         root.put("app", "MediaPod + Radio / Podcast")
         root.put("timestamp", System.currentTimeMillis())
 
@@ -195,20 +196,22 @@ object BackupRestoreManager {
 
     sealed class RestoreResult {
         object Success : RestoreResult()
+        object PasswordRequired : RestoreResult()
         data class Error(val message: String) : RestoreResult()
     }
 
-    suspend fun exportBackupToUri(context: Context, uri: Uri, password: CharArray): Boolean = withContext(Dispatchers.IO) {
+    /** Novos backups permanecem criptografados, sem senha solicitada ao usuário. */
+    suspend fun exportBackupToUri(context: Context, uri: Uri): Boolean = withContext(Dispatchers.IO) {
         try {
             val jsonString = generateBackupJson(context)
-            val encryptedBytes = BackupCryptoHelper.encryptBackupPayload(jsonString, password)
+            val encryptedBytes = BackupCryptoHelper.encryptBackupPayload(jsonString)
             context.contentResolver.openOutputStream(uri)?.use { outputStream ->
                 outputStream.write(encryptedBytes)
                 outputStream.flush()
             } ?: return@withContext false
             true
         } catch (e: Exception) {
-            android.util.Log.e("BackupRestoreManager", "Falha ao exportar backup criptografado", e)
+            android.util.Log.e("BackupRestoreManager", "Falha ao exportar backup", e)
             false
         }
     }
@@ -231,11 +234,14 @@ object BackupRestoreManager {
                 return@withContext RestoreResult.Error("Arquivo de backup inválido ou incompatível")
             }
 
-            // Descriptografia obrigatória AES-256-GCM com validação de assinatura e integridade
+            // Todos os backups continuam cifrados. Apenas os arquivos legados v2 exigem senha.
             val jsonStr = try {
+                if (password == null && BackupCryptoHelper.requiresPassword(rawBytes)) {
+                    return@withContext RestoreResult.PasswordRequired
+                }
                 BackupCryptoHelper.decryptBackupPayload(rawBytes, password)
             } catch (secEx: Exception) {
-                android.util.Log.w("BackupRestoreManager", "Falha de criptografia / integridade", secEx)
+                android.util.Log.w("BackupRestoreManager", "Falha ao ler backup", secEx)
                 return@withContext RestoreResult.Error("Arquivo de backup inválido ou incompatível")
             }
 
