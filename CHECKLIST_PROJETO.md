@@ -95,3 +95,7 @@ regressões pertinentes e gerar APK/AAB; não publicar automaticamente.
 - 24/09/2026 — Dock Mode AMOLED: `DockModeScreen.kt` passou a deslocar relógio e data juntos em bounce contínuo (~105 dp/s, reflexão em ±20% da tela), independente do pixel shift global. A barra de controles alterna entre rodapé e topo a cada 60 s, com transição de 600 ms; o relógio migra para a metade oposta. `:app:compileDebugKotlin` aprovado. Falta somente validação visual/física em aparelho AMOLED.
 
 - 24/09/2026 — Release 0.3.16 (98): `:app:assembleRelease` aprovado. APK assinado em `app/build/outputs/apk/release/app-release.apk`; `output-metadata.json` confirma versão 0.3.16 (98).
+
+- 24/09/2026 — Indicador de bateria: o cabeçalho superior e o Dock passaram a usar o broadcast Android `ACTION_BATTERY_CHANGED`, exibindo nível real e raio de carregamento (também em carga completa conectada). `:app:compileDebugKotlin` aprovado; teste físico com carregador continua pendente.
+
+- 24/09/2026 — Release 0.3.17 (99): `:app:assembleRelease` aprovado. APK assinado em `app/build/outputs/apk/release/app-release.apk`; `output-metadata.json` confirma versão 0.3.17 (99).

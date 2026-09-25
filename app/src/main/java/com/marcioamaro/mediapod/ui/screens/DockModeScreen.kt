@@ -54,6 +54,7 @@ import com.marcioamaro.mediapod.player.RdsInfo
 import com.marcioamaro.mediapod.player.RadioPlaybackStatus
 import com.marcioamaro.mediapod.R
 import com.marcioamaro.mediapod.ui.DockColorTheme
+import com.marcioamaro.mediapod.ui.components.BatteryStatusIndicator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import java.text.SimpleDateFormat
@@ -288,6 +289,15 @@ fun DockModeScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    BatteryStatusIndicator(
+                        tint = primaryColor,
+                        showPercentage = true,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color.White.copy(alpha = 0.08f))
+                            .padding(horizontal = 8.dp, vertical = 5.dp)
+                    )
+
                     // Botão Extra Dim (Escurecer Mais / Cabeceira)
                     IconButton(
                         onClick = { isExtraDim = !isExtraDim },

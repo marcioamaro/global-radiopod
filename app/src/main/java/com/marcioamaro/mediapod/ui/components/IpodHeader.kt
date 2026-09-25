@@ -1,5 +1,11 @@
 package com.marcioamaro.mediapod.ui.components
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.BatteryManager
+
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -20,7 +26,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BatteryFull
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -29,6 +35,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import android.text.format.DateFormat
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +60,101 @@ import kotlinx.coroutines.isActive
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
+private data class DeviceBatteryStatus(
+    val percent: Int,
+    val isCharging: Boolean
+)
+
+private fun Intent.toDeviceBatteryStatus(): DeviceBatteryStatus {
+    val level = getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+    val scale = getIntExtra(BatteryManager.EXTRA_SCALE, 100)
+    val percent = if (level >= 0 && scale > 0) {
+        ((level * 100f) / scale).toInt().coerceIn(0, 100)
+    } else {
+        0
+    }
+    val batteryState = getIntExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_UNKNOWN)
+    return DeviceBatteryStatus(
+        percent = percent,
+        isCharging = batteryState == BatteryManager.BATTERY_STATUS_CHARGING ||
+            batteryState == BatteryManager.BATTERY_STATUS_FULL
+    )
+}
+
+/** Observa o broadcast do Android para mostrar nível e carregamento reais. */
+@Composable
+fun BatteryStatusIndicator(
+    tint: Color,
+    modifier: Modifier = Modifier,
+    showPercentage: Boolean = false
+) {
+    val context = LocalContext.current
+    var batteryStatus by remember { mutableStateOf<DeviceBatteryStatus?>(null) }
+
+    DisposableEffect(context) {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                batteryStatus = intent.toDeviceBatteryStatus()
+            }
+        }
+        val stickyIntent = context.registerReceiver(receiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        stickyIntent?.let { batteryStatus = it.toDeviceBatteryStatus() }
+        onDispose { context.unregisterReceiver(receiver) }
+    }
+
+    val percent = batteryStatus?.percent ?: 0
+    val isCharging = batteryStatus?.isCharging == true
+    val description = if (isCharging) "Bateria $percent%, carregando" else "Bateria $percent%"
+
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(3.dp)
+    ) {
+        if (showPercentage) {
+            Text(
+                text = "$percent%",
+                color = tint,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1
+            )
+        }
+        Box(
+            modifier = Modifier
+                .width(22.dp)
+                .height(11.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .background(tint.copy(alpha = 0.25f))
+                .padding(1.5.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(percent / 100f)
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(1.dp))
+                    .background(tint)
+            )
+            if (isCharging) {
+                Icon(
+                    imageVector = Icons.Default.Bolt,
+                    contentDescription = description,
+                    tint = Color.White,
+                    modifier = Modifier.size(10.dp)
+                )
+            }
+        }
+        Box(
+            modifier = Modifier
+                .width(2.dp)
+                .height(5.dp)
+                .clip(RoundedCornerShape(0.5.dp))
+                .background(tint.copy(alpha = 0.75f))
+        )
+    }
+}
 
 @Composable
 fun IpodHeader(
@@ -267,32 +369,7 @@ fun IpodHeader(
                     modifier = Modifier.padding(end = 5.dp)
                 )
 
-                // Authentic Retro iPod Battery with tip (monochrome LCD pixel style)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .width(22.dp)
-                            .height(11.dp)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(backlightTextPrimary.copy(alpha = 0.25f))
-                            .padding(1.5.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(0.85f)
-                                .height(8.dp)
-                                .clip(RoundedCornerShape(1.dp))
-                                .background(backlightTextPrimary)
-                        )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .width(2.dp)
-                            .height(5.dp)
-                            .clip(RoundedCornerShape(0.5.dp))
-                            .background(backlightTextPrimary.copy(alpha = 0.75f))
-                    )
-                }
+                BatteryStatusIndicator(tint = backlightTextPrimary)
             }
         }
     }

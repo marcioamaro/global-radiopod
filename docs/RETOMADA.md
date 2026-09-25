@@ -6,7 +6,7 @@ execução autorizada. Confira alterações locais antes de editar. Não reinici
 zero nem suponha que uma tarefa em andamento terminou.
 
 ## Estado atual
-- Base: MediaPod Android Kotlin/Compose; versão 0.3.16, código 98.
+- Base: MediaPod Android Kotlin/Compose; versão 0.3.17, código 99.
 - Projeto: `D:\\global-radiopod - Copia`; shell PowerShell.
 - Alterações anteriores extensas e não commitadas: preservar.
 - Pedido prioritário concluído: rótulos Top 20, busca independente dos Tops e build 0.3.6 (88).
@@ -29,8 +29,9 @@ zero nem suponha que uma tarefa em andamento terminou.
 
 ## Próximo passo concreto
 Validar visualmente em aparelho AMOLED o Dock Mode por ao menos dois ciclos de 60 s:
-confirmar o bounce contínuo do conjunto relógio/data, a reflexão dentro da área útil e
-a alternância animada dos controles entre rodapé e topo. Em seguida, validar
+confirmar o bounce contínuo do conjunto relógio/data, a reflexão dentro da área útil,
+a alternância animada dos controles e o indicador de bateria. Conectar/desconectar o
+carregador para confirmar nível real e raio de carregamento; em seguida, validar
 fisicamente a reprodução de áudio e autoplay.
 
 ## Avaliação local — 24/09/2026
@@ -62,6 +63,17 @@ fisicamente a reprodução de áudio e autoplay.
   `:app:assembleRelease` concluído com sucesso. O APK release assinado está em
   `app/build/outputs/apk/release/app-release.apk`, confirmado por
   `output-metadata.json`.
+
+- Indicador de bateria (24/09/2026): `BatteryStatusIndicator` registra
+  `ACTION_BATTERY_CHANGED` e substitui a bateria decorativa do cabeçalho superior.
+  O Dock exibe o mesmo estado com porcentagem; o raio aparece durante carregamento e
+  com carga completa conectada. `:app:compileDebugKotlin` passou. Falta validar a
+  transição em aparelho físico com carregador.
+
+- Release 0.3.17 (99) — 24/09/2026: `:app:assembleRelease` concluído com
+  sucesso. O APK release assinado está em
+  `app/build/outputs/apk/release/app-release.apk`, e `output-metadata.json`
+  confirma a versão 0.3.17 (99).
 
 
 ## Verificação
