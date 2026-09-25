@@ -12,7 +12,7 @@ exibida na tela Sobre (`IpodClassicScreen.kt`). Conferir ambos antes de gerar o
 APK ou AAB.
 
 ## Estado atual
-- Base: MediaPod Android Kotlin/Compose; versão 0.3.19, código 101.
+- Base: MediaPod Android Kotlin/Compose; versão 0.3.20, código 102.
 - Projeto: `D:\\global-radiopod - Copia`; shell PowerShell.
 - Alterações anteriores extensas e não commitadas: preservar.
 - Pedido prioritário concluído: rótulos Top 20, busca independente dos Tops e build 0.3.6 (88).
@@ -35,9 +35,9 @@ APK ou AAB.
 
 ## Próximo passo concreto
 Validar em Android Auto físico a retomada da última rádio e a identificação da
-estação: abrir o app e conectar ao carro, confirmar início sem espera fixa e ausência
-de “Unknown source”. Depois, validar visualmente em AMOLED os dois ciclos de Dock,
-bateria e a reprodução/autoplay.
+estação: conectar ao carro repetidas vezes, confirmar o início após a negociação de
+750 ms e a ausência de “Unknown source” em Favoritas, Recentes e retomada. Depois,
+validar visualmente em AMOLED os dois ciclos de Dock, bateria e a reprodução/autoplay.
 
 ## Avaliação local — 24/09/2026
 - `python scripts/check_project.py` aprovado: 41.551 rádios, quatro rankings Top 20, 74 recursos de texto em sete idiomas e backup automático desativado.
@@ -98,6 +98,18 @@ bateria e a reprodução/autoplay.
   versão 0.3.19 (101), conforme a regra de manter data e versão sincronizadas
   com cada incremento. `:app:assembleRelease` passou; o APK assinado está em
   `app/build/outputs/apk/release/app-release.apk`, confirmado por
+  `output-metadata.json`.
+
+- Android Auto — correção de origem desconhecida (25/09/2026): o `MediaItem`
+  ativo agora preserva exatamente o `mediaId` devolvido pela árvore
+  (`radio_fav_*`, `radio_rec_*` ou `radio_*`) durante seleção, retomada e
+  fallback de stream. O autoplay foi removido da consulta de raiz e agendado uma
+  única vez, 750 ms após a aceitação da conexão. `:app:compileDebugKotlin` e
+  `AndroidAutoMediaTreeTest` passaram; falta confirmação no veículo.
+
+- Release 0.3.20 (102) — 25/09/2026: correção do Android Auto incorporada,
+  versão e tela Sobre sincronizadas em 2026.09.25. `:app:assembleRelease`
+  passou em 4m33s com R8, lint e assinatura; APK confirmado por
   `output-metadata.json`.
 
 

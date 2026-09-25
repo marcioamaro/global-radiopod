@@ -43,8 +43,10 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -1081,6 +1083,7 @@ class RadioMediaService : MediaLibraryService() {
      *           └── genre_{tag}
      */
     private inner class AutoMediaLibraryCallback : MediaLibrarySession.Callback {
+        private var androidAutoAutoplayJob: Job? = null
 
         override fun onConnect(
             session: MediaSession,
@@ -1121,7 +1124,7 @@ class RadioMediaService : MediaLibraryService() {
                 .build()
 
             if (isAndroidAutoController(session, controller)) {
-                autoPlayForAndroidAutoIfAllowed()
+                scheduleAndroidAutoAutoplay()
             }
 
             return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
@@ -1298,6 +1301,19 @@ class RadioMediaService : MediaLibraryService() {
             return isAutoPkg || isAutoCompanion
         }
 
+        /**
+         * Android Auto abre a sessão, consulta a raiz e só então aceita o item ativo.
+         * Começar o stream dentro de onConnect/onGetLibraryRoot pode publicar o player
+         * antes dessa negociação e o painel o classifica como "Unknown source".
+         */
+        private fun scheduleAndroidAutoAutoplay() {
+            androidAutoAutoplayJob?.cancel()
+            androidAutoAutoplayJob = serviceScope.launch {
+                delay(750L)
+                autoPlayForAndroidAutoIfAllowed()
+            }
+        }
+
         private fun restoreNavigationContextForStation(station: RadioStation) {
             val ipodPrefs = IpodPreferencesManager.getInstance(applicationContext)
             val sourceStr = ipodPrefs.getLastQueueSource()
@@ -1380,10 +1396,6 @@ class RadioMediaService : MediaLibraryService() {
             browser: MediaSession.ControllerInfo,
             params: LibraryParams?
         ): ListenableFuture<LibraryResult<MediaItem>> {
-            // Reproduz apenas se a conexão for proveniente do Android Auto e a preferência de autoplay estiver ativa
-            if (isAndroidAutoController(session, browser)) {
-                autoPlayForAndroidAutoIfAllowed()
-            }
             val listExtras = createContentStyleExtras(isGrid = false)
             val rootItem = MediaItem.Builder()
                 .setMediaId(ROOT_MEDIA_ID)
@@ -1705,7 +1717,7 @@ class RadioMediaService : MediaLibraryService() {
                             if (station != null) {
                                 withContext(Dispatchers.Main) {
                                     if (favs.isNotEmpty()) playerManager.updatePlaylist(favs)
-                                    playerManager.playStation(station)
+                                    playerManager.playStation(station, "radio_fav_${station.id}")
                                     val coordinator = (applicationContext as? com.marcioamaro.mediapod.RadioApp)?.playbackCoordinator
                                     coordinator?.setNavigationContext(
                                         com.marcioamaro.mediapod.player.context.NavigationContext(
@@ -1732,7 +1744,7 @@ class RadioMediaService : MediaLibraryService() {
                             if (station != null) {
                                 withContext(Dispatchers.Main) {
                                     if (recents.isNotEmpty()) playerManager.updatePlaylist(recents)
-                                    playerManager.playStation(station)
+                                    playerManager.playStation(station, "radio_rec_${station.id}")
                                     val coordinator = (applicationContext as? com.marcioamaro.mediapod.RadioApp)?.playbackCoordinator
                                     coordinator?.setNavigationContext(
                                         com.marcioamaro.mediapod.player.context.NavigationContext(
@@ -1765,7 +1777,7 @@ class RadioMediaService : MediaLibraryService() {
                                 val matchIndex = activeList.indexOfFirst { it.id == station.id }.coerceAtLeast(0)
                                 withContext(Dispatchers.Main) {
                                     playerManager.updatePlaylist(activeList)
-                                    playerManager.playStation(station)
+                                    playerManager.playStation(station, "radio_${station.id}")
                                     val coordinator = (applicationContext as? com.marcioamaro.mediapod.RadioApp)?.playbackCoordinator
                                     coordinator?.setNavigationContext(
                                         com.marcioamaro.mediapod.player.context.NavigationContext(
@@ -1881,7 +1893,7 @@ class RadioMediaService : MediaLibraryService() {
                         }
                         if (match != null) {
                             withContext(Dispatchers.Main) {
-                                playerManager.playStation(match)
+                                playerManager.playStation(match, id)
                             }
                             createStationCardItem(match, gridExtras)
                         } else {
@@ -1893,7 +1905,7 @@ class RadioMediaService : MediaLibraryService() {
                             ?: CuratedData.CURATED_GLOBAL_STATIONS.find { it.id == realId }
                         if (station != null) {
                             withContext(Dispatchers.Main) {
-                                playerManager.playStation(station)
+                                playerManager.playStation(station, id)
                             }
                             createStationCardItem(station, gridExtras)
                         } else {

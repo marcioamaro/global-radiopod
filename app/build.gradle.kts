@@ -19,8 +19,8 @@ android {
     applicationId = "com.marcioamaro.mediapod"
     minSdk = 24
     targetSdk = 36
-    versionCode = 101
-    versionName = "0.3.19"
+    versionCode = 102
+    versionName = "0.3.20"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

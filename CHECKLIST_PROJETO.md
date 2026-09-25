@@ -110,3 +110,16 @@ regressões pertinentes e gerar APK/AAB; não publicar automaticamente.
   gerar o artefato. `:app:assembleRelease` aprovado; APK assinado em
   `app/build/outputs/apk/release/app-release.apk`, com versão confirmada em
   `output-metadata.json`.
+
+- 25/09/2026 — Android Auto: corrigida a corrida que trocava o `mediaId` que o
+  Auto acabara de receber (`radio_fav_*`/`radio_rec_*`) pelo ID genérico
+  `radio_*`, possível causa de “Unknown source”. A reprodução automática passou
+  a ocorrer uma vez, 750 ms após a conexão, em vez de durante a consulta da raiz.
+  `:app:compileDebugKotlin` e `AndroidAutoMediaTreeTest` aprovados; teste no
+  carro continua pendente no Item 10.
+
+- 25/09/2026 — Release 0.3.20 (102): correção de origem do Android Auto
+  incorporada, tela Sobre atualizada para 2026.09.25 e APK assinado gerado com
+  `:app:assembleRelease` (R8/lint aprovados). `output-metadata.json` confirma
+  `versionCode 102` e `versionName 0.3.20`; teste físico no carro permanece
+  pendente.

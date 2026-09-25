@@ -333,6 +333,8 @@ class RadioPlayerManager private constructor(private val context: Context) {
     private var rdsSimulationJob: Job? = null
     private var sleepTimerJob: Job? = null
     private var reconnectJob: Job? = null
+    private var activeStationMediaId: String? = null
+    private var activeStationMediaIdStationId: String? = null
     private var retryCount = 0
     private var currentCandidateIndex = 0
     private val USER_AGENTS = listOf(
@@ -744,7 +746,12 @@ class RadioPlayerManager private constructor(private val context: Context) {
         return exoPlayer!!
     }
 
-    fun playStation(station: RadioStation) {
+    fun playStation(station: RadioStation, mediaId: String = "radio_${station.id}") {
+        // O ID precisa continuar igual ao MediaItem devolvido ao Android Auto. Trocar
+        // radio_fav_/radio_rec_ por radio_ durante onSetMediaItems faz o carro perder
+        // a associação e exibir "Unknown source".
+        activeStationMediaId = mediaId
+        activeStationMediaIdStationId = station.id
         requestAudioFocus()
         clearPlayerMetadata()
         try {
@@ -1144,6 +1151,11 @@ class RadioPlayerManager private constructor(private val context: Context) {
             return
         }
 
+        val stableMediaId = if (activeStationMediaIdStationId == station.id) {
+            activeStationMediaId
+        } else {
+            null
+        }
         val streamTitle = _rdsInfo.value.radioText.ifBlank {
             lastRealSongTitle?.ifBlank { null } ?: lastRawStreamTitle?.ifBlank { null } ?: "Ao Vivo"
         }
@@ -1170,7 +1182,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
         val mediaItem = MediaItem.Builder()
             // Mantém o mesmo ID estável exposto pelo MediaLibraryService ao Android Auto.
             // O ID cru fazia o Auto perder a associação com a fonte em algumas retomadas.
-            .setMediaId("radio_${station.id}")
+            .setMediaId(stableMediaId ?: "radio_${station.id}")
             .setUri(streamUrl)
             .setRequestMetadata(
                 MediaItem.RequestMetadata.Builder()
