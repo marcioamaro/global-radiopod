@@ -5,8 +5,14 @@ Leia AGENTS.md e CHECKLIST_PROJETO.md. Confira as tarefas pendentes e continue a
 execução autorizada. Confira alterações locais antes de editar. Não reinicie do
 zero nem suponha que uma tarefa em andamento terminou.
 
+## Regra de versões
+Sempre que uma versão for incrementada, atualizar na mesma alteração o
+`versionName`/`versionCode` em `app/build.gradle.kts` e a data com a versão
+exibida na tela Sobre (`IpodClassicScreen.kt`). Conferir ambos antes de gerar o
+APK ou AAB.
+
 ## Estado atual
-- Base: MediaPod Android Kotlin/Compose; versão 0.3.18, código 100.
+- Base: MediaPod Android Kotlin/Compose; versão 0.3.19, código 101.
 - Projeto: `D:\\global-radiopod - Copia`; shell PowerShell.
 - Alterações anteriores extensas e não commitadas: preservar.
 - Pedido prioritário concluído: rótulos Top 20, busca independente dos Tops e build 0.3.6 (88).
@@ -87,6 +93,12 @@ bateria e a reprodução/autoplay.
   quando detectado. Teste cobre cifra sem texto claro de URL e leitura sem senha.
   `:app:testDebugUnitTest` e `:app:assembleRelease` passaram; APK assinado em
   `app/build/outputs/apk/release/app-release.apk`.
+
+- Release 0.3.19 (101) — 25/09/2026: tela Sobre atualizada para 2026.09.25 e
+  versão 0.3.19 (101), conforme a regra de manter data e versão sincronizadas
+  com cada incremento. `:app:assembleRelease` passou; o APK assinado está em
+  `app/build/outputs/apk/release/app-release.apk`, confirmado por
+  `output-metadata.json`.
 
 
 ## Verificação

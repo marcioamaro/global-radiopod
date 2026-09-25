@@ -103,3 +103,10 @@ regressões pertinentes e gerar APK/AAB; não publicar automaticamente.
 - 25/09/2026 — Retomada/Android Auto: removida a espera fixa de 400 ms antes de preparar a última rádio. O item reproduzido agora usa o mesmo `mediaId` `radio_<id>` e `RequestMetadata` expostos pelo `MediaLibraryService`, evitando a perda de origem que podia aparecer como “Unknown source” no Android Auto. `:app:testDebugUnitTest` aprovado; confirmar em Android Auto físico.
 
 - 25/09/2026 — Backup sem senha: novos backups voltaram a ser cifrados integralmente com AES-GCM e chave interna do app, sem diálogo de senha. URLs de rádios personalizadas permanecem dentro do payload cifrado para restauração completa. Backups v1 restauram sem senha; o app solicita a senha original somente para backups legados v2. Teste confirma ausência de URL em texto claro e restauração sem senha. `:app:testDebugUnitTest` e `:app:assembleRelease` aprovados; APK 0.3.18 (100) confirmado por `output-metadata.json`.
+
+- 25/09/2026 — Release 0.3.19 (101): a tela Sobre foi atualizada para exibir
+  2026.09.25 e versão 0.3.19 (101). A regra de release exige agora a atualização
+  conjunta de `versionName`, `versionCode`, data e versão da tela Sobre antes de
+  gerar o artefato. `:app:assembleRelease` aprovado; APK assinado em
+  `app/build/outputs/apk/release/app-release.apk`, com versão confirmada em
+  `output-metadata.json`.
