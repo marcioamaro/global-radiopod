@@ -160,7 +160,8 @@ recuperação esperada sem os fallbacks artificiais.
 
 Release 0.3.22 (104) preparada em 25/09/2026: versão e tela Sobre atualizadas;
 `:app:assembleRelease` passou e `output-metadata.json` confirmou `versionCode
-104`/`versionName 0.3.22`; commit/push desta entrega ainda pendentes.
+104`/`versionName 0.3.22`; commit `8bbff77` criado e enviado para
+`origin/internaciona`.
 
 Os documentos sobrevivem ao fechamento da IDE. A execução requer uma sessão do
 agente aberta; não é prometida execução autônoma com a IDE fechada. Ao iniciar uma
