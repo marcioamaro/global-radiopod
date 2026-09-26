@@ -146,7 +146,20 @@ class AudioRouteManager private constructor(private val context: Context) {
             val volumeManager = com.marcioamaro.mediapod.audio.VolumeManager.getInstance(context)
             val castVol = try { session.volume.toFloat() } catch (_: Exception) { 1.0f }
             volumeManager.switchToCast(castVol)
-            transferPlaybackToCast(session)
+            // Se o receptor já tem uma mídia ativa, a sessão pode ter sido
+            // reanexada ao voltar do segundo plano. Recarregar aqui reinicia o
+            // stream e provoca uma pausa longa, mesmo com o Cast saudável.
+            val remoteStatus = session.remoteMediaClient?.mediaStatus
+            val remoteHasActiveMedia = remoteStatus?.getQueueItemById(remoteStatus.currentItemId) != null &&
+                remoteStatus.playerState != com.google.android.gms.cast.MediaStatus.PLAYER_STATE_IDLE
+            if (remoteHasActiveMedia) {
+                android.util.Log.d(
+                    "AudioRouteManager",
+                    "Sessão Cast retomada com mídia ativa; preservando reprodução remota"
+                )
+            } else {
+                transferPlaybackToCast(session)
+            }
             updateRoutes()
         }
         override fun onSessionStartFailed(session: com.google.android.gms.cast.framework.CastSession, error: Int) {
@@ -200,6 +213,12 @@ class AudioRouteManager private constructor(private val context: Context) {
             val volumeManager = com.marcioamaro.mediapod.audio.VolumeManager.getInstance(context)
             val castVol = try { session.volume.toFloat() } catch (_: Exception) { 1.0f }
             volumeManager.switchToCast(castVol)
+            val remoteStatus = session.remoteMediaClient?.mediaStatus
+            val remoteHasActiveMedia = remoteStatus?.getQueueItemById(remoteStatus.currentItemId) != null &&
+                remoteStatus.playerState != com.google.android.gms.cast.MediaStatus.PLAYER_STATE_IDLE
+            if (!remoteHasActiveMedia) {
+                transferPlaybackToCast(session)
+            }
             updateRoutes()
         }
         override fun onSessionResumeFailed(session: com.google.android.gms.cast.framework.CastSession, error: Int) {
@@ -216,6 +235,16 @@ class AudioRouteManager private constructor(private val context: Context) {
         }
         override fun onSessionSuspended(session: com.google.android.gms.cast.framework.CastSession, reason: Int) {
             _castSessionState.value = CastSessionState.SUSPENDED
+            // A suspensão normalmente significa que o receptor perdeu a rede
+            // local. Não deixe a UI anunciar Cast enquanto o áudio já voltou ao
+            // telefone; restaure a reprodução local uma única vez.
+            if (isCastingActive) {
+                isCastingActive = false
+                com.marcioamaro.mediapod.audio.VolumeManager.getInstance(context).switchToLocal()
+                com.marcioamaro.mediapod.cast.CastStreamProxy.getInstance(context).stopServer()
+                transferPlaybackToLocal()
+            }
+            updateRoutes()
         }
     }
 
@@ -491,9 +520,9 @@ class AudioRouteManager private constructor(private val context: Context) {
 
                 android.util.Log.d("AudioRouteManager", "Cast metadata atualizada in-place: $streamTitle")
             } else {
-                // Fallback: se não conseguir atualizar in-place, faz load completo
-                android.util.Log.d("AudioRouteManager", "Cast: sem item ativo na fila, fazendo load completo")
-                transferPlaybackToCast(session)
+                // O status pode estar momentaneamente vazio durante uma troca de
+                // rota. Não recarregue o stream: isso causa pausa e reload.
+                android.util.Log.d("AudioRouteManager", "Cast: status sem item ativo; metadados adiados")
             }
         } catch (e: Exception) {
             android.util.Log.w("AudioRouteManager", "Falha ao atualizar Cast metadata in-place", e)
@@ -529,8 +558,8 @@ class AudioRouteManager private constructor(private val context: Context) {
         }
 
         val now = System.currentTimeMillis()
-        if (now - lastTransferTime < 600L && currentMediaId == lastTransferMediaId) {
-            android.util.Log.d("AudioRouteManager", "transferPlaybackToCast: ignorando chamada duplicada por debounce (< 600ms)")
+        if (now - lastTransferTime < 300L && currentMediaId == lastTransferMediaId) {
+            android.util.Log.d("AudioRouteManager", "transferPlaybackToCast: ignorando chamada duplicada por debounce (< 300ms)")
             return
         }
         lastTransferTime = now
@@ -897,11 +926,22 @@ class AudioRouteManager private constructor(private val context: Context) {
             mediaRouter?.selectRoute(route)
             _selectedDevice.value = device.copy(isSelected = true)
             if (device.isDefault || device.deviceType == AudioDeviceType.THIS_DEVICE) {
-                if (isCastingActive) {
-                    try {
-                        val castCtx = CastContext.getSharedInstance(context)
+                // A rota visual pode já estar local enquanto o CastSession ainda
+                // permanece conectado. Sempre encerre a sessão subjacente ao
+                // selecionar o smartphone para evitar nova transferência ao
+                // voltar do segundo plano.
+                try {
+                    val castCtx = CastContext.getSharedInstance(context)
+                    if (castCtx.sessionManager.currentCastSession != null || isCastingActive) {
                         castCtx.sessionManager.endCurrentSession(true)
-                    } catch (_: Exception) {}
+                    }
+                } catch (_: Exception) {}
+                if (isCastingActive) {
+                    isCastingActive = false
+                    castSession = null
+                    _castSessionState.value = CastSessionState.DISCONNECTED
+                    com.marcioamaro.mediapod.audio.VolumeManager.getInstance(context).switchToLocal()
+                    com.marcioamaro.mediapod.cast.CastStreamProxy.getInstance(context).stopServer()
                 }
             }
             updateRoutes()

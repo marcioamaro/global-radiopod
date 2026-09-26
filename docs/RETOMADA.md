@@ -163,6 +163,33 @@ Release 0.3.22 (104) preparada em 25/09/2026: versão e tela Sobre atualizadas;
 104`/`versionName 0.3.22`; commit `8bbff77` criado e enviado para
 `origin/internaciona`.
 
+Diagnóstico Cast/segundo plano (26/09/2026): o proxy Cast podia iniciar vários
+`ServerSocket`s concorrentes, causando troca de portas, `Broken pipe`, encerramento
+de sessão e ANR durante mudanças de rota. `CastStreamProxy` agora reserva a porta
+de forma síncrona e inicia somente um servidor. Ao selecionar o dispositivo local,
+`AudioRouteManager` encerra também sessões Cast stale, mesmo quando a flag da UI já
+está falsa. Para evitar a microinterrupção ao retornar à Activity, `MainActivity`
+deixou de reaplicar o volume no `onResume`; o `ContentObserver` continua cuidando
+das alterações reais de volume. `:app:assembleDebug` passou e o APK foi instalado
+no aparelho `HMQ8PJHY4LHI7PNZ`, com log limpo para novo teste físico. Persistem
+pendentes a validação de estabilidade Cast por 10 minutos e a confirmação de que
+o retorno ao primeiro plano não pausa o áudio.
+
 Os documentos sobrevivem ao fechamento da IDE. A execução requer uma sessão do
 agente aberta; não é prometida execução autônoma com a IDE fechada. Ao iniciar uma
 nova sessão neste diretório, AGENTS.md direciona a leitura das pendências.
+
+Próximo passo concreto: executar no aparelho o ciclo local (rádio, segundo plano,
+tela apagada e retorno ao primeiro plano), depois repetir com Cast por pelo menos
+10 minutos, verificando ausência de ANR, troca indevida para o telefone e pausas.
+
+Ajuste de buffer (26/09/2026): `RadioPlayerManager` passou a priorizar tempo de
+buffer em vez de tamanho de pacote, com janela de 20–60 s e 10 s para retomada
+após rebuffer. `:app:assembleDebug` passou e o APK foi reinstalado no aparelho;
+aguarda novo teste físico para confirmar continuidade sem gagueira.
+
+Cast sem reload na retomada (26/09/2026): os horários do teste mostraram que a
+pausa longa coincidia com novo `remoteMediaClient.load()` ao reanexar uma sessão
+que já tinha mídia ativa. `AudioRouteManager` agora preserva a mídia remota quando
+a sessão volta com item em reprodução/buffering, evitando reinício do stream. APK
+debug recompilado, instalado e log limpo; repetir o ciclo Cast de 10 minutos.

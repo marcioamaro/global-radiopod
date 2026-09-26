@@ -143,3 +143,21 @@ regressões pertinentes e gerar APK/AAB; não publicar automaticamente.
   eliminar URLs antigas persistidas.
   Teste limpo repetido: a primeira conexão recebeu EOF e a segunda estabilizou;
   não foram observados 404/400 após a remoção dos fallbacks artificiais.
+
+- 26/09/2026 — Diagnóstico Cast e retorno do segundo plano: corrigida a corrida
+  que criava múltiplos `ServerSocket`s no `CastStreamProxy`, encerradas sessões
+  Cast stale ao selecionar o dispositivo local e removida a reaplicação de volume
+  no `onResume`, que podia provocar microinterrupção do `AudioTrack`. `:app:assembleDebug`
+  passou e o APK foi instalado no aparelho ADB. Validação física de Cast por 10
+  minutos, ausência de ANR e continuidade ao voltar do segundo plano ainda está
+  pendente no Item 10.
+
+- 26/09/2026 — Buffer de rádio ao vivo ajustado para priorizar tempo disponível
+  (20–60 s; 10 s após rebuffer), reduzindo flush/recriação por entrega AAC
+  irregular sem buffer ilimitado. `:app:assembleDebug` passou e o APK foi
+  reinstalado; confirmar no Item 10 que a pausa desapareceu sem gagueira.
+
+- 26/09/2026 — Cast: diagnóstico dos horários mostrou reload do `remoteMediaClient`
+  ao reanexar sessão já ativa. A retomada agora preserva item remoto em reprodução
+  ou buffering, evitando reinício e pausa longa. `:app:assembleDebug` passou; APK
+  reinstalado e log limpo. Repetir validação física no Item 10.

@@ -114,7 +114,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        viewModel.syncVolumeFromSystem()
+        // O ContentObserver já sincroniza alterações de volume. Reaplicar o
+        // volume neste ponto força uma atualização do AudioTrack ao voltar do
+        // segundo plano e pode causar uma microinterrupção na rádio.
     }
 
     override fun onDestroy() {

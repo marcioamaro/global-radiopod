@@ -444,15 +444,17 @@ class RadioPlayerManager private constructor(private val context: Context) {
             .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
             .build()
 
-        // Configure buffer for continuous, resilient live radio streaming (zero backBuffer to save RAM)
+        // Buffer moderado para rádio ao vivo: prioriza tempo disponível, não tamanho
+        // de pacote. Isso evita rebuffer/flush em AAC com entrega irregular sem
+        // acumular uma fila excessiva (e sem aumentar indefinidamente o atraso).
         val loadControl = DefaultLoadControl.Builder()
             .setBufferDurationsMs(
-                15000,  // minBufferMs (15 segundos para estabilidade contínua sem engasgo)
-                50000,  // maxBufferMs (50 segundos)
-                5000,   // bufferForPlaybackMs (5 segundos para iniciar reprodução sem rebuffering)
-                8000    // bufferForPlaybackAfterRebufferMs (8 segundos para rebuffer seguro)
+                20000,  // minBufferMs: margem contra oscilações breves
+                60000,  // maxBufferMs: limite de atraso/memória para rádio ao vivo
+                5000,   // bufferForPlaybackMs: início responsivo
+                10000   // bufferForPlaybackAfterRebufferMs: retomada sem gagueira
             )
-            .setPrioritizeTimeOverSizeThresholds(false)
+            .setPrioritizeTimeOverSizeThresholds(true)
             .setBackBuffer(0, false) // Sem retenção de buffer passado para economizar memória RAM
             .build()
 
@@ -2044,7 +2046,10 @@ class RadioPlayerManager private constructor(private val context: Context) {
                     artworkUri = LocalArtworkGenerator.getDefaultRadioArtwork(context)
                 )
                 if (AudioRouteManager.getInstance(context).isCastingActive()) {
-                    AudioRouteManager.getInstance(context).updateCastMedia()
+                    // Atualiza artista/título sem recarregar o stream no receptor.
+                    // Um load completo aqui atrasava a troca de estação e podia
+                    // interromper o áudio sempre que o RDS mudava.
+                    AudioRouteManager.getInstance(context).updateCastMetadataOnly()
                 }
             }
         }

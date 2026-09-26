@@ -68,26 +68,32 @@ class CastStreamProxy private constructor(private val context: Context) {
     @Synchronized
     fun startServer() {
         if (serverSocket != null && !serverSocket!!.isClosed) return
-
-        serverJob = scope.launch {
-            try {
-                serverSocket = ServerSocket(0)
-                serverPort = serverSocket!!.localPort
-                Log.i(TAG, "CastStreamProxy iniciado na porta $serverPort")
-
-                while (isActive && !serverSocket!!.isClosed) {
-                    try {
-                        val clientSocket = serverSocket!!.accept()
-                        launch {
-                            handleClient(clientSocket)
+        try {
+            // Reservar a porta antes de lançar a coroutine evita que chamadas
+            // concorrentes (sessão Cast + transferência de mídia) criem vários
+            // servidores e retornem portas diferentes para o mesmo receptor.
+            val socket = ServerSocket(0)
+            serverSocket = socket
+            serverPort = socket.localPort
+            Log.i(TAG, "CastStreamProxy iniciado na porta $serverPort")
+            serverJob = scope.launch {
+                try {
+                    while (isActive && !socket.isClosed) {
+                        try {
+                            val clientSocket = socket.accept()
+                            launch { handleClient(clientSocket) }
+                        } catch (_: Exception) {
+                            if (!isActive) break
                         }
-                    } catch (e: Exception) {
-                        if (!isActive) break
                     }
+                } catch (e: Exception) {
+                    if (isActive) Log.e(TAG, "Erro no loop do ServerSocket do CastStreamProxy", e)
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Erro ao iniciar ServerSocket do CastStreamProxy", e)
             }
+        } catch (e: Exception) {
+            serverSocket = null
+            serverPort = 0
+            Log.e(TAG, "Erro ao iniciar ServerSocket do CastStreamProxy", e)
         }
     }
 
@@ -122,6 +128,9 @@ class CastStreamProxy private constructor(private val context: Context) {
             while (interfaces.hasMoreElements()) {
                 val iface = interfaces.nextElement()
                 if (iface.isLoopback || !iface.isUp) continue
+                // O receptor Cast precisa alcançar o telefone pela LAN Wi‑Fi;
+                // evite escolher VPN, hotspot ou interface móvel primeiro.
+                if (iface.name != "wlan0" && iface.name != "wifi0" && iface.name != "eth0") continue
                 val addresses = iface.inetAddresses
                 while (addresses.hasMoreElements()) {
                     val addr = addresses.nextElement()
