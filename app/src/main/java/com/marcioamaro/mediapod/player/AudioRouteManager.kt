@@ -163,6 +163,7 @@ class AudioRouteManager private constructor(private val context: Context) {
             updateRoutes()
         }
         override fun onSessionStartFailed(session: com.google.android.gms.cast.framework.CastSession, error: Int) {
+            RadioPlayerManager.getInstance(context).stopCastMetadataMonitor()
             session.remoteMediaClient?.unregisterCallback(remoteClientCallback)
             try {
                 session.removeCastListener(castVolumeListener)
@@ -182,6 +183,7 @@ class AudioRouteManager private constructor(private val context: Context) {
             } catch (_: Exception) {}
         }
         override fun onSessionEnded(session: com.google.android.gms.cast.framework.CastSession, error: Int) {
+            RadioPlayerManager.getInstance(context).stopCastMetadataMonitor()
             session.remoteMediaClient?.unregisterCallback(remoteClientCallback)
             try {
                 session.removeCastListener(castVolumeListener)
@@ -222,6 +224,7 @@ class AudioRouteManager private constructor(private val context: Context) {
             updateRoutes()
         }
         override fun onSessionResumeFailed(session: com.google.android.gms.cast.framework.CastSession, error: Int) {
+            RadioPlayerManager.getInstance(context).stopCastMetadataMonitor()
             session.remoteMediaClient?.unregisterCallback(remoteClientCallback)
             try {
                 session.removeCastListener(castVolumeListener)
@@ -234,6 +237,7 @@ class AudioRouteManager private constructor(private val context: Context) {
             updateRoutes()
         }
         override fun onSessionSuspended(session: com.google.android.gms.cast.framework.CastSession, reason: Int) {
+            RadioPlayerManager.getInstance(context).stopCastMetadataMonitor()
             _castSessionState.value = CastSessionState.SUSPENDED
             // A suspensão normalmente significa que o receptor perdeu a rede
             // local. Não deixe a UI anunciar Cast enquanto o áudio já voltou ao
@@ -679,6 +683,11 @@ class AudioRouteManager private constructor(private val context: Context) {
                 } else {
                     com.marcioamaro.mediapod.cast.CastStreamProxy.getInstance(context).getProxyStreamUrl(streamUrl)
                 }
+                if (isHls) {
+                    playerManager.stopCastMetadataMonitor()
+                } else {
+                    playerManager.startCastMetadataMonitor(streamUrl)
+                }
                 android.util.Log.d("AudioRouteManager", "transferPlaybackToCast: rádio='${station.name}', urlFinal='$finalUrl', isHls=$isHls, contentType='$finalContentType'")
 
                 val mediaInfo = com.google.android.gms.cast.MediaInfo.Builder(finalUrl)
@@ -926,6 +935,7 @@ class AudioRouteManager private constructor(private val context: Context) {
             mediaRouter?.selectRoute(route)
             _selectedDevice.value = device.copy(isSelected = true)
             if (device.isDefault || device.deviceType == AudioDeviceType.THIS_DEVICE) {
+                RadioPlayerManager.getInstance(context).stopCastMetadataMonitor()
                 // A rota visual pode já estar local enquanto o CastSession ainda
                 // permanece conectado. Sempre encerre a sessão subjacente ao
                 // selecionar o smartphone para evitar nova transferência ao
@@ -972,6 +982,7 @@ class AudioRouteManager private constructor(private val context: Context) {
             )
         } catch (_: Exception) {}
         castSession?.remoteMediaClient?.unregisterCallback(remoteClientCallback)
+        RadioPlayerManager.getInstance(context).stopCastMetadataMonitor()
         castSession = null
         isCastingActive = false
         _castSessionState.value = CastSessionState.DISCONNECTED

@@ -111,6 +111,23 @@ class RadioPlayerManager private constructor(private val context: Context) {
         stopVisualizer()
     }
 
+    /** Mantém a leitura ICY ativa enquanto o áudio é reproduzido somente no Cast. */
+    fun startCastMetadataMonitor(streamUrl: String) {
+        if (streamUrl.isBlank() || streamUrl.contains(".m3u8", ignoreCase = true)) return
+        if (castMetadataMonitorUrl == streamUrl && castMetadataMonitor != null) return
+        stopCastMetadataMonitor()
+        castMetadataMonitorUrl = streamUrl
+        castMetadataMonitor = IcyMetadataMonitor { title -> processDetectedRdsTitle(title) }.also {
+            it.start(streamUrl)
+        }
+    }
+
+    fun stopCastMetadataMonitor() {
+        castMetadataMonitor?.stop()
+        castMetadataMonitor = null
+        castMetadataMonitorUrl = null
+    }
+
     private val _currentStation = MutableStateFlow<RadioStation?>(null)
     val currentStation: StateFlow<RadioStation?> = _currentStation.asStateFlow()
 
@@ -333,6 +350,8 @@ class RadioPlayerManager private constructor(private val context: Context) {
     private var rdsSimulationJob: Job? = null
     private var sleepTimerJob: Job? = null
     private var reconnectJob: Job? = null
+    private var castMetadataMonitor: IcyMetadataMonitor? = null
+    private var castMetadataMonitorUrl: String? = null
     private var activeStationMediaId: String? = null
     private var activeStationMediaIdStationId: String? = null
     private var retryCount = 0
@@ -2179,6 +2198,7 @@ class RadioPlayerManager private constructor(private val context: Context) {
         rdsSimulationJob?.cancel()
         sleepTimerJob?.cancel()
         reconnectJob?.cancel()
+        stopCastMetadataMonitor()
         releaseLocks()
         exoPlayer?.release()
         exoPlayer = null

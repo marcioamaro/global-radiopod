@@ -193,3 +193,13 @@ pausa longa coincidia com novo `remoteMediaClient.load()` ao reanexar uma sessã
 que já tinha mídia ativa. `AudioRouteManager` agora preserva a mídia remota quando
 a sessão volta com item em reprodução/buffering, evitando reinício do stream. APK
 debug recompilado, instalado e log limpo; repetir o ciclo Cast de 10 minutos.
+
+Metadados ICY no Cast (26/09/2026): implementado `IcyMetadataMonitor` para manter
+uma conexão auxiliar com `Icy-MetaData: 1` enquanto o áudio é reproduzido no
+Chromecast. Os blocos de áudio são descartados, `StreamTitle` atualiza o estado
+do app e `queueUpdateItems` atualiza o item remoto sem `load()`/interrupção. O
+monitor tem reconexão progressiva e ciclo de vida vinculado à sessão Cast.
+`:app:testDebugUnitTest` e `:app:assembleRelease` passaram. Release 0.3.24
+(106) confirmada em `output-metadata.json`; evidência em
+`reports/cast-metadata-release.log`. Próximo passo concreto: validar fisicamente
+por pelo menos 10 minutos que cantor/música mudam no receptor sem pausa.

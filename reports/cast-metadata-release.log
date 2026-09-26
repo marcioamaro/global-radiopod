@@ -1,0 +1,13 @@
+2026-09-26 — Correção de metadados ICY no Cast
+
+Implementado IcyMetadataMonitor: conexão auxiliar sem reprodução local, solicita
+Icy-MetaData: 1, descarta áudio e encaminha StreamTitle ao estado nowPlaying e ao
+remoteMediaClient via queueUpdateItems, sem recarregar o stream no receptor.
+Monitor cancelado ao encerrar/suspender Cast, trocar para o dispositivo local ou
+liberar o player.
+
+Validação interna:
+- :app:testDebugUnitTest — BUILD SUCCESSFUL
+- :app:assembleRelease — BUILD SUCCESSFUL em 6m28s
+- APK release: versão 0.3.24 (106), confirmada em output-metadata.json
+- Teste físico de Cast ainda pendente no Item 10.

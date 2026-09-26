@@ -161,3 +161,12 @@ regressões pertinentes e gerar APK/AAB; não publicar automaticamente.
   ao reanexar sessão já ativa. A retomada agora preserva item remoto em reprodução
   ou buffering, evitando reinício e pausa longa. `:app:assembleDebug` passou; APK
   reinstalado e log limpo. Repetir validação física no Item 10.
+
+- 26/09/2026 — Metadados variáveis do Cast: adicionado `IcyMetadataMonitor`, uma
+  conexão auxiliar que solicita `Icy-MetaData: 1`, descarta áudio e encaminha cada
+  `StreamTitle` ao Cast sem pausar/recarregar o áudio remoto. O monitor é cancelado
+  em encerramento, suspensão, troca para o telefone e liberação do player. A
+  versão 0.3.24 (106) foi conferida no Gradle, na tela Sobre e em
+  `output-metadata.json`. `:app:testDebugUnitTest` e `:app:assembleRelease`
+  passaram. Evidência: `reports/cast-metadata-release.log`. Validação física da
+  troca de música no Chromecast continua pendente no Item 10.
